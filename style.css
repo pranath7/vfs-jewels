@@ -238,6 +238,7 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 
 /* Logo */
 .header-logo { display: flex; align-items: center; justify-content: center; }
+.logo-img { height: 44px; width: auto; object-fit: contain; display: block; }
 
 .logo-text {
   font-family: var(--font-heading);
