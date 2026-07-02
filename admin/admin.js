@@ -81,8 +81,13 @@ function initAuthListener() {
 
 window.handleLoginSubmit = async function(event) {
   event.preventDefault();
-  const email = $('#loginEmail').value.trim();
+  let email = $('#loginEmail').value.trim();
   const password = $('#loginPassword').value;
+  
+  // If the user typed a plain username without an @ symbol, append the default domain
+  if (email && !email.includes('@')) {
+    email = `${email}@vfsjewels.store`;
+  }
   const errorMsg = $('#loginErrorMsg');
   const loginCard = $('.login-card');
   const btn = $('#btnLoginSubmit');
