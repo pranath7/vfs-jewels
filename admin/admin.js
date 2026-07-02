@@ -772,8 +772,10 @@ window.downloadInvoicePDF = async function(orderId) {
   // Create temporary offscreen container
   const tempDiv = document.createElement('div');
   tempDiv.style.position = 'fixed';
-  tempDiv.style.top = '-9999px';
+  tempDiv.style.top = '0';
   tempDiv.style.left = '0';
+  tempDiv.style.zIndex = '-9999';
+  tempDiv.style.pointerEvents = 'none';
   tempDiv.style.width = '750px';
   tempDiv.style.background = '#ffffff';
   tempDiv.style.color = '#000000';

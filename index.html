@@ -298,6 +298,16 @@
             <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">WhatsApp Phone Number</label>
             <input type="tel" id="coPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;" required>
           </div>
+          <!-- Wallet Balance Lookup Container -->
+          <div id="coWalletContainer" style="display:none;background:var(--color-primary-10);border:1px dashed var(--color-primary);padding:12px;border-radius:var(--rounded-md);text-align:left;font-size:1.3rem;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input type="checkbox" id="coUseWallet" style="width:18px;height:18px;cursor:pointer;">
+              <label for="coUseWallet" style="cursor:pointer;font-weight:700;color:var(--color-primary);display:inline-block;vertical-align:middle;margin:0;">
+                🎁 Redeem VFS Wallet Points (Balance: <span id="coWalletBalance">₹0</span>)
+              </label>
+            </div>
+            <p style="margin:6px 0 0 28px;font-size:1.15rem;color:#666;">Apply points to get a discount on this order total.</p>
+          </div>
           <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
             <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Delivery Address</label>
             <input type="text" id="coAddress" placeholder="Flat/House No, Street, Landmark" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;" required>
@@ -329,6 +339,10 @@
         <div class="checkout-summary" style="background:#f9f9f9;padding:16px;border-radius:var(--rounded-md);margin-bottom:20px;text-align:left;font-size:1.35rem;">
           <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>Cart Total:</span><strong id="coSumSubtotal">₹0</strong></div>
           <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>Delivery Fee:</span><strong id="coSumShipping">₹0</strong></div>
+          <!-- Dynamic discount row -->
+          <div id="coSumDiscountRow" style="display:none;justify-content:space-between;margin-bottom:8px;color:#27ae60;">
+            <span>Wallet Discount:</span><strong id="coSumDiscount">-₹0</strong>
+          </div>
           <div style="display:flex;justify-content:space-between;border-top:1px dashed #ccc;padding-top:8px;margin-top:8px;font-size:1.6rem;color:var(--color-secondary);">
             <span>Grand Total:</span><strong id="coSumTotal">₹0</strong>
           </div>

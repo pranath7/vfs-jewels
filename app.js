@@ -182,6 +182,21 @@ window.VFS_DB = {
     return local ? JSON.parse(local) : {};
   },
 
+  saveWalletBalance: async function(phone, balance) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        await window.db.collection('wallet_credits').doc(phone).set({ balance: balance });
+        return;
+      } catch(e) {
+        console.error("Firestore write error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_customer_credits');
+    let credits = local ? JSON.parse(local) : {};
+    credits[phone] = balance;
+    localStorage.setItem('vfs_customer_credits', JSON.stringify(credits));
+  },
+
   // ── Catalog Products ──
   getProducts: async function() {
     if (window.VFS_CLOUD_ACTIVE) {
@@ -792,6 +807,34 @@ $('#closeCheckout').addEventListener('click', closeCheckout);
 $('#checkoutModal').addEventListener('click', (e) => {
   if (e.target === $('#checkoutModal')) closeCheckout();
 });
+// Automatically check wallet balance when phone number is entered
+$('#coPhone').addEventListener('input', async () => {
+  const phoneVal = $('#coPhone').value.trim();
+  const walletContainer = $('#coWalletContainer');
+  const walletBalanceSpan = $('#coWalletBalance');
+  const walletCheckbox = $('#coUseWallet');
+  
+  if (phoneVal.length === 10) {
+    try {
+      const credits = await window.VFS_DB.getWalletCredits();
+      const balance = credits[phoneVal] || 0;
+      if (balance > 0) {
+        walletBalanceSpan.textContent = fmt(balance);
+        walletContainer.style.display = 'block';
+      } else {
+        walletContainer.style.display = 'none';
+        walletCheckbox.checked = false;
+      }
+    } catch (err) {
+      console.warn("Wallet check failed:", err);
+      walletContainer.style.display = 'none';
+      walletCheckbox.checked = false;
+    }
+  } else {
+    walletContainer.style.display = 'none';
+    walletCheckbox.checked = false;
+  }
+});
 
 // Checkout Step 1 Shipping form submission
 $('#coForm').addEventListener('submit', (e) => {
@@ -807,7 +850,22 @@ $('#coForm').addEventListener('submit', (e) => {
   });
   
   const shippingCost = 200;
-  const grandTotal = subtotal + shippingCost;
+  let grandTotal = subtotal + shippingCost;
+  
+  // Calculate Wallet Discount
+  let walletDiscount = 0;
+  const useWalletCheckbox = $('#coUseWallet');
+  if (useWalletCheckbox && useWalletCheckbox.checked) {
+    const phoneVal = $('#coPhone').value.trim();
+    try {
+      const credits = await window.VFS_DB.getWalletCredits();
+      const balance = credits[phoneVal] || 0;
+      walletDiscount = Math.min(balance, grandTotal);
+      grandTotal -= walletDiscount;
+    } catch (err) {
+      console.warn("Deducting wallet credits failed:", err);
+    }
+  }
   
   // Create Order Structure
   const newOrder = {
@@ -822,6 +880,7 @@ $('#coForm').addEventListener('submit', (e) => {
     items: itemsList,
     subtotal: subtotal,
     shipping: shippingCost,
+    walletDiscount: walletDiscount,
     total: grandTotal,
     status: 'unpaid', // unpaid/paid
     trackingId: ''
@@ -832,6 +891,12 @@ $('#coForm').addEventListener('submit', (e) => {
   // Render Step 2 Payment details
   $('#coSumSubtotal').textContent = fmt(subtotal);
   $('#coSumShipping').textContent = fmt(shippingCost);
+  if (walletDiscount > 0) {
+    $('#coSumDiscountRow').style.display = 'flex';
+    $('#coSumDiscount').textContent = `-${fmt(walletDiscount)}`;
+  } else {
+    $('#coSumDiscountRow').style.display = 'none';
+  }
   $('#coSumTotal').textContent = fmt(grandTotal);
   
   // Create UPI URI using your real payment receiver details (8939086608@fam)
@@ -859,8 +924,27 @@ $('#coForm').addEventListener('submit', (e) => {
 $('#coConfirmBtn').addEventListener('click', async () => {
   if (!activeCheckoutOrder) return;
   
-  // Save order via VFS_DB wrapper
-  await window.VFS_DB.saveOrder(activeCheckoutOrder);
+  const submitBtn = $('#coConfirmBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Placing Order...';
+  
+  try {
+    // Save order via VFS_DB wrapper
+    await window.VFS_DB.saveOrder(activeCheckoutOrder);
+    
+    // Deduct wallet balance if a discount was applied!
+    if (activeCheckoutOrder.walletDiscount && activeCheckoutOrder.walletDiscount > 0) {
+      const credits = await window.VFS_DB.getWalletCredits();
+      const balance = credits[activeCheckoutOrder.phone] || 0;
+      const newBalance = Math.max(0, balance - activeCheckoutOrder.walletDiscount);
+      await window.VFS_DB.saveWalletBalance(activeCheckoutOrder.phone, newBalance);
+    }
+  } catch (err) {
+    console.error("Order submission or wallet debit failed:", err);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Confirm & Place Order on WhatsApp';
+  }
   
   // Create Formatted WhatsApp Message
   let itemsSummaryText = "";
@@ -868,7 +952,7 @@ $('#coConfirmBtn').addEventListener('click', async () => {
     itemsSummaryText += `${idx+1}. *${item.name}* x ${item.qty} - ₹${item.price * item.qty}\n`;
   });
   
-  const waMessage = 
+  let waMessage = 
 `🌸 *VFS JEWELLERY - NEW ORDER* 🌸
 ----------------------------------
 *Order ID:* ${activeCheckoutOrder.id}
@@ -881,8 +965,13 @@ $('#coConfirmBtn').addEventListener('click', async () => {
 ${itemsSummaryText}
 ----------------------------------
 *Subtotal:* ₹${activeCheckoutOrder.subtotal}
-*Delivery Fee:* ₹${activeCheckoutOrder.shipping}
-*Grand Total:* *₹${activeCheckoutOrder.total}*
+*Delivery Fee:* ₹${activeCheckoutOrder.shipping}\n`;
+
+  if (activeCheckoutOrder.walletDiscount && activeCheckoutOrder.walletDiscount > 0) {
+    waMessage += `*Wallet Discount:* -₹${activeCheckoutOrder.walletDiscount}\n`;
+  }
+  
+  waMessage += `*Grand Total:* *₹${activeCheckoutOrder.total}*
 
 *Payment Method:* UPI Transfer
 ----------------------------------
@@ -2031,8 +2120,10 @@ window.downloadCustomerInvoicePDF = async function(orderId) {
   // Create temporary offscreen container
   const tempDiv = document.createElement('div');
   tempDiv.style.position = 'fixed';
-  tempDiv.style.top = '-9999px';
+  tempDiv.style.top = '0';
   tempDiv.style.left = '0';
+  tempDiv.style.zIndex = '-9999';
+  tempDiv.style.pointerEvents = 'none';
   tempDiv.style.width = '750px';
   tempDiv.style.background = '#ffffff';
   tempDiv.style.color = '#000000';
