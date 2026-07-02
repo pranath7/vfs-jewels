@@ -182,6 +182,23 @@ window.VFS_DB = {
     return local ? JSON.parse(local) : {};
   },
 
+  getCustomerWalletBalance: async function(phone) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        const doc = await window.db.collection('wallet_credits').doc(phone).get();
+        if (doc.exists) {
+          return doc.data().balance || 0;
+        }
+        return 0;
+      } catch(e) {
+        console.error("Firestore read error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_customer_credits');
+    let credits = local ? JSON.parse(local) : {};
+    return credits[phone] || 0;
+  },
+
   saveWalletBalance: async function(phone, balance) {
     if (window.VFS_CLOUD_ACTIVE) {
       try {
@@ -808,16 +825,16 @@ $('#checkoutModal').addEventListener('click', (e) => {
   if (e.target === $('#checkoutModal')) closeCheckout();
 });
 // Automatically check wallet balance when phone number is entered
-$('#coPhone').addEventListener('input', async () => {
+async function checkWalletBalance() {
   const phoneVal = $('#coPhone').value.trim();
+  const cleanPhone = phoneVal.replace(/\D/g, '').slice(-10);
   const walletContainer = $('#coWalletContainer');
   const walletBalanceSpan = $('#coWalletBalance');
   const walletCheckbox = $('#coUseWallet');
   
-  if (phoneVal.length === 10) {
+  if (cleanPhone.length === 10) {
     try {
-      const credits = await window.VFS_DB.getWalletCredits();
-      const balance = credits[phoneVal] || 0;
+      const balance = await window.VFS_DB.getCustomerWalletBalance(cleanPhone);
       if (balance > 0) {
         walletBalanceSpan.textContent = fmt(balance);
         walletContainer.style.display = 'block';
@@ -834,7 +851,9 @@ $('#coPhone').addEventListener('input', async () => {
     walletContainer.style.display = 'none';
     walletCheckbox.checked = false;
   }
-});
+}
+$('#coPhone').addEventListener('input', checkWalletBalance);
+$('#coPhone').addEventListener('change', checkWalletBalance);
 
 // Checkout Step 1 Shipping form submission
 $('#coForm').addEventListener('submit', async (e) => {
@@ -854,12 +873,13 @@ $('#coForm').addEventListener('submit', async (e) => {
   
   // Calculate Wallet Discount
   let walletDiscount = 0;
+  const phoneVal = $('#coPhone').value.trim();
+  const cleanPhone = phoneVal.replace(/\D/g, '').slice(-10);
+  
   const useWalletCheckbox = $('#coUseWallet');
   if (useWalletCheckbox && useWalletCheckbox.checked) {
-    const phoneVal = $('#coPhone').value.trim();
     try {
-      const credits = await window.VFS_DB.getWalletCredits();
-      const balance = credits[phoneVal] || 0;
+      const balance = await window.VFS_DB.getCustomerWalletBalance(cleanPhone);
       walletDiscount = Math.min(balance, grandTotal);
       grandTotal -= walletDiscount;
     } catch (err) {
@@ -872,7 +892,7 @@ $('#coForm').addEventListener('submit', async (e) => {
     id: '#VF-' + Math.floor(1000 + Math.random() * 9000),
     date: new Date().toLocaleDateString('en-IN'),
     name: $('#coName').value.trim(),
-    phone: $('#coPhone').value.trim(),
+    phone: cleanPhone,
     address: $('#coAddress').value.trim(),
     city: $('#coCity').value.trim(),
     pincode: $('#coPincode').value.trim(),
@@ -934,8 +954,7 @@ $('#coConfirmBtn').addEventListener('click', async () => {
     
     // Deduct wallet balance if a discount was applied!
     if (activeCheckoutOrder.walletDiscount && activeCheckoutOrder.walletDiscount > 0) {
-      const credits = await window.VFS_DB.getWalletCredits();
-      const balance = credits[activeCheckoutOrder.phone] || 0;
+      const balance = await window.VFS_DB.getCustomerWalletBalance(activeCheckoutOrder.phone);
       const newBalance = Math.max(0, balance - activeCheckoutOrder.walletDiscount);
       await window.VFS_DB.saveWalletBalance(activeCheckoutOrder.phone, newBalance);
     }
