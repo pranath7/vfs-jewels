@@ -43,14 +43,87 @@ async function initCloudConfig() {
         window.VFS_CLOUD_ACTIVE = true;
         console.log("🔥 VFS Admin Cloud: Connected to Firestore.");
         
-        // Initial cache and render refresh
-        await refreshCloudData();
+        // Setup Auth Listener
+        initAuthListener();
+      } else {
+        bypassLoginLocalMode();
       }
+    } else {
+      bypassLoginLocalMode();
     }
   } catch (e) {
     console.warn("⚠️ VFS Admin Cloud: Fallback to localStorage.", e);
+    bypassLoginLocalMode();
   }
 }
+
+function bypassLoginLocalMode() {
+  window.VFS_CLOUD_ACTIVE = false;
+  $('#loginPanel').style.display = 'none';
+  $('#adminLayout').style.display = 'block';
+  refreshCloudData();
+}
+
+function initAuthListener() {
+  firebase.auth().onAuthStateChanged(async (user) => {
+    if (user) {
+      console.log("👤 VFS Admin Auth: Logged in as", user.email);
+      $('#loginPanel').style.display = 'none';
+      $('#adminLayout').style.display = 'block';
+      await refreshCloudData();
+    } else {
+      console.log("👤 VFS Admin Auth: Logged out.");
+      $('#loginPanel').style.display = 'flex';
+      $('#adminLayout').style.display = 'none';
+    }
+  });
+}
+
+window.handleLoginSubmit = async function(event) {
+  event.preventDefault();
+  const email = $('#loginEmail').value.trim();
+  const password = $('#loginPassword').value;
+  const errorMsg = $('#loginErrorMsg');
+  const loginCard = $('.login-card');
+  const btn = $('#btnLoginSubmit');
+  
+  errorMsg.textContent = '';
+  loginCard.classList.remove('shake');
+  
+  if (!email || !password) {
+    errorMsg.textContent = 'Please fill out all fields.';
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.textContent = 'Signing In...';
+  
+  try {
+    await firebase.auth().signInWithEmailAndPassword(email, password);
+    adminToast('Signed in successfully! 🔑');
+  } catch (err) {
+    console.error("Login failed:", err);
+    loginCard.classList.add('shake');
+    errorMsg.textContent = err.message || 'Invalid email or password.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+  }
+};
+
+window.logoutAdmin = async function() {
+  if (!confirm('Are you sure you want to log out of the Admin panel?')) return;
+  try {
+    if (window.VFS_CLOUD_ACTIVE) {
+      await firebase.auth().signOut();
+    } else {
+      adminToast('Logged out (LocalStorage Mode).');
+    }
+  } catch (err) {
+    console.error("Logout failed:", err);
+    adminToast('Logout failed.', 'error');
+  }
+};
 
 async function refreshCloudData() {
   const dbProducts = await window.VFS_DB.getProducts();
