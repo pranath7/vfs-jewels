@@ -2639,6 +2639,25 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
     box-shadow: var(--shadow-medium);
 }
 
+.checkout-modal-card {
+    max-width: 500px !important;
+    width: 95% !important;
+    padding: 35px;
+    box-sizing: border-box;
+}
+
+.checkout-modal-card input,
+.checkout-modal-card select {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+    .checkout-modal-card {
+        padding: 24px 20px !important;
+    }
+}
+
 .checkout-step {
     animation: fadeUp 0.3s ease;
 }
