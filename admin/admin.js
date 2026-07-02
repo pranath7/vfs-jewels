@@ -769,13 +769,18 @@ window.downloadInvoicePDF = async function(orderId) {
 
   adminToast("Generating invoice PDF... 📄");
 
-  // Create temporary offscreen container
+  // Create invisible wrapper container to force layout painting
+  const wrapper = document.createElement('div');
+  wrapper.style.position = 'fixed';
+  wrapper.style.top = '0';
+  wrapper.style.left = '0';
+  wrapper.style.width = '0';
+  wrapper.style.height = '0';
+  wrapper.style.overflow = 'hidden';
+  wrapper.style.zIndex = '-9999';
+  wrapper.style.pointerEvents = 'none';
+
   const tempDiv = document.createElement('div');
-  tempDiv.style.position = 'fixed';
-  tempDiv.style.top = '0';
-  tempDiv.style.left = '0';
-  tempDiv.style.zIndex = '-9999';
-  tempDiv.style.pointerEvents = 'none';
   tempDiv.style.width = '750px';
   tempDiv.style.background = '#ffffff';
   tempDiv.style.color = '#000000';
@@ -879,7 +884,8 @@ window.downloadInvoicePDF = async function(orderId) {
     </div>
   `;
   
-  document.body.appendChild(tempDiv);
+  wrapper.appendChild(tempDiv);
+  document.body.appendChild(wrapper);
   
   const opt = {
     margin:       [0.4, 0.4],
@@ -890,11 +896,12 @@ window.downloadInvoicePDF = async function(orderId) {
   };
   
   html2pdf().set(opt).from(tempDiv).save().then(() => {
-    tempDiv.remove();
+    wrapper.remove();
     adminToast(`PDF invoice downloaded! 📄`);
   }).catch(err => {
     console.error("PDF generation error:", err);
-    tempDiv.remove();
+    wrapper.remove();
+    alert("PDF generation failed: " + err.message);
   });
 };
 
