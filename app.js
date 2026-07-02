@@ -1635,7 +1635,10 @@ function closeStoreLocator() {
   document.body.style.overflow = '';
 }
 
-$('#openStore').addEventListener('click', openStoreLocator);
+const openStoreBtn = $('#openStore');
+if (openStoreBtn) {
+  openStoreBtn.addEventListener('click', openStoreLocator);
+}
 $('#closeStore').addEventListener('click', closeStoreLocator);
 $('#storeOverlay').addEventListener('click', (e) => {
   if (e.target === $('#storeOverlay')) {
