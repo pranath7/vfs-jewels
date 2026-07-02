@@ -771,12 +771,12 @@ window.downloadInvoicePDF = async function(orderId) {
 
   // Create invisible wrapper container to force layout painting
   const wrapper = document.createElement('div');
-  wrapper.style.position = 'fixed';
+  wrapper.style.position = 'absolute';
   wrapper.style.top = '0';
-  wrapper.style.left = '0';
-  wrapper.style.width = '0';
-  wrapper.style.height = '0';
-  wrapper.style.overflow = 'hidden';
+  wrapper.style.left = '-9999px';
+  wrapper.style.width = '750px';
+  wrapper.style.height = 'auto';
+  wrapper.style.overflow = 'visible';
   wrapper.style.zIndex = '-9999';
   wrapper.style.pointerEvents = 'none';
 
