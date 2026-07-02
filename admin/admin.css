@@ -282,11 +282,15 @@ body { display: flex; font-size: 1.4rem; }
 
 /* ORDER GRID */
 .orders-grid-flow {
-  padding: 16px;
+  padding: 16px 16px 120px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-height: 100px;
+}
+
+.search-result-area {
+  padding-bottom: 120px;
 }
 
 .empty-state {
