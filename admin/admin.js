@@ -466,8 +466,6 @@ window.renderSearchCatalog = function() {
                       <option value="earrings" ${p.cat === 'earrings' ? 'selected' : ''}>Earrings</option>
                       <option value="necklaces" ${p.cat === 'necklaces' ? 'selected' : ''}>Necklaces</option>
                       <option value="bracelets" ${p.cat === 'bracelets' ? 'selected' : ''}>Bracelets</option>
-                      <option value="mangalsutra" ${p.cat === 'mangalsutra' ? 'selected' : ''}>Mangalsutras</option>
-                      <option value="anklets" ${p.cat === 'anklets' ? 'selected' : ''}>Anklets &amp; Toe Rings</option>
                     </select>
                   </div>
                 </div>
@@ -1469,8 +1467,6 @@ function renderSingleProductForm() {
             <option value="earrings">Earrings</option>
             <option value="necklaces">Necklaces</option>
             <option value="bracelets">Bracelets</option>
-            <option value="mangalsutra">Mangalsutras</option>
-            <option value="anklets">Anklets &amp; Toe Rings</option>
             <option value="__new__">+ Add New Category</option>
           </select>
           <input type="text" id="singCustomCategory" placeholder="Enter Category Name" style="display:none; margin-top:8px;">
@@ -1516,8 +1512,6 @@ function renderBulkProductsForm() {
             <option value="earrings">Earrings</option>
             <option value="necklaces">Necklaces</option>
             <option value="bracelets">Bracelets</option>
-            <option value="mangalsutra">Mangalsutras</option>
-            <option value="anklets">Anklets &amp; Toe Rings</option>
             <option value="__new__">+ Add New Category</option>
           </select>
           <input type="text" class="bulk-custom-category" id="bulkCustomCategory_${idx}" placeholder="Enter Category Name" style="display:none; margin-top:8px;">
@@ -1794,9 +1788,7 @@ function generateProductDescription(title, category) {
     rings: "Precision-cast with a comfort-fit inner band, it features a brilliant, multi-faceted CZ crystal centerpiece that captures light beautifully like a real diamond.",
     earrings: "Hand-set with high-clarity Austrian crystals, they feature a lightweight, skin-safe hypoallergenic post designed for comfortable, all-day wear.",
     necklaces: "Featuring a dainty chain paired with a high-finish gold-plated pendant, it is designed for effortless layering.",
-    bracelets: "Custom-built with an adjustable link chain for the perfect wrist fit, it boasts a thick, premium 18K gold protective plating.",
-    mangalsutra: "Crafted with traditional black beads combined with a modern luxury pendant, making it a perfect daily-wear symbol.",
-    anklets: "Delicately detailed with lightweight charms, it is designed for durable, everyday comfort on your ankles."
+    bracelets: "Custom-built with an adjustable link chain for the perfect wrist fit, it boasts a thick, premium 18K gold protective plating."
   };
   
   const catKey = category ? category.toLowerCase() : '';
