@@ -386,7 +386,7 @@ function generateSKU(offset = 0) {
   catalog.forEach(p => {
     if (p.sku && typeof p.sku === 'string' && p.sku.startsWith('SN-')) {
       const num = parseInt(p.sku.replace('SN-', ''));
-      if (!isNaN(num) && num > maxNum) maxNum = num;
+      if (!isNaN(num) && num > maxNum && num < 10000) maxNum = num;
     }
   });
   const next = maxNum + 1 + offset;
@@ -1575,9 +1575,11 @@ $('#productForm').addEventListener('submit', async (e) => {
       category = $('#singCustomCategory').value.trim().toLowerCase();
     }
     
+    const productSku = generateSKU();
+    const productId = parseInt(productSku.replace('SN-', ''));
     const singProd = {
-      id: Math.floor(10000 + Math.random() * 90000),
-      sku: generateSKU(),
+      id: productId,
+      sku: productSku,
       name: $('#singTitle').value.trim(),
       cat: category,
       meta: 'Imitation Jewellery',
@@ -1607,11 +1609,12 @@ $('#productForm').addEventListener('submit', async (e) => {
         category = document.getElementById(`bulkCustomCategory_${idx}`).value.trim().toLowerCase();
       }
       
-      const pId = Math.floor(10000 + Math.random() * 90000);
+      const productSku = generateSKU(idx);
+      const productId = parseInt(productSku.replace('SN-', ''));
       const mainImg = fileObj.cloudinaryUrl || fileObj.base64;
       const prod = {
-        id: pId,
-        sku: generateSKU(idx),
+        id: productId,
+        sku: productSku,
         name: titles[idx].value.trim(),
         cat: category,
         meta: 'Imitation Jewellery',

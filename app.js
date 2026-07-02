@@ -803,7 +803,7 @@ $('#coForm').addEventListener('submit', (e) => {
   const itemsList = cart.map(ci => {
     const p = fullCatalog.find(x => x.id === ci.id);
     subtotal += p.price * ci.qty;
-    return { id: p.id, name: p.name, price: p.price, qty: ci.qty };
+    return { id: p.id, sku: p.sku || `SN-${String(p.id).padStart(4, '0')}`, name: p.name, price: p.price, qty: ci.qty };
   });
   
   const shippingCost = 200;
