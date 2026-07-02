@@ -780,9 +780,6 @@ window.downloadInvoicePDF = async function(orderId) {
   tempDiv.style.padding = '30px';
   tempDiv.style.fontFamily = "'Lato', sans-serif";
 
-  const cgst = order.subtotal * 0.015;
-  const sgst = order.subtotal * 0.015;
-
   const tableRows = order.items.map((item, idx) => `
     <tr style="border-bottom: 1px solid #eeeeee;">
       <td style="padding: 12px 10px; font-size: 10pt; color: #000000;">${idx + 1}</td>
@@ -847,14 +844,6 @@ window.downloadInvoicePDF = async function(orderId) {
           <tr>
             <td style="padding: 4px 0; color: #000000;">Subtotal:</td>
             <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(order.subtotal)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 4px 0; color: #000000;">CGST (1.5%):</td>
-            <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(cgst)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 4px 0; color: #000000;">SGST (1.5%):</td>
-            <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(sgst)}</td>
           </tr>
           <tr>
             <td style="padding: 4px 0; color: #000000;">Shipping Fee:</td>
@@ -935,7 +924,6 @@ window.shareOnWhatsApp = async function(orderId) {
   msg += `*Date:* ${order.date}\n\n`;
   msg += `*Items:*\n${itemsText}\n\n`;
   msg += `*Subtotal:* ${fmt(order.subtotal)}\n`;
-  msg += `*GST (3%):* ${fmt(order.subtotal * 0.03)}\n`;
   msg += `*Shipping Fee:* ${fmt(order.shipping)}\n`;
   msg += `*Grand Total:* ${fmt(order.total)}\n\n`;
   
@@ -1187,10 +1175,6 @@ window.printInvoice = async function(orderId) {
   const order = ordersList.find(o => o.id === orderId);
   if (!order) return;
   
-  // Calculations
-  const cgst = order.subtotal * 0.015; // 1.5% CGST
-  const sgst = order.subtotal * 0.015; // 1.5% SGST
-  
   const tableRows = order.items.map((item, idx) => `
     <tr>
       <td>${idx + 1}</td>
@@ -1256,14 +1240,6 @@ window.printInvoice = async function(orderId) {
           <tr>
             <td>Subtotal:</td>
             <td>${fmt(order.subtotal)}</td>
-          </tr>
-          <tr>
-            <td>CGST (1.5%):</td>
-            <td>${fmt(cgst)}</td>
-          </tr>
-          <tr>
-            <td>SGST (1.5%):</td>
-            <td>${fmt(sgst)}</td>
           </tr>
           <tr>
             <td>Shipping Fee:</td>

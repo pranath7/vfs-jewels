@@ -2039,9 +2039,6 @@ window.downloadCustomerInvoicePDF = async function(orderId) {
   tempDiv.style.padding = '30px';
   tempDiv.style.fontFamily = "'Lato', sans-serif";
 
-  const cgst = order.subtotal * 0.015;
-  const sgst = order.subtotal * 0.015;
-
   const tableRows = order.items.map((item, idx) => `
     <tr style="border-bottom: 1px solid #eeeeee;">
       <td style="padding: 12px 10px; font-size: 10pt; color: #000000;">${idx + 1}</td>
@@ -2106,14 +2103,6 @@ window.downloadCustomerInvoicePDF = async function(orderId) {
           <tr>
             <td style="padding: 4px 0; color: #000000;">Subtotal:</td>
             <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(order.subtotal)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 4px 0; color: #000000;">CGST (1.5%):</td>
-            <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(cgst)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 4px 0; color: #000000;">SGST (1.5%):</td>
-            <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(sgst)}</td>
           </tr>
           <tr>
             <td style="padding: 4px 0; color: #000000;">Shipping Fee:</td>
