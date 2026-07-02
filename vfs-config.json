@@ -1,0 +1,14 @@
+{
+  "firebase": {
+    "apiKey": "AIzaSyD6h-kC0Afqd20pLASwUC1smMCdjUfQLes",
+    "authDomain": "vfs-jewellery.firebaseapp.com",
+    "projectId": "vfs-jewellery",
+    "storageBucket": "vfs-jewellery.firebasestorage.app",
+    "messagingSenderId": "956570689691",
+    "appId": "1:956570689691:web:2c0fb78e1d2d7d58e0a63e"
+  },
+  "cloudinary": {
+    "cloudName": "cwx4zame",
+    "uploadPreset": "vfs_preset"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "id": "/admin/admin.html",
+  "name": "VFS Jewels Admin",
+  "short_name": "VFS Admin",
+  "description": "VFS Jewellery Admin Portal — Manage orders, payments, and products.",
+  "start_url": "/admin/admin.html",
+  "scope": "/admin/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0B0C",
+  "theme_color": "#D4AF37",
+  "lang": "en-IN",
+  "categories": ["shopping", "business", "productivity"],
+  "icons": [
+    {
+      "src": "/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "VFS Admin Dashboard"
+    }
+  ]
+}
