@@ -748,13 +748,8 @@ function renderOrderCard(order, container) {
 }
 
 // ── Dynamic PDF Invoice Downloader (using html2pdf.js) ──
-window.downloadInvoicePDF = function(orderId) {
-  const stored = localStorage.getItem('vfs_orders');
-  let ordersList = [];
-  if (stored) {
-    try { ordersList = JSON.parse(stored); } catch(e) { ordersList = []; }
-  }
-  
+window.downloadInvoicePDF = async function(orderId) {
+  const ordersList = await window.VFS_DB.getOrders();
   const order = ordersList.find(o => o.id === orderId);
   if (!order) return;
 
@@ -899,18 +894,13 @@ window.downloadInvoicePDF = function(orderId) {
 };
 
 // ── WhatsApp Receipt Share Action ──
-window.shareOnWhatsApp = function(orderId) {
-  const stored = localStorage.getItem('vfs_orders');
-  let ordersList = [];
-  if (stored) {
-    try { ordersList = JSON.parse(stored); } catch(e) { ordersList = []; }
-  }
-  
+window.shareOnWhatsApp = async function(orderId) {
+  const ordersList = await window.VFS_DB.getOrders();
   const order = ordersList.find(o => o.id === orderId);
   if (!order) return;
 
   // Auto-download the PDF Invoice
-  downloadInvoicePDF(orderId);
+  await downloadInvoicePDF(orderId);
 
   const itemsText = order.items.map(item => `- ${item.name} x${item.qty} (${fmt(item.price * item.qty)})`).join('\n');
   
@@ -1014,14 +1004,14 @@ function playBeep() {
 // ── Webcam Barcode Scanner Logic ──
 let codeReader = null;
 
-window.openScanner = function(orderId) {
+window.openScanner = async function(orderId) {
   activeScanOrderId = orderId;
   let hasScanned = false; // guard: only process the first successful scan
   const modal = $('#scannerModal');
   modal.classList.add('active');
   
   // Set empty tracking value and dynamic placeholder
-  const carrier = getOrderCarrier(orderId);
+  const carrier = await getOrderCarrier(orderId);
   const prefix = carrier === 'BlueDart' ? 'BD-' : (carrier === 'Delhivery' ? 'DL-' : 'DT-');
   const dummyCode = prefix + Math.floor(1000000 + Math.random() * 9000000) + '-IN';
   $('#manualTrackingId').value = '';
@@ -1090,12 +1080,8 @@ window.openScanner = function(orderId) {
     });
 };
 
-function getOrderCarrier(orderId) {
-  const stored = localStorage.getItem('vfs_orders');
-  let ordersList = [];
-  if (stored) {
-    try { ordersList = JSON.parse(stored); } catch(e) { ordersList = []; }
-  }
+async function getOrderCarrier(orderId) {
+  const ordersList = await window.VFS_DB.getOrders();
   const order = ordersList.find(o => o.id === orderId);
   return order ? order.carrier : 'Standard';
 }
@@ -1185,13 +1171,8 @@ $('#btnSimulateScan').addEventListener('click', () => {
 });
 
 // ── Print Invoice Bill Builder ──
-window.printInvoice = function(orderId) {
-  const stored = localStorage.getItem('vfs_orders');
-  let ordersList = [];
-  if (stored) {
-    try { ordersList = JSON.parse(stored); } catch(e) { ordersList = []; }
-  }
-  
+window.printInvoice = async function(orderId) {
+  const ordersList = await window.VFS_DB.getOrders();
   const order = ordersList.find(o => o.id === orderId);
   if (!order) return;
   
@@ -1674,12 +1655,8 @@ window.logSimulatedSMS = function(phone, msg) {
   }
 };
 
-window.sendSMSNotification = function(orderId, stage) {
-  const stored = localStorage.getItem('vfs_orders');
-  let ordersList = [];
-  if (stored) {
-    try { ordersList = JSON.parse(stored); } catch(e) { ordersList = []; }
-  }
+window.sendSMSNotification = async function(orderId, stage) {
+  const ordersList = await window.VFS_DB.getOrders();
   const order = ordersList.find(o => o.id === orderId);
   if (!order) return;
   
@@ -1848,6 +1825,7 @@ window.triggerAutoDesc = function(type, idx) {
 // ── VFS Returns Center Administration ──
 async function loadReturnQueries() {
   const returnsList = await window.VFS_DB.getReturns();
+  const ordersList = await window.VFS_DB.getOrders();
 
   const container = document.getElementById('listReturns');
   if (!container) return;
@@ -1872,16 +1850,11 @@ async function loadReturnQueries() {
   });
 
   returnsList.forEach(ret => {
-    renderReturnCard(ret, container);
+    renderReturnCard(ret, container, ordersList);
   });
 }
 
-function renderReturnCard(ret, container) {
-  const storedOrders = localStorage.getItem('vfs_orders');
-  let ordersList = [];
-  if (storedOrders) {
-    try { ordersList = JSON.parse(storedOrders); } catch(e) {}
-  }
+function renderReturnCard(ret, container, ordersList) {
   const order = ordersList.find(o => o.id === ret.orderId);
 
   const card = document.createElement('div');
