@@ -228,7 +228,7 @@
           <h4>Customer Help</h4>
           <ul>
             <li><a href="#trust">Anti-Tarnish Shield Care</a></li>
-            <li><a href="#">Shipping Rates &amp; Policies</a></li>
+            <li><a href="#shipping-policy" id="footerShippingPolicy">Shipping Rates &amp; Policies</a></li>
             <li><a href="#returns-policy" id="footerReturnsPolicy">Returns &amp; Exchanges</a></li>
             <li><a href="#track-order" id="footerTrackOrder">Track Your Order</a></li>
             <li><a href="#categories">Browse Catalog</a></li>
@@ -557,6 +557,53 @@
     </div>
   </div>
 
+  <!-- SHIPPING POLICY MODAL -->
+  <div class="modal-bg" id="shippingPolicyModal">
+    <div class="pin-modal guide-pin-modal" style="max-width:550px;padding:35px;">
+      <button class="modal-x" id="closeShippingPolicy"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      <h3 style="font-size:2.2rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:400;text-transform:uppercase;text-align:center;">Shipping Rates &amp; Policies 🚚</h3>
+      <p style="font-size:1.3rem;color:#666;margin-bottom:24px;text-align:center;">We ensure premium packaging and partner with top express couriers for secure delivery.</p>
+      
+      <div class="guide-steps-container" style="display:flex;flex-direction:column;gap:16px;">
+        <div class="guide-step-card">
+          <div style="font-size: 2.2rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary-10); color: var(--color-primary); font-weight: 700; flex-shrink: 0;">₹</div>
+          <div class="step-text-container">
+            <h4 class="step-title">Flat Shipping Rates</h4>
+            <p class="step-desc">Standard shipping across India is flat **₹200** per order. This includes handling, bubble-wrap shockproof packaging, and transit insurance.</p>
+          </div>
+        </div>
+        
+        <div class="guide-step-card">
+          <div style="font-size: 2rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary-10); color: var(--color-primary); font-weight: 700; flex-shrink: 0;">⏱️</div>
+          <div class="step-text-container">
+            <h4 class="step-title">Dispatch &amp; Delivery Timeline</h4>
+            <p class="step-desc">Orders are processed within 24-48 hours. Metro cities receive parcels in **2-4 business days**, and other locations in **4-7 business days**.</p>
+          </div>
+        </div>
+        
+        <div class="guide-step-card">
+          <div style="font-size: 2rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary-10); color: var(--color-primary); font-weight: 700; flex-shrink: 0;">📦</div>
+          <div class="step-text-container">
+            <h4 class="step-title">Trusted Express Partners</h4>
+            <p class="step-desc">We dispatch shipments using India's leading logistics providers: **Delhivery (Standard Express)**, **BlueDart (Priority Air)**, and **DTDC**.</p>
+          </div>
+        </div>
+        
+        <div class="guide-step-card">
+          <div style="font-size: 2rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary-10); color: var(--color-primary); font-weight: 700; flex-shrink: 0;">📍</div>
+          <div class="step-text-container">
+            <h4 class="step-title">Live Order Tracking</h4>
+            <p class="step-desc">As soon as your shipment is dispatched, you will receive a tracking ID. Use the **Track Order** feature in the header/footer to trace your parcel live.</p>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btnPolicyCloseShipping" style="width:100%;margin-top:20px;font-size:1.3rem;padding:12px;background:#121212;color:#D4AF37;border:1px solid #D4AF37;cursor:pointer;justify-content:center;">
+        Close Policy
+      </button>
+    </div>
+  </div>
+
   <!-- TOASTS -->
   <div class="toast-box" id="toastBox"></div>
 
@@ -716,7 +763,7 @@
 
   <!-- CDN libraries loaded last so they don't block page render -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
-  <script src="app.js?v=9" defer></script>
+  <script src="app.js?v=10" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

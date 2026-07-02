@@ -2496,6 +2496,43 @@ if (policyTrackBtn && returnPolicyModal) {
   });
 }
 
+// ── Shipping Policy Modal Listeners ──
+const shippingPolicyModal = $('#shippingPolicyModal');
+const openShippingBtn = $('#footerShippingPolicy');
+const closeShippingBtn = $('#closeShippingPolicy');
+const policyCloseShippingBtn = $('#btnPolicyCloseShipping');
+
+if (openShippingBtn && shippingPolicyModal) {
+  openShippingBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    shippingPolicyModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  });
+}
+
+if (closeShippingBtn && shippingPolicyModal) {
+  closeShippingBtn.addEventListener('click', () => {
+    shippingPolicyModal.classList.remove('active');
+    document.body.style.overflow = '';
+  });
+}
+
+if (policyCloseShippingBtn && shippingPolicyModal) {
+  policyCloseShippingBtn.addEventListener('click', () => {
+    shippingPolicyModal.classList.remove('active');
+    document.body.style.overflow = '';
+  });
+}
+
+if (shippingPolicyModal) {
+  shippingPolicyModal.addEventListener('click', (e) => {
+    if (e.target === shippingPolicyModal) {
+      shippingPolicyModal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  });
+}
+
 // ── Returns Request Form Logic ──
 window.toggleReturnForm = function() {
   const form = document.getElementById('returnsSubmitForm');
