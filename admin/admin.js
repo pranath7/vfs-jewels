@@ -5,7 +5,21 @@
 // ── Helpers ──
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
-const fmt = (n) => '₹' + n.toLocaleString('en-IN');
+const fmt = (n) => '₹' + (Number(n) || 0).toLocaleString('en-IN');
+
+const openWhatsAppChat = (phone, text) => {
+  let cleanPhone = (phone || '').replace(/\D/g, '');
+  if (cleanPhone.length === 10) {
+    cleanPhone = '91' + cleanPhone;
+  } else if (cleanPhone.startsWith('0') && cleanPhone.length === 11) {
+    cleanPhone = '91' + cleanPhone.slice(1);
+  }
+  const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+  const win = window.open(waUrl, '_blank');
+  if (!win || win.closed || typeof win.closed === 'undefined') {
+    window.location.href = waUrl;
+  }
+};
 
 // ── Default Storefront Catalog ──
 const DEFAULT_PRODUCTS = [
@@ -899,8 +913,12 @@ window.shareOnWhatsApp = async function(orderId) {
   const order = ordersList.find(o => o.id === orderId);
   if (!order) return;
 
-  // Auto-download the PDF Invoice
-  await downloadInvoicePDF(orderId);
+  // Auto-download the PDF Invoice (convenience action, don't let failures block WhatsApp redirect)
+  try {
+    await downloadInvoicePDF(orderId);
+  } catch (pdfErr) {
+    console.warn("Auto-invoice download failed:", pdfErr);
+  }
 
   const itemsText = order.items.map(item => `- ${item.name} x${item.qty} (${fmt(item.price * item.qty)})`).join('\n');
   
@@ -935,14 +953,7 @@ window.shareOnWhatsApp = async function(orderId) {
   
   msg += `\n\nThank you for shopping with VFS Jewels Sowcarpet!`;
   
-  // Format phone number
-  let cleanPhone = order.phone.replace(/\D/g, '');
-  if (cleanPhone.length === 10) {
-    cleanPhone = '91' + cleanPhone; // India code fallback
-  }
-  
-  const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
-  window.open(waUrl, '_blank');
+  openWhatsAppChat(order.phone, msg);
 };
 
 // ── Mark Paid Action ──
@@ -1685,8 +1696,7 @@ window.sendSMSNotification = async function(orderId, stage) {
   modal.classList.add('active');
   
   btnWA.onclick = () => {
-    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
-    window.open(waUrl, '_blank');
+    openWhatsAppChat(order.phone, msg);
     logSimulatedSMS(order.phone, `[WhatsApp Notification sent]: "${msg}"`);
     adminToast('WhatsApp Web client launched! 💬');
     modal.classList.remove('active');
@@ -1972,8 +1982,7 @@ window.approveReturnRequest = async function(retId, orderTotal) {
 
   // 4. Pre-fill WhatsApp message to customer
   const text = `Hi, your return request for order ${retObj.orderId} has been approved. A credit of ₹${orderTotal} points has been successfully added to your VFS wallet account (Phone: ${retObj.phone}). Thank you for shopping with VFS!`;
-  const waUrl = `https://wa.me/91${retObj.phone}?text=${encodeURIComponent(text)}`;
-  window.open(waUrl, '_blank');
+  openWhatsAppChat(retObj.phone, text);
 };
 
 window.rejectReturnRequest = async function(retId) {
@@ -1998,8 +2007,7 @@ window.rejectReturnRequest = async function(retId) {
 
   // 3. Pre-fill WhatsApp message
   const text = `Hi, your return request for order ${retObj.orderId} was reviewed and could not be approved due to: ${reason}. Please contact us if you have any questions.`;
-  const waUrl = `https://wa.me/91${retObj.phone}?text=${encodeURIComponent(text)}`;
-  window.open(waUrl, '_blank');
+  openWhatsAppChat(retObj.phone, text);
 };
 
 window.checkCustomerWalletCredits = async function() {
