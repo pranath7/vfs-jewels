@@ -837,7 +837,7 @@ $('#coPhone').addEventListener('input', async () => {
 });
 
 // Checkout Step 1 Shipping form submission
-$('#coForm').addEventListener('submit', (e) => {
+$('#coForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   
   const fullCatalog = getFullCatalog();
