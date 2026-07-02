@@ -771,9 +771,9 @@ window.downloadInvoicePDF = async function(orderId) {
 
   // Create temporary offscreen container
   const tempDiv = document.createElement('div');
-  tempDiv.style.position = 'absolute';
-  tempDiv.style.left = '-9999px';
-  tempDiv.style.top = '0';
+  tempDiv.style.position = 'fixed';
+  tempDiv.style.top = '-9999px';
+  tempDiv.style.left = '0';
   tempDiv.style.width = '750px';
   tempDiv.style.background = '#ffffff';
   tempDiv.style.color = '#000000';
@@ -883,7 +883,7 @@ window.downloadInvoicePDF = async function(orderId) {
     margin:       [0.4, 0.4],
     filename:     `VFS_Invoice_${order.id.replace('#', '')}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true },
+    html2canvas:  { scale: 2, useCORS: true, scrollY: 0, scrollX: 0 },
     jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
   };
   
