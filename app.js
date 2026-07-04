@@ -804,9 +804,10 @@ function openCheckout() {
   }
   closeDrawer('cart');
   
-  // Show shipping form (step 1)
+  // Show shipping form (step 1) and reset other steps
   $('#coStep1').style.display = 'block';
   $('#coStep2').style.display = 'none';
+  $('#coStep3').style.display = 'none';
   $('#coForm').reset();
   
   // Open checkout modal
