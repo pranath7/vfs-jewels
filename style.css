@@ -828,7 +828,7 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 
 .footer-socials a svg { width: 15px; height: 15px; }
 
-.footer-col h4 {
+.footer-col h3, .footer-col h4 {
   font-size: 1.35rem;
   font-weight: 700;
   text-transform: uppercase;
