@@ -798,7 +798,7 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1.5fr;
+  grid-template-columns: 1.5fr 1fr 1.5fr;
   gap: var(--space-md);
   margin-bottom: 40px;
 }
@@ -3074,4 +3074,214 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   0% { transform: scale(0.5); opacity: 0; }
   70% { transform: scale(1.08); opacity: 0.9; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+/* =========================================================
+   TINDER SWIPER SYSTEM
+   ========================================================= */
+.tinder-swiper-container {
+  max-width: 360px;
+  margin: 30px auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  user-select: none;
+}
+
+.tinder-card-stack {
+  position: relative;
+  width: 300px;
+  height: 420px;
+  perspective: 1000px;
+}
+
+.tinder-card {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--rounded-lg);
+  overflow: hidden;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-medium);
+  border: 1px solid var(--color-neutral);
+  transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+  cursor: grab;
+  touch-action: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.tinder-card:active {
+  cursor: grabbing;
+}
+
+/* Card images */
+.tinder-card .tinder-img-box {
+  width: 100%;
+  height: 70%;
+  overflow: hidden;
+  position: relative;
+  background: #fdfdfd;
+}
+
+.tinder-card .tinder-img-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* Card detail info */
+.tinder-card .tinder-card-info {
+  padding: 16px;
+  background: var(--color-surface);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.tinder-card .tinder-meta {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.tinder-card .tinder-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin-bottom: 8px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tinder-card .tinder-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tinder-card .tinder-price {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--color-on-surface);
+}
+
+.tinder-card .tinder-mrp {
+  font-size: 1.25rem;
+  color: #999;
+  text-decoration: line-through;
+  margin-left: 6px;
+}
+
+/* Swipe Badges (NOPE / LIKE tags overlay) */
+.tinder-badge {
+  position: absolute;
+  top: 20px;
+  font-size: 2.2rem;
+  font-weight: 900;
+  border: 4px solid;
+  border-radius: var(--rounded-sm);
+  padding: 4px 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0;
+  transform: rotate(-15deg);
+  z-index: 10;
+  pointer-events: none;
+  transition: opacity 0.1s ease;
+}
+
+.tinder-badge.like {
+  right: 20px;
+  color: #27ae60;
+  border-color: #27ae60;
+  transform: rotate(15deg);
+}
+
+.tinder-badge.dislike {
+  left: 20px;
+  color: #c0392b;
+  border-color: #c0392b;
+}
+
+/* Controls style */
+.tinder-controls {
+  display: flex;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.tinder-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.tinder-btn:active {
+  transform: scale(0.9);
+}
+
+.tinder-btn svg {
+  width: 24px;
+  height: 24px;
+  transition: color 0.2s ease;
+}
+
+.tinder-btn.dislike {
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+.tinder-btn.dislike:hover {
+  background: #e74c3c;
+  color: #fff;
+}
+
+.tinder-btn.like {
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.2);
+}
+
+.tinder-btn.like:hover {
+  background: #2ecc71;
+  color: #fff;
+}
+
+/* Modal styling options */
+.cat-shift-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  border: 1px solid var(--color-neutral);
+  border-radius: var(--rounded-md);
+  font-size: 1.35rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.cat-shift-btn:hover {
+  background: var(--color-secondary);
+  color: var(--color-primary);
+  border-color: var(--color-secondary);
 }

@@ -277,6 +277,23 @@ try {
   const storedCart = localStorage.getItem('vfs_cart');
   cart = storedCart ? JSON.parse(storedCart) : [];
   if (!Array.isArray(cart)) cart = [];
+  
+  // 24-Hour Cart Expiration: Remove items added more than 24 hours ago
+  const now = Date.now();
+  let expired = false;
+  cart = cart.map(item => {
+    if (!item.addedAt) item.addedAt = now;
+    return item;
+  }).filter(item => {
+    if (now - item.addedAt > 24 * 60 * 60 * 1000) {
+      expired = true;
+      return false;
+    }
+    return true;
+  });
+  if (expired) {
+    localStorage.setItem('vfs_cart', JSON.stringify(cart));
+  }
 } catch (e) {
   cart = [];
 }
@@ -499,8 +516,9 @@ function addToCart(id, qty = 1) {
   const existing = cart.find(c => c.id === id);
   if (existing) {
     existing.qty += qty;
+    existing.addedAt = Date.now();
   } else {
-    cart.push({ id, qty });
+    cart.push({ id, qty, addedAt: Date.now() });
   }
   saveState();
   updateCounts();
@@ -554,6 +572,7 @@ function renderCart() {
       const ci = cart.find(c => c.id === id);
       if (ci) {
         ci.qty += d;
+        ci.addedAt = Date.now();
         if (ci.qty < 1) cart = cart.filter(c => c.id !== id);
       }
       saveState();
@@ -789,7 +808,7 @@ if (checkPinBtn) {
     // Simulate check
     const days = 2 + Math.floor(Math.random() * 4);
     res.className = 'pin-result ok';
-    res.innerHTML = `✓ Delivery available! Estimated ${days}–${days + 2} business days.<br><span style="font-weight:700;color:var(--color-secondary)">Express Shipping: ₹200 applies!</span>`;
+    res.innerHTML = `✓ Delivery available! Estimated ${days}–${days + 2} business days.<br><span style="font-weight:700;color:var(--color-secondary)">Express Shipping: ₹90 applies!</span>`;
   });
 }
 
@@ -869,7 +888,7 @@ $('#coForm').addEventListener('submit', async (e) => {
     return { id: p.id, sku: p.sku || `SN-${String(p.id).padStart(4, '0')}`, name: p.name, price: p.price, qty: ci.qty };
   });
   
-  const shippingCost = 200;
+  const shippingCost = 90;
   let grandTotal = subtotal + shippingCost;
   
   // Calculate Wallet Discount
@@ -1289,107 +1308,271 @@ function openPDP(id) {
     `;
   })();
 
-  // 3. Related Products (Infinite scroll Recommendations)
-  const relatedContainer = $('#pdpRelated');
-  relatedContainer.innerHTML = "";
-  
-  let recommendedIndex = 0;
-  function appendRecommendations() {
-    const fullCatalog = getFullCatalog();
-    const catProducts = fullCatalog.filter(x => x.cat === p.cat && x.id !== p.id);
-    if (!catProducts.length) {
-      if (relatedContainer.children.length === 0) {
-        relatedContainer.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#999;padding:24px;">No related items found</p>`;
-      }
-      return;
+  // 3. Related Products Tinder Swiper suggestions
+  let swipeCount = 0;
+  let hasRightSwiped = false;
+  let tinderDeckIndex = 0;
+  let swiperCategory = p.cat;
+
+  function createTinderCardDOM(product, isTop) {
+    const card = document.createElement('div');
+    card.className = 'tinder-card';
+    card.dataset.id = product.id;
+    card.style.zIndex = isTop ? '10' : String(5 - product.id % 3);
+    if (!isTop) {
+      card.style.transform = `scale(0.95) translateY(10px)`;
+      card.style.pointerEvents = 'none';
     }
-    
-    const batchSize = 4;
-    const nextBatch = [];
-    for (let i = 0; i < batchSize; i++) {
-      const prod = catProducts[(recommendedIndex + i) % catProducts.length];
-      nextBatch.push(prod);
-    }
-    recommendedIndex = (recommendedIndex + batchSize) % catProducts.length;
-    
-    const html = nextBatch.map(rp => {
-      const isRpWL = wishlist.includes(rp.id);
-      const rpOff = pct(rp.price, rp.mrp);
-      return `
-        <div class="p-card" data-id="${rp.id}">
-          ${rp.badge ? `<span class="p-badge">${rp.badge}</span>` : ''}
-          <button class="p-wish${isRpWL ? ' active' : ''}" data-wl="${rp.id}" aria-label="Wishlist">
-            <svg viewBox="0 0 24 24" fill="${isRpWL ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
-          </button>
-          <div class="p-img">
-            <img src="${rp.img}" alt="${rp.name}">
-            <div class="p-quick" data-add="${rp.id}">Add to Cart</div>
+
+    const isDiscounted = product.mrp && product.mrp > product.price;
+    const off = isDiscounted ? pct(product.price, product.mrp) : 0;
+
+    card.innerHTML = `
+      <div class="tinder-badge dislike">NOPE</div>
+      <div class="tinder-badge like">LIKE</div>
+      <div class="tinder-img-box">
+        <img src="${product.img}" alt="${product.name}">
+      </div>
+      <div class="tinder-card-info">
+        <div>
+          <div class="tinder-meta">${product.meta}</div>
+          <div class="tinder-name">${product.name}</div>
+        </div>
+        <div class="tinder-bottom-row">
+          <div class="tinder-price">
+            ${fmt(product.price)}
+            ${isDiscounted ? `<span class="tinder-mrp">${fmt(product.mrp)}</span>` : ''}
           </div>
-          <div class="p-info">
-            <div class="p-meta">${rp.meta}</div>
-            <div class="p-name">${rp.name}</div>
-            <div class="p-rating"><span class="stars">${stars(rp.rating)}</span><span class="count">(${rp.reviews})</span></div>
-            <div class="p-prices">
-              <span class="price-now">${fmt(rp.price)}</span>
-              <span class="price-was">${fmt(rp.mrp)}</span>
-              <span class="price-off">${rpOff}% OFF</span>
-            </div>
-          </div>
-        </div>`;
-    }).join('');
-    
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = html;
-    
-    wrapper.querySelectorAll('.p-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const rId = +card.dataset.id;
-        openPDP(rId);
+          <div style="font-size: 1.15rem; color: #ffb214; font-weight:700;">★ ${product.rating}</div>
+        </div>
+      </div>
+    `;
+
+    // Click navigation (if drag was small, open that product page)
+    let startX = 0, startY = 0;
+    card.addEventListener('mousedown', (e) => { startX = e.clientX; startY = e.clientY; });
+    card.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; });
+    card.addEventListener('click', (e) => {
+      const dx = Math.abs(e.clientX - startX);
+      const dy = Math.abs(e.clientY - startY);
+      if (dx < 8 && dy < 8) {
+        openPDP(product.id);
         overlay.scrollTo({ top: 0, behavior: 'smooth' });
-      });
+      }
     });
-    
-    wrapper.querySelectorAll('[data-wl]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const wlId = +btn.dataset.wl;
-        if (wishlist.includes(wlId)) {
-          wishlist = wishlist.filter(x => x !== wlId);
-          toast('Removed from wishlist');
-        } else {
-          wishlist.push(wlId);
-          toast('Added to wishlist ♡');
-        }
-        saveState();
-        updateCounts();
-        btn.classList.toggle('active');
-        btn.querySelector('svg').setAttribute('fill', wishlist.includes(wlId) ? 'currentColor' : 'none');
-      });
-    });
-    
-    wrapper.querySelectorAll('[data-add]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        addToCart(+btn.dataset.add);
-      });
-    });
-    
-    while (wrapper.firstChild) {
-      relatedContainer.appendChild(wrapper.firstChild);
-    }
+
+    return card;
   }
 
-  // Populate first 8 items
-  appendRecommendations();
-  appendRecommendations();
+  function initTinderSwiper() {
+    const stack = $('#tinderCardStack');
+    if (!stack) return;
+    stack.innerHTML = "";
 
-  // Scroll listener on PDP overlay for infinite recommendations
-  currentPdpScrollListener = () => {
-    if (overlay.scrollTop + overlay.clientHeight >= overlay.scrollHeight - 150) {
-      appendRecommendations();
+    const fullCatalog = getFullCatalog();
+    const deckProducts = fullCatalog.filter(x => x.cat === swiperCategory && x.id !== p.id);
+
+    if (deckProducts.length === 0) {
+      stack.innerHTML = `
+        <div class="tinder-card" style="display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;pointer-events:none;transform:none;box-shadow:none;border:1px dashed #ccc;">
+          <div>
+            <div style="font-size:3rem;margin-bottom:12px;">🌟</div>
+            <h4 style="font-size:1.5rem;font-weight:700;">All Items Viewed!</h4>
+            <p style="font-size:1.2rem;color:#777;margin-top:6px;">Select a category below to browse.</p>
+          </div>
+        </div>
+      `;
+      return;
     }
-  };
-  overlay.addEventListener('scroll', currentPdpScrollListener);
+
+    if (tinderDeckIndex >= deckProducts.length) {
+      tinderDeckIndex = 0;
+    }
+
+    const cardsToLoad = Math.min(deckProducts.length, 3);
+    for (let i = cardsToLoad - 1; i >= 0; i--) {
+      const prodIdx = (tinderDeckIndex + i) % deckProducts.length;
+      const product = deckProducts[prodIdx];
+      const cardEl = createTinderCardDOM(product, i === 0);
+      stack.appendChild(cardEl);
+    }
+
+    setupTopCardGesture();
+  }
+
+  function setupTopCardGesture() {
+    const stack = $('#tinderCardStack');
+    const cards = stack.querySelectorAll('.tinder-card');
+    if (!cards.length) return;
+
+    const topCard = cards[cards.length - 1];
+    topCard.style.pointerEvents = 'auto';
+
+    let startX = 0, startY = 0;
+    let currentX = 0, currentY = 0;
+    let dragging = false;
+
+    const likeBadge = topCard.querySelector('.tinder-badge.like');
+    const dislikeBadge = topCard.querySelector('.tinder-badge.dislike');
+
+    const startDrag = (clientX, clientY) => {
+      dragging = true;
+      startX = clientX;
+      startY = clientY;
+      topCard.style.transition = 'none';
+    };
+
+    const moveDrag = (clientX, clientY) => {
+      if (!dragging) return;
+      currentX = clientX - startX;
+      currentY = clientY - startY;
+
+      const rotate = currentX / 15;
+      topCard.style.transform = `translate(${currentX}px, ${currentY}px) rotate(${rotate}deg)`;
+
+      if (currentX > 20) {
+        likeBadge.style.opacity = Math.min((currentX - 20) / 80, 1);
+        dislikeBadge.style.opacity = 0;
+      } else if (currentX < -20) {
+        dislikeBadge.style.opacity = Math.min((-currentX - 20) / 80, 1);
+        likeBadge.style.opacity = 0;
+      } else {
+        likeBadge.style.opacity = 0;
+        dislikeBadge.style.opacity = 0;
+      }
+    };
+
+    const endDrag = () => {
+      if (!dragging) return;
+      dragging = false;
+
+      topCard.style.transition = 'transform 0.25s ease-out, opacity 0.25s ease-out';
+
+      if (currentX > 100) {
+        executeSwipe(true);
+      } else if (currentX < -100) {
+        executeSwipe(false);
+      } else {
+        topCard.style.transform = '';
+        likeBadge.style.opacity = 0;
+        dislikeBadge.style.opacity = 0;
+      }
+      currentX = 0;
+      currentY = 0;
+    };
+
+    window.executeSwipe = (isLike) => {
+      topCard.style.transition = 'transform 0.3s ease, opacity 0.3s';
+      const flyX = isLike ? 600 : -600;
+      topCard.style.transform = `translate(${flyX}px, ${currentY}px) rotate(${flyX / 15}deg)`;
+      topCard.style.opacity = '0';
+
+      const topCardId = +topCard.dataset.id;
+
+      setTimeout(() => {
+        topCard.remove();
+        tinderDeckIndex++;
+        swipeCount++;
+
+        if (isLike) {
+          hasRightSwiped = true;
+          addToCart(topCardId);
+        }
+
+        initTinderSwiper();
+
+        // 20 Swipes Threshold Trigger
+        if (swipeCount >= 20 && !hasRightSwiped) {
+          triggerCategoryShiftPrompt();
+        }
+      }, 220);
+    };
+
+    topCard.addEventListener('touchstart', (e) => {
+      startDrag(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    
+    topCard.addEventListener('touchmove', (e) => {
+      moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    
+    topCard.addEventListener('touchend', endDrag);
+
+    topCard.addEventListener('mousedown', (e) => {
+      startDrag(e.clientX, e.clientY);
+
+      const mouseMoveHandler = (ev) => moveDrag(ev.clientX, ev.clientY);
+      const mouseUpHandler = () => {
+        endDrag();
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+      };
+      document.addEventListener('mousemove', mouseMoveHandler);
+      document.addEventListener('mouseup', mouseUpHandler);
+    });
+  }
+
+  function triggerCategoryShiftPrompt() {
+    const modal = $('#categoryShiftModal');
+    if (!modal) return;
+    
+    const optionsContainer = $('#catShiftOptions');
+    // Get unique categories and filter out current
+    const standardCategories = ['rings', 'earrings', 'necklaces', 'bracelets', 'mangalsutra'];
+    const otherCats = standardCategories.filter(c => c !== swiperCategory);
+    
+    optionsContainer.innerHTML = otherCats.map(cat => `
+      <button class="cat-shift-btn" data-shift="${cat}">Explore ${cat}</button>
+    `).join('');
+    
+    optionsContainer.querySelectorAll('[data-shift]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        swiperCategory = btn.dataset.shift;
+        tinderDeckIndex = 0;
+        swipeCount = 0;
+        hasRightSwiped = false;
+        modal.classList.remove('active');
+        initTinderSwiper();
+      });
+    });
+    
+    modal.classList.add('active');
+  }
+
+  // Bind keep swiping button
+  const closeCatShiftBtn = $('#closeCatShiftModal');
+  if (closeCatShiftBtn) {
+    closeCatShiftBtn.addEventListener('click', () => {
+      $('#categoryShiftModal').classList.remove('active');
+      swipeCount = 0; // reset count to allow next 20 swipes
+    });
+  }
+
+  // Bind swiper button controls
+  const dislikeBtn = $('#tinderDislikeBtn');
+  const likeBtn = $('#tinderLikeBtn');
+  
+  if (dislikeBtn && likeBtn) {
+    // Prevent duplicate triggers
+    dislikeBtn.onclick = (e) => {
+      e.preventDefault();
+      const topCard = $('#tinderCardStack .tinder-card');
+      if (topCard && topCard.style.pointerEvents !== 'none') {
+        window.executeSwipe(false);
+      }
+    };
+    
+    likeBtn.onclick = (e) => {
+      e.preventDefault();
+      const topCard = $('#tinderCardStack .tinder-card');
+      if (topCard && topCard.style.pointerEvents !== 'none') {
+        window.executeSwipe(true);
+      }
+    };
+  }
+
+  // Initialize
+  initTinderSwiper();
 
   overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -1548,10 +1731,13 @@ function addGiftWrapToCart() {
   
   const existingInCart = cart.find(c => c.id === giftWrapId);
   if (!existingInCart) {
-    cart.push({ id: giftWrapId, qty: 1 });
+    cart.push({ id: giftWrapId, qty: 1, addedAt: Date.now() });
     saveState();
     updateCounts();
     renderCart();
+  } else {
+    existingInCart.addedAt = Date.now();
+    saveState();
   }
 }
 
