@@ -3,20 +3,7 @@
    ========================================================= */
 
 // ── Product Data ──
-const PRODUCTS = [
-  { id: 1, name: 'Celestial Halo Ring', cat: 'rings', meta: 'Gold Plated', price: 899, mrp: 1799, img: 'assets/rings.webp', rating: 4.8, reviews: 312, badge: 'Bestseller' },
-  { id: 2, name: 'Aurora Drop Earrings', cat: 'earrings', meta: 'CZ Crystal', price: 749, mrp: 1499, img: 'assets/earrings.webp', rating: 4.7, reviews: 287, badge: 'New' },
-  { id: 3, name: 'Eternal Love Pendant', cat: 'necklaces', meta: 'Gold Plated', price: 1199, mrp: 2399, img: 'assets/necklaces.webp', rating: 4.9, reviews: 456, badge: 'Most Gifted' },
-  { id: 4, name: 'Twisted Rope Bracelet', cat: 'bracelets', meta: 'Rose Gold', price: 649, mrp: 1299, img: 'assets/bracelets.webp', rating: 4.6, reviews: 198, badge: '' },
-  { id: 5, name: 'CZ Solitaire Studs', cat: 'earrings', meta: 'Gold Plated', price: 599, mrp: 1199, img: 'assets/earrings.webp', rating: 4.9, reviews: 524, badge: 'Bestseller' },
-  { id: 6, name: 'Infinity Band Ring', cat: 'rings', meta: 'Rose Gold', price: 799, mrp: 1599, img: 'assets/rings.webp', rating: 4.5, reviews: 176, badge: '' },
-  { id: 7, name: 'Pearl Chain Necklace', cat: 'necklaces', meta: 'Gold Plated', price: 1399, mrp: 2799, img: 'assets/necklaces.webp', rating: 4.8, reviews: 389, badge: 'Trending' },
-  { id: 8, name: 'Charm Link Bracelet', cat: 'bracelets', meta: 'Gold Plated', price: 849, mrp: 1699, img: 'assets/bracelets.webp', rating: 4.7, reviews: 243, badge: 'New' },
-  { id: 9, name: 'Diamond Cut Hoops', cat: 'earrings', meta: 'CZ Crystal', price: 699, mrp: 1399, img: 'assets/earrings.webp', rating: 4.6, reviews: 167, badge: '' },
-  { id: 10, name: 'Floral Statement Ring', cat: 'rings', meta: 'Oxidised', price: 549, mrp: 1099, img: 'assets/rings.webp', rating: 4.4, reviews: 134, badge: '' },
-  { id: 11, name: 'Layered Chain Set', cat: 'necklaces', meta: 'Gold Plated', price: 1599, mrp: 3199, img: 'assets/necklaces.webp', rating: 4.9, reviews: 412, badge: 'Most Gifted' },
-  { id: 12, name: 'Tennis Bracelet CZ', cat: 'bracelets', meta: 'Rose Gold', price: 1099, mrp: 2199, img: 'assets/bracelets.webp', rating: 4.8, reviews: 298, badge: 'Trending' },
-];
+const PRODUCTS = [];
 
 const CLOUDINARY_URLS = {
   "assets/kadas/IMG-20260704-WA0015.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg",
@@ -399,14 +386,8 @@ function getFullCatalog() {
 }
 
 const CATEGORY_BANNERS = {
-  rings: { title: "Rings Collection", desc: "18K Gold Plated stackable bands and statement rings.", img: "assets/rings.webp" },
-  earrings: { title: "Earrings & Studs", desc: "A++ Austrian crystals that catch light beautifully.", img: "assets/earrings.webp" },
-  necklaces: { title: "Necklaces & Pendants", desc: "Elegant chains and pendants designed for layering.", img: "assets/necklaces.webp" },
-  bracelets: { title: "Bracelets & Bands", desc: "Dainty rope chains and classic tennis bracelets.", img: "assets/bracelets.webp" },
-  mangalsutra: { title: "Mangalsutra Edit", desc: "Traditional symbols crafted in modern luxury shapes.", img: "assets/necklaces.webp" },
-  anklets: { title: "Anklets & Toe Rings", desc: "Elegant daily-wear charms for your feet.", img: "assets/bracelets.webp" },
-  kadas: { title: "Kadas Collection", desc: "Premium handcrafted daily-wear gold plated Kadas.", img: "assets/kadas/IMG-20260704-WA0015.jpg" },
-  chains: { title: "Chains Collection", desc: "Classic and luxury gold-plated chains and necklaces.", img: "assets/chains/IMG-20260704-WA0039.jpg" }
+  kadas: { title: "Kadas Collection", desc: "Premium handcrafted daily-wear gold plated Kadas.", img: "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg" },
+  chains: { title: "Chains Collection", desc: "Classic and luxury gold-plated chains and necklaces.", img: "https://res.cloudinary.com/cwx4zame/image/upload/v1783178938/vza7byllycs7nmz8bwdq.jpg" }
 };
 
 const TESTIMONIALS = [
@@ -537,7 +518,7 @@ function renderProducts(filter) {
     categories = Array.from(uniqueCats);
     
     // Sort standard ones first
-    const standardOrder = ['rings', 'earrings', 'necklaces', 'bracelets', 'mangalsutra', 'anklets', 'kadas', 'chains'];
+    const standardOrder = ['kadas', 'chains'];
     categories.sort((a, b) => {
       const idxA = standardOrder.indexOf(a);
       const idxB = standardOrder.indexOf(b);
@@ -1718,7 +1699,7 @@ function openPDP(id) {
     
     const optionsContainer = $('#catShiftOptions');
     // Get unique categories and filter out current
-    const standardCategories = ['rings', 'earrings', 'necklaces', 'bracelets', 'mangalsutra', 'kadas', 'chains'];
+    const standardCategories = ['kadas', 'chains'];
     const otherCats = standardCategories.filter(c => c !== swiperCategory);
     
     optionsContainer.innerHTML = otherCats.map(cat => `
