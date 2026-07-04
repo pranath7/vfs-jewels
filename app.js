@@ -1233,11 +1233,7 @@ function openPDP(id) {
   if (p.imgs && Array.isArray(p.imgs)) {
     images = p.imgs;
   } else if (p.img) {
-    images = [
-      p.img,
-      'assets/hero_banner.webp',
-      p.img
-    ];
+    images = [p.img];
   } else {
     images = ['assets/hero_banner.webp'];
   }
@@ -1246,17 +1242,23 @@ function openPDP(id) {
   mainImgContainer.innerHTML = `
     <div class="pdp-images-slider" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; width:100%; height:100%; scrollbar-width:none; -ms-overflow-style:none;">
       ${images.map((imgSrc, idx) => `
-        <img src="${imgSrc}" alt="${p.name} - Image ${idx+1}" style="flex:0 0 100%; width:100%; height:100%; object-fit:cover; scroll-snap-align:start;">
+        <img src="${imgSrc}" alt="${p.name} - Image ${idx+1}" style="flex:0 0 100%; width:100%; height:100%; object-fit:contain; scroll-snap-align:start; background:#fff;">
       `).join('')}
     </div>
   `;
 
   const thumbsContainer = $('#pdpThumbs');
-  thumbsContainer.innerHTML = images.map((imgSrc, idx) => `
-    <div class="pdp-thumb ${idx === 0 ? 'active' : ''}" data-idx="${idx}">
-      <img src="${imgSrc}" alt="${p.name} - Angle ${idx + 1}">
-    </div>
-  `).join('');
+  if (images.length > 1) {
+    thumbsContainer.style.display = 'flex';
+    thumbsContainer.innerHTML = images.map((imgSrc, idx) => `
+      <div class="pdp-thumb ${idx === 0 ? 'active' : ''}" data-idx="${idx}">
+        <img src="${imgSrc}" alt="${p.name} - Angle ${idx + 1}" style="object-fit:contain; background:#fff;">
+      </div>
+    `).join('');
+  } else {
+    thumbsContainer.style.display = 'none';
+    thumbsContainer.innerHTML = '';
+  }
 
   const slider = mainImgContainer.querySelector('.pdp-images-slider');
   thumbsContainer.querySelectorAll('.pdp-thumb').forEach(thumb => {
@@ -1495,8 +1497,12 @@ function openPDP(id) {
         </div>
         <div class="tinder-bottom-row">
           <div class="tinder-price">
-            ${fmt(product.price)}
-            ${isDiscounted ? `<span class="tinder-mrp">${fmt(product.mrp)}</span>` : ''}
+            ${product.priceOnRequest ? `
+              <span style="font-size: 1.25rem; font-weight:700; color:var(--color-secondary);">Price on Request</span>
+            ` : `
+              ${fmt(product.price)}
+              ${isDiscounted ? `<span class="tinder-mrp">${fmt(product.mrp)}</span>` : ''}
+            `}
           </div>
           <div style="font-size: 1.15rem; color: #ffb214; font-weight:700;">★ ${product.rating}</div>
         </div>
