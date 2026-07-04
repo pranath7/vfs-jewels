@@ -1903,7 +1903,7 @@ function handleReviewSubmit() {
   
   // Open google writereview in new tab
   setTimeout(() => {
-    window.open('https://search.google.com/local/writereview?placeid=ChIJGeNBXJ1vUjoRKvwj5pfrrCk', '_blank');
+    window.open('https://www.google.com/maps/place/VFS+JEWELS+%7C+Jewellery+Wholesaler/@13.0901146,80.2750305,17z/data=!3m1!4b1!4m6!3m5!1s0x3a526f9d5c41e319:0x29aceb97e623fc2a!8m2!3d13.0901094!4d80.2799014!16s%2Fg%2F11vt81tvl1?entry=ttu&g_ep=EgoyMDI2MDYyOS4wIKXMDSoASAFQAw%3D%3D', '_blank');
     closeReviewModal();
     // Reset modal content after closing transition finishes
     setTimeout(() => {
