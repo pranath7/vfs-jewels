@@ -647,6 +647,19 @@
     </div>
   </div>
 
+  <!-- IMAGE ZOOM LIGHTBOX -->
+  <div class="modal-bg" id="zoomLightbox" style="z-index: 2500;">
+    <button class="modal-x" id="closeZoomLightbox" style="top: 20px; right: 20px; color: #fff; font-size: 2.5rem; background: rgba(0,0,0,0.5); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="zoom-lightbox-content" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+      <img src="" id="zoomLightboxImg" alt="Zoomed View" style="max-width: 95%; max-height: 95%; object-fit: contain; cursor: zoom-in; transition: transform 0.25s ease-out; transform-origin: center center; user-select: none; touch-action: none;">
+    </div>
+    <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 1.2rem; pointer-events: none;">
+      Click/Tap to zoom. Drag to pan.
+    </div>
+  </div>
+
   <!-- RETURN POLICY MODAL -->
   <div class="modal-bg" id="returnPolicyModal">
     <div class="pin-modal" style="max-width:550px;padding:35px;">
@@ -899,7 +912,7 @@
   </div>
 
   <!-- CDN libraries loaded last so they don't block page render -->
-  <script src="app.js?v=27" defer></script>
+  <script src="app.js?v=29" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
