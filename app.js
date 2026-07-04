@@ -2821,13 +2821,12 @@ drawerNavLinks.forEach(link => {
       e.preventDefault();
       const target = document.getElementById('store');
       if (target) target.scrollIntoView({ behavior: 'smooth' });
-    } else if (targetAttr === 'fine-gold') {
+    } else if (targetAttr === 'shipping-policy') {
       e.preventDefault();
-      // filter to 'Fine Gold' category
-      const filtered = getFullCatalog().filter(p => p.cat.toLowerCase() === 'fine gold' || p.cat.toLowerCase() === 'gold');
-      renderProducts(filtered);
-      const target = document.getElementById('products');
-      if (target) target.scrollIntoView({ behavior: 'smooth' });
+      if (shippingPolicyModal) {
+        shippingPolicyModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
     }
   });
 });
