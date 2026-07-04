@@ -64,7 +64,7 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="stylesheet" href="style.css?v=10">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -221,7 +221,41 @@
   <!-- PRODUCTS -->
   <section class="products-section" id="products">
     <div class="page-width" id="categoryTracksContainer">
-      <!-- Dynamic Category Banners and Horizontal Product Tracks will be injected here -->
+      <!-- Static SEO Pre-rendered Catalog (Crawled by search engines, replaced dynamically by JS) -->
+      <div class="category-track-row" data-category="rings">
+        <div class="category-banner" style="background-image: url('assets/rings.webp')">
+          <div class="category-banner-overlay">
+            <h2>Rings Collection</h2>
+            <p>18K gold-plated &amp; anti-tarnish rings.</p>
+          </div>
+        </div>
+        <div class="product-row-scroll">
+          <div class="p-card">
+            <div class="p-img"><img src="assets/rings.webp" alt="Celestial Halo Ring"></div>
+            <div class="p-info">
+              <div class="p-meta">Gold Plated</div>
+              <div class="p-name">Celestial Halo Ring</div>
+              <div class="p-prices"><span class="price-now">₹899</span><span class="price-was">₹1,799</span></div>
+            </div>
+          </div>
+          <div class="p-card">
+            <div class="p-img"><img src="assets/rings.webp" alt="Infinity Band Ring"></div>
+            <div class="p-info">
+              <div class="p-meta">Rose Gold</div>
+              <div class="p-name">Infinity Band Ring</div>
+              <div class="p-prices"><span class="price-now">₹799</span><span class="price-was">₹1,599</span></div>
+            </div>
+          </div>
+          <div class="p-card">
+            <div class="p-img"><img src="assets/rings.webp" alt="Floral Statement Ring"></div>
+            <div class="p-info">
+              <div class="p-meta">Oxidised</div>
+              <div class="p-name">Floral Statement Ring</div>
+              <div class="p-prices"><span class="price-now">₹549</span><span class="price-was">₹1,099</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -838,7 +872,7 @@
 
   <!-- CDN libraries loaded last so they don't block page render -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
-  <script src="app.js?v=18" defer></script>
+  <script src="app.js?v=19" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

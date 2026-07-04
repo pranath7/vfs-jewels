@@ -1,0 +1,19 @@
+# VFS Jewels
+
+> Handcrafted premium 18K gold-plated, anti-tarnish imitation jewellery store based in Sowcarpet, Chennai.
+
+## Core Offerings
+- **Rings:** Celestial Halo, Infinity Bands, and statement rings.
+- **Earrings:** CZ solitaire studs, drop earrings, and hoops.
+- **Necklaces:** Eternal love pendants, pearl chains, and mangalsutras.
+- **Bracelets:** Twisted rope designs, link charms, and tennis cuffs.
+
+## Store Details
+- **Location:** 42, 2nd Floor, Natwar Kurpa Complex, Narayana Mudali Street, Sowcarpet, George Town, Chennai - 600001
+- **Contact:** WhatsApp/Phone +91 98407 57363 | Email: vfsjewels@gmail.com
+- **Shipping:** Pan-India express delivery (₹200 flat fee).
+- **Features:** Anti-Tarnish shield protective coating, lead-free, nickel-free brass alloy, premium ribbon gift packaging.
+
+## URL Index
+- [Storefront Homepage](https://vfsjewels.store/) - Browse catalog and place orders.
+- [Sitemap](https://vfsjewels.store/sitemap.xml) - Full crawl index of storefront resources.
