@@ -49,14 +49,43 @@ const PRODUCTS = [
   });
 })();
 
-// Force local storage migration if kadas are missing
+// Generate 15 Chains dynamically
+(function generateChains() {
+  const CHAIN_IMAGES = [
+    'IMG-20260704-WA0039.jpg', 'IMG-20260704-WA0040.jpg', 'IMG-20260704-WA0041.jpg',
+    'IMG-20260704-WA0042.jpg', 'IMG-20260704-WA0043.jpg', 'IMG-20260704-WA0044.jpg',
+    'IMG-20260704-WA0045.jpg', 'IMG-20260704-WA0046.jpg', 'IMG-20260704-WA0047.jpg',
+    'IMG-20260704-WA0048.jpg', 'IMG-20260704-WA0049.jpg', 'IMG-20260704-WA0050.jpg',
+    'IMG-20260704-WA0051.jpg', 'IMG-20260704-WA0052.jpg', 'IMG-20260704-WA0053.jpg'
+  ];
+
+  CHAIN_IMAGES.forEach((imgFile, idx) => {
+    PRODUCTS.push({
+      id: 301 + idx,
+      sku: `SN-C${String(idx + 1).padStart(3, '0')}`,
+      name: `VFS Gold Chain #${String(idx + 1).padStart(2, '0')}`,
+      cat: 'chains',
+      meta: 'Premium Chain',
+      price: 0,
+      mrp: 0,
+      img: `assets/chains/${imgFile}`,
+      rating: (4.6 + (idx % 4) * 0.1).toFixed(1),
+      reviews: 10 + (idx * 4) % 30,
+      badge: 'Exclusive',
+      priceOnRequest: true
+    });
+  });
+})();
+
+// Force local storage migration if kadas or chains are missing
 (function migrateStorage() {
   try {
     const stored = localStorage.getItem('vfs_products');
     if (stored) {
       const items = JSON.parse(stored);
       const hasKadas = items.some(x => x.cat === 'kadas');
-      if (!hasKadas) {
+      const hasChains = items.some(x => x.cat === 'chains');
+      if (!hasKadas || !hasChains) {
         localStorage.removeItem('vfs_products');
         localStorage.removeItem('vfs_custom_products');
       }
@@ -306,7 +335,8 @@ const CATEGORY_BANNERS = {
   bracelets: { title: "Bracelets & Bands", desc: "Dainty rope chains and classic tennis bracelets.", img: "assets/bracelets.webp" },
   mangalsutra: { title: "Mangalsutra Edit", desc: "Traditional symbols crafted in modern luxury shapes.", img: "assets/necklaces.webp" },
   anklets: { title: "Anklets & Toe Rings", desc: "Elegant daily-wear charms for your feet.", img: "assets/bracelets.webp" },
-  kadas: { title: "Kadas Collection", desc: "Premium handcrafted daily-wear gold plated Kadas.", img: "assets/kadas/IMG-20260704-WA0015.jpg" }
+  kadas: { title: "Kadas Collection", desc: "Premium handcrafted daily-wear gold plated Kadas.", img: "assets/kadas/IMG-20260704-WA0015.jpg" },
+  chains: { title: "Chains Collection", desc: "Classic and luxury gold-plated chains and necklaces.", img: "assets/chains/IMG-20260704-WA0039.jpg" }
 };
 
 const TESTIMONIALS = [
@@ -437,7 +467,7 @@ function renderProducts(filter) {
     categories = Array.from(uniqueCats);
     
     // Sort standard ones first
-    const standardOrder = ['rings', 'earrings', 'necklaces', 'bracelets', 'mangalsutra', 'anklets'];
+    const standardOrder = ['rings', 'earrings', 'necklaces', 'bracelets', 'mangalsutra', 'anklets', 'kadas', 'chains'];
     categories.sort((a, b) => {
       const idxA = standardOrder.indexOf(a);
       const idxB = standardOrder.indexOf(b);
@@ -1600,7 +1630,7 @@ function openPDP(id) {
     
     const optionsContainer = $('#catShiftOptions');
     // Get unique categories and filter out current
-    const standardCategories = ['rings', 'earrings', 'necklaces', 'bracelets', 'mangalsutra'];
+    const standardCategories = ['rings', 'earrings', 'necklaces', 'bracelets', 'mangalsutra', 'kadas', 'chains'];
     const otherCats = standardCategories.filter(c => c !== swiperCategory);
     
     optionsContainer.innerHTML = otherCats.map(cat => `
