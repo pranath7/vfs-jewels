@@ -1886,14 +1886,16 @@ function renderReturnCard(ret, container, ordersList) {
       <strong class="total-amt" style="color:var(--color-secondary);">${order ? fmt(order.total) : 'N/A'}</strong>
     </div>
 
-    <div class="card-actions" style="margin-top:14px;">
+    <div class="card-actions" style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
       ${ret.status === 'pending' ? `
         <button class="btn-card-primary" onclick="approveReturnRequest('${ret.id}', ${order ? order.total : 0})" style="background:#27ae60;border-color:#27ae60;">Approve Return</button>
         <button class="btn-card-danger" onclick="rejectReturnRequest('${ret.id}')">Reject Return</button>
+        <button class="btn-card-danger" onclick="deleteReturnRequest('${ret.id}')" style="grid-column: 1 / -1; background:#8b0000; border-color:#8b0000; margin-top:4px;">Delete Request</button>
       ` : `
-        <div class="return-status-badge ${ret.status}" style="grid-column: 1 / -1; text-align:center; padding:10px; font-weight:800; text-transform:uppercase; border-radius:4px; font-size:1.3rem;">
+        <div class="return-status-badge ${ret.status}" style="grid-column: 1 / -1; text-align:center; padding:10px; font-weight:800; text-transform:uppercase; border-radius:4px; font-size:1.3rem; margin-bottom:4px;">
           ${ret.status === 'approved' ? '✅ Approved & Points Credited' : '❌ Declined'}
         </div>
+        <button class="btn-card-danger" onclick="deleteReturnRequest('${ret.id}')" style="grid-column: 1 / -1; background:#8b0000; border-color:#8b0000;">Delete Request</button>
       `}
     </div>
   `;
@@ -1993,6 +1995,26 @@ window.rejectReturnRequest = async function(retId) {
   // 3. Pre-fill WhatsApp message
   const text = `Hi, your return request for order ${retObj.orderId} was reviewed and could not be approved due to: ${reason}. Please contact us if you have any questions.`;
   openWhatsAppChat(retObj.phone, text);
+};
+
+window.deleteReturnRequest = async function(retId) {
+  if (!confirm(`Are you sure you want to delete return request ${retId}? This will remove it permanently.`)) return;
+
+  if (window.VFS_CLOUD_ACTIVE) {
+    try {
+      await window.db.collection('returns').doc(retId).delete();
+    } catch(e) {
+      console.error("Firestore delete error:", e);
+    }
+  } else {
+    const stored = localStorage.getItem('vfs_returns');
+    if (stored) {
+      const list = JSON.parse(stored).filter(r => r.id !== retId);
+      localStorage.setItem('vfs_returns', JSON.stringify(list));
+    }
+  }
+  adminToast(`Return request ${retId} has been deleted`, 'error');
+  await loadReturnQueries();
 };
 
 window.checkCustomerWalletCredits = async function() {
