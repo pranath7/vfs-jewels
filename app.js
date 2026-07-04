@@ -223,6 +223,9 @@ window.VFS_DB = {
 };
 
 function getFullCatalog() {
+  if (window.VFS_PRODUCTS_CACHE && window.VFS_PRODUCTS_CACHE.length > 0) {
+    return window.VFS_PRODUCTS_CACHE;
+  }
   return PRODUCTS;
 }
 

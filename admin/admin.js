@@ -31,20 +31,26 @@ const openWhatsAppChat = (phone, text) => {
 };
 
 // ── Default Storefront Catalog ──
-const DEFAULT_PRODUCTS = [
-  { id: 1, name: 'Celestial Halo Ring', cat: 'rings', meta: 'Gold Plated', price: 899, mrp: 1799, img: 'assets/rings.webp', rating: 4.8, reviews: 312, badge: 'Bestseller' },
-  { id: 2, name: 'Aurora Drop Earrings', cat: 'earrings', meta: 'CZ Crystal', price: 749, mrp: 1499, img: 'assets/earrings.webp', rating: 4.7, reviews: 287, badge: 'New' },
-  { id: 3, name: 'Eternal Love Pendant', cat: 'necklaces', meta: 'Gold Plated', price: 1199, mrp: 2399, img: 'assets/necklaces.webp', rating: 4.9, reviews: 456, badge: 'Most Gifted' },
-  { id: 4, name: 'Twisted Rope Bracelet', cat: 'bracelets', meta: 'Rose Gold', price: 649, mrp: 1299, img: 'assets/bracelets.webp', rating: 4.6, reviews: 198, badge: '' },
-  { id: 5, name: 'CZ Solitaire Studs', cat: 'earrings', meta: 'Gold Plated', price: 599, mrp: 1199, img: 'assets/earrings.webp', rating: 4.9, reviews: 524, badge: 'Bestseller' },
-  { id: 6, name: 'Infinity Band Ring', cat: 'rings', meta: 'Rose Gold', price: 799, mrp: 1599, img: 'assets/rings.webp', rating: 4.5, reviews: 176, badge: '' },
-  { id: 7, name: 'Pearl Chain Necklace', cat: 'necklaces', meta: 'Gold Plated', price: 1399, mrp: 2799, img: 'assets/necklaces.webp', rating: 4.8, reviews: 389, badge: 'Trending' },
-  { id: 8, name: 'Charm Link Bracelet', cat: 'bracelets', meta: 'Gold Plated', price: 849, mrp: 1699, img: 'assets/bracelets.webp', rating: 4.7, reviews: 243, badge: 'New' },
-  { id: 9, name: 'Diamond Cut Hoops', cat: 'earrings', meta: 'CZ Crystal', price: 699, mrp: 1399, img: 'assets/earrings.webp', rating: 4.6, reviews: 167, badge: '' },
-  { id: 10, name: 'Floral Statement Ring', cat: 'rings', meta: 'Oxidised', price: 549, mrp: 1099, img: 'assets/rings.webp', rating: 4.4, reviews: 134, badge: '' },
-  { id: 11, name: 'Layered Chain Set', cat: 'necklaces', meta: 'Gold Plated', price: 1599, mrp: 3199, img: 'assets/necklaces.webp', rating: 4.9, reviews: 412, badge: 'Most Gifted' },
-  { id: 12, name: 'Tennis Bracelet CZ', cat: 'bracelets', meta: 'Rose Gold', price: 1099, mrp: 2199, img: 'assets/bracelets.webp', rating: 4.8, reviews: 298, badge: 'Trending' }
-];
+let DEFAULT_PRODUCTS = [];
+
+async function initAdminCatalog() {
+  try {
+    localStorage.removeItem('vfs_products');
+    localStorage.removeItem('vfs_custom_products');
+  } catch (e) {}
+
+  try {
+    const res = await fetch('../vfs-products.json?t=' + Date.now());
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        DEFAULT_PRODUCTS = data;
+      }
+    }
+  } catch (e) {
+    console.error("⚠️ VFS Admin: Failed to load default products JSON.", e);
+  }
+}
 
 // ── Cloud Persistence & File Upload wrappers ──
 window.VFS_CLOUD_ACTIVE = false;
@@ -166,8 +172,11 @@ async function refreshCloudData() {
   }
 }
 
-// Call config initialization asynchronously
-initCloudConfig();
+// Call config initialization asynchronously after loading defaults
+(async () => {
+  await initAdminCatalog();
+  await initCloudConfig();
+})();
 
 window.uploadToCloudinary = async function(file) {
   if (!window.VFS_CONFIG.cloudinary || !window.VFS_CONFIG.cloudinary.cloudName || window.VFS_CONFIG.cloudinary.cloudName.startsWith("YOUR_")) {
