@@ -6,6 +6,15 @@
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 const fmt = (n) => '₹' + (Number(n) || 0).toLocaleString('en-IN');
+const escapeHtml = (str) => {
+  if (typeof str !== 'string') return str === undefined || str === null ? '' : String(str);
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
 
 const openWhatsAppChat = (phone, text) => {
   let cleanPhone = (phone || '').replace(/\D/g, '');
@@ -708,15 +717,15 @@ function renderOrderCard(order, container) {
   card.className = 'order-card';
   card.innerHTML = `
     <div class="card-top">
-      <span class="order-id">${order.id}</span>
-      <span class="order-date">${order.date}</span>
+      <span class="order-id">${escapeHtml(order.id)}</span>
+      <span class="order-date">${escapeHtml(order.date)}</span>
     </div>
     <div class="card-customer">
-      <span class="cust-name">${order.name}</span>
-      <span class="cust-details">📞 ${order.phone}</span>
-      <span class="cust-details">📍 ${order.address}, ${order.city} - ${order.pincode}</span>
+      <span class="cust-name">${escapeHtml(order.name)}</span>
+      <span class="cust-details">📞 ${escapeHtml(order.phone)}</span>
+      <span class="cust-details">📍 ${escapeHtml(order.address)}, ${escapeHtml(order.city)} - ${escapeHtml(order.pincode)}</span>
     </div>
-    <span class="card-carrier-badge">Carrier: ${order.carrier}</span>
+    <span class="card-carrier-badge">Carrier: ${escapeHtml(order.carrier)}</span>
     <div class="card-items">
       ${itemsText}
     </div>
@@ -738,8 +747,8 @@ function renderOrderCard(order, container) {
       <div class="card-actions">
         ${order.trackingId ? `
           <div class="card-tracking-assigned" style="grid-column: 1 / -1; margin-bottom: 6px;">
-            <strong>Shipped via ${order.carrier}</strong><br>
-            Tracking ID: <code>${order.trackingId}</code>
+            <strong>Shipped via ${escapeHtml(order.carrier)}</strong><br>
+            Tracking ID: <code>${escapeHtml(order.trackingId)}</code>
           </div>
           <button class="btn-card-primary" onclick="printInvoice('${order.id}')">Print Invoice</button>
           <button class="btn-card-whatsapp" onclick="shareOnWhatsApp('${order.id}')">
@@ -1860,12 +1869,12 @@ function renderReturnCard(ret, container, ordersList) {
 
   card.innerHTML = `
     <div class="card-top">
-      <span class="order-id">${ret.id} (Order: ${ret.orderId})</span>
-      <span class="order-date">${ret.date}</span>
+      <span class="order-id">${escapeHtml(ret.id)} (Order: ${escapeHtml(ret.orderId)})</span>
+      <span class="order-date">${escapeHtml(ret.date)}</span>
     </div>
     <div class="card-customer">
-      <span class="cust-name">Customer Phone: 📞 ${ret.phone}</span>
-      <span class="cust-details" style="margin-top: 6px; font-size:1.25rem; display:block;"><strong>Reported Defect:</strong> ${ret.desc}</span>
+      <span class="cust-name">Customer Phone: 📞 ${escapeHtml(ret.phone)}</span>
+      <span class="cust-details" style="margin-top: 6px; font-size:1.25rem; display:block;"><strong>Reported Defect:</strong> ${escapeHtml(ret.desc)}</span>
     </div>
     
     <!-- Proof Files Preview Grid -->
