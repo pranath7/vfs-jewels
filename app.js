@@ -5,150 +5,7 @@
 // ── Product Data ──
 const PRODUCTS = [];
 
-const CLOUDINARY_URLS = {
-  "assets/kadas/IMG-20260704-WA0015.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg",
-  "assets/kadas/IMG-20260704-WA0016.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178918/j0qhpmddqcww7jyfclpo.jpg",
-  "assets/kadas/IMG-20260704-WA0017.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178918/d8vmmezbtwedza9gw64b.jpg",
-  "assets/kadas/IMG-20260704-WA0018.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178919/em7mwrwmfx00nl8wpun1.jpg",
-  "assets/kadas/IMG-20260704-WA0019.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178920/w5poym0duvb90ursvdev.jpg",
-  "assets/kadas/IMG-20260704-WA0020.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178921/jory1vfmjdhh0qagmyfl.jpg",
-  "assets/kadas/IMG-20260704-WA0021.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178922/cetvhjbqvarfycmzhntn.jpg",
-  "assets/kadas/IMG-20260704-WA0022.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178923/zfrcjcmkpuxafyv04on5.jpg",
-  "assets/kadas/IMG-20260704-WA0023.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178924/zq0p5l4psp1zfh2btxzp.jpg",
-  "assets/kadas/IMG-20260704-WA0024.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178925/w4jdyqxhbuouv6oksiwg.jpg",
-  "assets/kadas/IMG-20260704-WA0025.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178926/bkafajsyk3obdoexbdop.jpg",
-  "assets/kadas/IMG-20260704-WA0026.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178927/dmii1bdkrfbtfcwfh7qp.jpg",
-  "assets/kadas/IMG-20260704-WA0027.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178928/wcr0s6xqpnmbs98fz7dr.jpg",
-  "assets/kadas/IMG-20260704-WA0028.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178929/fojx0kassipwwftfcknh.jpg",
-  "assets/kadas/IMG-20260704-WA0029.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178929/degumookjbgnciecrk1w.jpg",
-  "assets/kadas/IMG-20260704-WA0030.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178930/hadow30cqoea39phjvyx.jpg",
-  "assets/kadas/IMG-20260704-WA0031.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178931/obphqfxf2veys5hpwwqy.jpg",
-  "assets/kadas/IMG-20260704-WA0032.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178932/o6uivxisjr80bzjwm0b0.jpg",
-  "assets/kadas/IMG-20260704-WA0033.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178932/jstxgmvyv9unn1af9iih.jpg",
-  "assets/kadas/IMG-20260704-WA0034.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178934/xowv48eepyqj1pr3h0b6.jpg",
-  "assets/kadas/IMG-20260704-WA0035.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178935/bczaaywwqdt22rn8vv2b.jpg",
-  "assets/kadas/IMG-20260704-WA0036.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178935/deilwm2evxa7gpoahoao.jpg",
-  "assets/kadas/IMG-20260704-WA0037.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178936/mq3sstgts4yofjakycq1.jpg",
-  "assets/chains/IMG-20260704-WA0039.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178938/vza7byllycs7nmz8bwdq.jpg",
-  "assets/chains/IMG-20260704-WA0040.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178939/dguesoyw4s03cb1y9ief.jpg",
-  "assets/chains/IMG-20260704-WA0041.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178940/vswytffuij1oasityf2i.jpg",
-  "assets/chains/IMG-20260704-WA0042.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178941/qoy6w51ygjbszrtcf2ef.jpg",
-  "assets/chains/IMG-20260704-WA0043.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178941/uu9wtaiv9bshk1y3trsz.jpg",
-  "assets/chains/IMG-20260704-WA0044.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178942/a5dpinkitzolrdkpbd56.jpg",
-  "assets/chains/IMG-20260704-WA0045.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178943/aa1iixfx4xm59m1q1sdx.jpg",
-  "assets/chains/IMG-20260704-WA0046.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178943/ysipsjrglrsjlfs02td9.jpg",
-  "assets/chains/IMG-20260704-WA0047.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178944/qckk55ackb90t40ktaa8.jpg",
-  "assets/chains/IMG-20260704-WA0048.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178945/zqajttwrvl4zxz1txylj.jpg",
-  "assets/chains/IMG-20260704-WA0049.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178946/ar7rtyo8njcemkbthexq.jpg",
-  "assets/chains/IMG-20260704-WA0050.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178947/v4ad0wpgrfbxudn0fpwa.jpg",
-  "assets/chains/IMG-20260704-WA0051.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178948/bwksqbswagtyce0so8y1.jpg",
-  "assets/chains/IMG-20260704-WA0052.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178949/pieihb2fs9nzhyww2jgs.jpg",
-  "assets/chains/IMG-20260704-WA0053.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178952/luctfemssi0bzbwzezsr.jpg",
-  "assets/kadas/IMG-20260704-WA0088.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183397/n8bmrsjttxaasvpdu2eo.jpg",
-  "assets/kadas/IMG-20260704-WA0089.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183399/aczis8kte2knj6pnglrj.jpg",
-  "assets/kadas/IMG-20260704-WA0090.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183400/t5gdt82rhxnrogftkhrb.jpg",
-  "assets/kadas/IMG-20260704-WA0091.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183402/bkeswn7xhlegne0m3bas.jpg",
-  "assets/kadas/IMG-20260704-WA0092.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183403/lmpf5ur44kzr98qnmkl6.jpg",
-  "assets/kadas/IMG-20260704-WA0093.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183406/kgnpdu42ebdsovbgphc3.jpg",
-  "assets/kadas/IMG-20260704-WA0094.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183407/u8n2utk4wn71v17ff65p.jpg",
-  "assets/kadas/IMG-20260704-WA0095.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183409/nka5iv7ombpmbzbna5om.jpg",
-  "assets/kadas/IMG-20260704-WA0096.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183410/puk5hquq8fumaxwj5dpx.jpg",
-  "assets/kadas/IMG-20260704-WA0097.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183411/lvgurzc4rwala7jcya7z.jpg",
-  "assets/kadas/IMG-20260704-WA0098.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183412/pix59rgta8lhbepfzj50.jpg",
-  "assets/kadas/IMG-20260704-WA0099.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183413/hmhdogxmyd3bffzpspdc.jpg",
-  "assets/kadas/IMG-20260704-WA0100.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183414/f5vvyog7m4caap4jlosl.jpg",
-  "assets/kadas/IMG-20260704-WA0101.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183415/xqn4m0kgob2mr0ubzayx.jpg",
-  "assets/kadas/IMG-20260704-WA0102.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183416/kklbimpezdyxlrqb6hd7.jpg",
-  "assets/kadas/IMG-20260704-WA0103.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183417/gskjatvdchym7dudokfm.jpg",
-  "assets/kadas/IMG-20260704-WA0104.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183418/fsqckzt2yrvlcqpppmjq.jpg",
-  "assets/kadas/IMG-20260704-WA0105.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183419/jlvrdssz7x3b7nawyglb.jpg",
-  "assets/kadas/IMG-20260704-WA0106.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183420/c61mrnccabtarwdqabz2.jpg",
-  "assets/kadas/IMG-20260704-WA0107.jpg": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183421/aukttd0gb7isoa4cjj3h.jpg"
-};
-
-// Generate 43 Kadas dynamically
-(function generateKadas() {
-  const KADA_IMAGES = [
-    'IMG-20260704-WA0015.jpg', 'IMG-20260704-WA0016.jpg', 'IMG-20260704-WA0017.jpg',
-    'IMG-20260704-WA0018.jpg', 'IMG-20260704-WA0019.jpg', 'IMG-20260704-WA0020.jpg',
-    'IMG-20260704-WA0021.jpg', 'IMG-20260704-WA0022.jpg', 'IMG-20260704-WA0023.jpg',
-    'IMG-20260704-WA0024.jpg', 'IMG-20260704-WA0025.jpg', 'IMG-20260704-WA0026.jpg',
-    'IMG-20260704-WA0027.jpg', 'IMG-20260704-WA0028.jpg', 'IMG-20260704-WA0029.jpg',
-    'IMG-20260704-WA0030.jpg', 'IMG-20260704-WA0031.jpg', 'IMG-20260704-WA0032.jpg',
-    'IMG-20260704-WA0033.jpg', 'IMG-20260704-WA0034.jpg', 'IMG-20260704-WA0035.jpg',
-    'IMG-20260704-WA0036.jpg', 'IMG-20260704-WA0037.jpg',
-    'IMG-20260704-WA0088.jpg', 'IMG-20260704-WA0089.jpg', 'IMG-20260704-WA0090.jpg',
-    'IMG-20260704-WA0091.jpg', 'IMG-20260704-WA0092.jpg', 'IMG-20260704-WA0093.jpg',
-    'IMG-20260704-WA0094.jpg', 'IMG-20260704-WA0095.jpg', 'IMG-20260704-WA0096.jpg',
-    'IMG-20260704-WA0097.jpg', 'IMG-20260704-WA0098.jpg', 'IMG-20260704-WA0099.jpg',
-    'IMG-20260704-WA0100.jpg', 'IMG-20260704-WA0101.jpg', 'IMG-20260704-WA0102.jpg',
-    'IMG-20260704-WA0103.jpg', 'IMG-20260704-WA0104.jpg', 'IMG-20260704-WA0105.jpg',
-    'IMG-20260704-WA0106.jpg', 'IMG-20260704-WA0107.jpg'
-  ];
-
-  KADA_IMAGES.forEach((imgFile, idx) => {
-    const localPath = `assets/kadas/${imgFile}`;
-    PRODUCTS.push({
-      id: 201 + idx,
-      sku: `SN-K${String(idx + 1).padStart(3, '0')}`,
-      name: `VFS Designer Kada #${String(idx + 1).padStart(2, '0')}`,
-      cat: 'kadas',
-      meta: 'Premium Kada',
-      price: 0,
-      mrp: 0,
-      img: CLOUDINARY_URLS[localPath] || localPath,
-      rating: (4.6 + (idx % 4) * 0.1).toFixed(1),
-      reviews: 12 + (idx * 3) % 40,
-      badge: 'Exclusive',
-      priceOnRequest: true
-    });
-  });
-})();
-
-// Generate 15 Chains dynamically
-(function generateChains() {
-  const CHAIN_IMAGES = [
-    'IMG-20260704-WA0039.jpg', 'IMG-20260704-WA0040.jpg', 'IMG-20260704-WA0041.jpg',
-    'IMG-20260704-WA0042.jpg', 'IMG-20260704-WA0043.jpg', 'IMG-20260704-WA0044.jpg',
-    'IMG-20260704-WA0045.jpg', 'IMG-20260704-WA0046.jpg', 'IMG-20260704-WA0047.jpg',
-    'IMG-20260704-WA0048.jpg', 'IMG-20260704-WA0049.jpg', 'IMG-20260704-WA0050.jpg',
-    'IMG-20260704-WA0051.jpg', 'IMG-20260704-WA0052.jpg', 'IMG-20260704-WA0053.jpg'
-  ];
-
-  CHAIN_IMAGES.forEach((imgFile, idx) => {
-    const localPath = `assets/chains/${imgFile}`;
-    PRODUCTS.push({
-      id: 301 + idx,
-      sku: `SN-C${String(idx + 1).padStart(3, '0')}`,
-      name: `VFS Gold Chain #${String(idx + 1).padStart(2, '0')}`,
-      cat: 'chains',
-      meta: 'Premium Chain',
-      price: 0,
-      mrp: 0,
-      img: CLOUDINARY_URLS[localPath] || localPath,
-      rating: (4.6 + (idx % 4) * 0.1).toFixed(1),
-      reviews: 10 + (idx * 4) % 30,
-      badge: 'Exclusive',
-      priceOnRequest: true
-    });
-  });
-})();
-
-// Force local storage migration if kadas or chains are missing
-(function migrateStorage() {
-  try {
-    const stored = localStorage.getItem('vfs_products');
-    if (stored) {
-      const items = JSON.parse(stored);
-      const hasKadas = items.some(x => x.cat === 'kadas');
-      const hasChains = items.some(x => x.cat === 'chains');
-      if (!hasKadas || !hasChains) {
-        localStorage.removeItem('vfs_products');
-        localStorage.removeItem('vfs_custom_products');
-      }
-    }
-  } catch (e) {}
-})();
+// PRODUCTS catalog loaded dynamically from vfs-products.json
 
 // ── Cloud Persistence & File Upload wrappers ──
 window.VFS_CLOUD_ACTIVE = false;
@@ -366,23 +223,7 @@ window.VFS_DB = {
 };
 
 function getFullCatalog() {
-  if (window.VFS_PRODUCTS_CACHE && window.VFS_PRODUCTS_CACHE.length > 0) {
-    return window.VFS_PRODUCTS_CACHE;
-  }
-  const stored = localStorage.getItem('vfs_products');
-  let defaults = [];
-  if (stored) {
-    try { defaults = JSON.parse(stored); } catch(e) {}
-  }
-  if (!defaults.length) {
-    defaults = PRODUCTS.map((p, idx) => ({
-      ...p,
-      sku: p.sku || `SN-${String(idx + 1).padStart(4, '0')}`
-    }));
-    localStorage.setItem('vfs_products', JSON.stringify(defaults));
-  }
-  window.VFS_PRODUCTS_CACHE = defaults;
-  return defaults;
+  return PRODUCTS;
 }
 
 const CATEGORY_BANNERS = {
@@ -2659,15 +2500,39 @@ function checkHashRoute() {
   }
 }
 
-window.addEventListener('load', checkHashRoute);
+async function initApp() {
+  // Clear any legacy client-side products caching to avoid conflicts
+  try {
+    localStorage.removeItem('vfs_products');
+    localStorage.removeItem('vfs_custom_products');
+  } catch (e) {}
+
+  try {
+    const res = await fetch(`/vfs-products.json?t=${Date.now()}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        PRODUCTS.length = 0; // Clear
+        PRODUCTS.push(...data);
+      }
+    }
+  } catch (e) {
+    console.error("Failed to load products from live catalog:", e);
+  }
+
+  checkHashRoute();
+  renderProducts(null);
+  renderTestimonials();
+  updateCounts();
+}
+
+window.addEventListener('load', initApp);
 window.addEventListener('hashchange', checkHashRoute);
 
-// Execute immediately in case the load event has already fired
-checkHashRoute();
-
-renderProducts(null);
-renderTestimonials();
-updateCounts();
+// Execute immediately if DOM content is already parsed/loading
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  initApp();
+}
 
 // ── MOBILE SIDE DRAWER NAVIGATION ──
 const mobileNavDrawer = $('#mobileNavDrawer');
