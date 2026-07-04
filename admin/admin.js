@@ -160,10 +160,37 @@ window.logoutAdmin = async function() {
 };
 
 async function refreshCloudData() {
-  const dbProducts = await window.VFS_DB.getProducts();
-  if (dbProducts && dbProducts.length > 0) {
-    window.VFS_PRODUCTS_CACHE = dbProducts;
+  // 1. Always start with the live JSON catalog as the base
+  try {
+    const res = await fetch('../vfs-products.json?t=' + Date.now());
+    if (res.ok) {
+      const jsonProducts = await res.json();
+      if (Array.isArray(jsonProducts) && jsonProducts.length > 0) {
+        window.VFS_PRODUCTS_CACHE = jsonProducts;
+        DEFAULT_PRODUCTS = jsonProducts;
+      }
+    }
+  } catch (e) {
+    console.warn("⚠️ VFS Admin: Could not load vfs-products.json", e);
   }
+
+  // 2. If Firestore is active, merge any cloud-stored products on top
+  if (window.VFS_CLOUD_ACTIVE) {
+    try {
+      const dbProducts = await window.VFS_DB.getProducts();
+      if (dbProducts && dbProducts.length > 0) {
+        // Merge: start with JSON products, add any Firestore-only products
+        const existingIds = new Set(window.VFS_PRODUCTS_CACHE.map(p => p.id));
+        const newFromDb = dbProducts.filter(p => !existingIds.has(p.id));
+        if (newFromDb.length > 0) {
+          window.VFS_PRODUCTS_CACHE = [...window.VFS_PRODUCTS_CACHE, ...newFromDb];
+        }
+      }
+    } catch (e) {
+      console.warn("⚠️ VFS Admin: Firestore product sync failed", e);
+    }
+  }
+
   if (typeof loadDashboard === 'function') {
     loadDashboard();
   }
