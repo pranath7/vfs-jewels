@@ -18,6 +18,52 @@ const PRODUCTS = [
   { id: 12, name: 'Tennis Bracelet CZ', cat: 'bracelets', meta: 'Rose Gold', price: 1099, mrp: 2199, img: 'assets/bracelets.webp', rating: 4.8, reviews: 298, badge: 'Trending' },
 ];
 
+// Generate 23 Kadas dynamically
+(function generateKadas() {
+  const KADA_IMAGES = [
+    'IMG-20260704-WA0015.jpg', 'IMG-20260704-WA0016.jpg', 'IMG-20260704-WA0017.jpg',
+    'IMG-20260704-WA0018.jpg', 'IMG-20260704-WA0019.jpg', 'IMG-20260704-WA0020.jpg',
+    'IMG-20260704-WA0021.jpg', 'IMG-20260704-WA0022.jpg', 'IMG-20260704-WA0023.jpg',
+    'IMG-20260704-WA0024.jpg', 'IMG-20260704-WA0025.jpg', 'IMG-20260704-WA0026.jpg',
+    'IMG-20260704-WA0027.jpg', 'IMG-20260704-WA0028.jpg', 'IMG-20260704-WA0029.jpg',
+    'IMG-20260704-WA0030.jpg', 'IMG-20260704-WA0031.jpg', 'IMG-20260704-WA0032.jpg',
+    'IMG-20260704-WA0033.jpg', 'IMG-20260704-WA0034.jpg', 'IMG-20260704-WA0035.jpg',
+    'IMG-20260704-WA0036.jpg', 'IMG-20260704-WA0037.jpg'
+  ];
+
+  KADA_IMAGES.forEach((imgFile, idx) => {
+    PRODUCTS.push({
+      id: 201 + idx,
+      sku: `SN-K${String(idx + 1).padStart(3, '0')}`,
+      name: `VFS Designer Kada #${String(idx + 1).padStart(2, '0')}`,
+      cat: 'kadas',
+      meta: 'Premium Kada',
+      price: 0,
+      mrp: 0,
+      img: `assets/kadas/${imgFile}`,
+      rating: (4.6 + (idx % 4) * 0.1).toFixed(1),
+      reviews: 12 + (idx * 3) % 40,
+      badge: 'Exclusive',
+      priceOnRequest: true
+    });
+  });
+})();
+
+// Force local storage migration if kadas are missing
+(function migrateStorage() {
+  try {
+    const stored = localStorage.getItem('vfs_products');
+    if (stored) {
+      const items = JSON.parse(stored);
+      const hasKadas = items.some(x => x.cat === 'kadas');
+      if (!hasKadas) {
+        localStorage.removeItem('vfs_products');
+        localStorage.removeItem('vfs_custom_products');
+      }
+    }
+  } catch (e) {}
+})();
+
 // ── Cloud Persistence & File Upload wrappers ──
 window.VFS_CLOUD_ACTIVE = false;
 window.VFS_CONFIG = {
@@ -259,7 +305,8 @@ const CATEGORY_BANNERS = {
   necklaces: { title: "Necklaces & Pendants", desc: "Elegant chains and pendants designed for layering.", img: "assets/necklaces.webp" },
   bracelets: { title: "Bracelets & Bands", desc: "Dainty rope chains and classic tennis bracelets.", img: "assets/bracelets.webp" },
   mangalsutra: { title: "Mangalsutra Edit", desc: "Traditional symbols crafted in modern luxury shapes.", img: "assets/necklaces.webp" },
-  anklets: { title: "Anklets & Toe Rings", desc: "Elegant daily-wear charms for your feet.", img: "assets/bracelets.webp" }
+  anklets: { title: "Anklets & Toe Rings", desc: "Elegant daily-wear charms for your feet.", img: "assets/bracelets.webp" },
+  kadas: { title: "Kadas Collection", desc: "Premium handcrafted daily-wear gold plated Kadas.", img: "assets/kadas/IMG-20260704-WA0015.jpg" }
 };
 
 const TESTIMONIALS = [
@@ -435,18 +482,26 @@ function renderProducts(filter) {
                 </button>
                 <div class="p-img">
                   <img src="${p.img}" alt="${p.name}" loading="lazy">
-                  <div class="p-quick" data-add="${p.id}">Add to Cart</div>
+                  ${p.priceOnRequest ? `
+                    <div class="p-quick inquire-btn" style="background:#25D366;color:#fff;">Request Price</div>
+                  ` : `
+                    <div class="p-quick" data-add="${p.id}">Add to Cart</div>
+                  `}
                 </div>
                 <div class="p-info">
                   <div class="p-meta">${p.meta}</div>
                   <div class="p-name">${p.name}</div>
                   <div class="p-rating"><span class="stars">${stars(p.rating)}</span><span class="count">(${p.reviews})</span></div>
                   <div class="p-prices">
-                    <span class="price-now">${fmt(p.price)}</span>
-                    ${isDiscounted ? `
-                      <span class="price-was">${fmt(p.mrp)}</span>
-                      <span class="price-off">${off}% OFF</span>
-                    ` : ''}
+                    ${p.priceOnRequest ? `
+                      <span class="price-now" style="font-size: 1.25rem; font-weight:700; color:var(--color-secondary);">Price on Request</span>
+                    ` : `
+                      <span class="price-now">${fmt(p.price)}</span>
+                      ${isDiscounted ? `
+                        <span class="price-was">${fmt(p.mrp)}</span>
+                        <span class="price-off">${off}% OFF</span>
+                      ` : ''}
+                    `}
                   </div>
                 </div>
               </div>`;
@@ -472,6 +527,16 @@ function renderProducts(filter) {
       saveState();
       updateCounts();
       renderProducts(currentFilter);
+    });
+  });
+
+  container.querySelectorAll('.inquire-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = +btn.closest('.p-card').dataset.id;
+      const product = getFullCatalog().find(x => x.id === id);
+      const text = `Hi VFS Jewels, I would like to inquire about the price of Kada: ${product.name} (SKU: ZU1-${product.id}).`;
+      window.open(`https://api.whatsapp.com/send?phone=919840757363&text=${encodeURIComponent(text)}`, '_blank');
     });
   });
 
@@ -751,7 +816,7 @@ $('#searchInput').addEventListener('input', (e) => {
     ? matches.map(p => `
         <div class="sr-item" data-sr="${p.id}">
           <img class="sr-img" src="${p.img}" alt="${p.name}">
-          <div class="sr-info"><h4>${p.name}</h4><span>${fmt(p.price)}</span></div>
+          <div class="sr-info"><h4>${p.name}</h4><span>${p.priceOnRequest ? 'Price on Request' : fmt(p.price)}</span></div>
         </div>`).join('')
     : '<div style="padding:16px;text-align:center;color:#999;font-size:1.3rem">No results found</div>';
 
@@ -1150,11 +1215,15 @@ function openPDP(id) {
     <h1 class="pdp-title">${p.name} ( ${sku} )</h1>
     
     <div class="pdp-price-box">
-      <span class="pdp-price-now">${fmt(p.price)}</span>
-      ${isDiscounted ? `
-        <span class="pdp-price-was">${fmt(p.mrp)}</span>
-        <span class="pdp-price-off">${off}% OFF</span>
-      ` : ''}
+      ${p.priceOnRequest ? `
+        <span class="pdp-price-now" style="font-size: 1.8rem; font-weight:700; color:var(--color-secondary);">Price on Request</span>
+      ` : `
+        <span class="pdp-price-now">${fmt(p.price)}</span>
+        ${isDiscounted ? `
+          <span class="pdp-price-was">${fmt(p.mrp)}</span>
+          <span class="pdp-price-off">${off}% OFF</span>
+        ` : ''}
+      `}
     </div>
     
     <div class="pdp-swipe-helper">
@@ -1163,14 +1232,20 @@ function openPDP(id) {
     </div>
     
     <div class="pdp-qty-cart-row">
-      <div class="pdp-qty-selector">
-        <button id="pdpQtyDec" class="pdp-qty-btn">−</button>
-        <input type="number" id="pdpQtyInput" class="pdp-qty-input" value="1" min="1" readonly>
-        <button id="pdpQtyInc" class="pdp-qty-btn">+</button>
-      </div>
-      <button class="pdp-btn-add-new" id="pdpBtnAdd" data-id="${p.id}">
-        ADD TO CART
-      </button>
+      ${p.priceOnRequest ? `
+        <button class="pdp-btn-add-new" id="pdpBtnAdd" data-id="${p.id}" style="width: 100%; background: #25D366; border-color: #25D366; color: #fff;">
+          REQUEST PRICE ON WHATSAPP
+        </button>
+      ` : `
+        <div class="pdp-qty-selector">
+          <button id="pdpQtyDec" class="pdp-qty-btn">−</button>
+          <input type="number" id="pdpQtyInput" class="pdp-qty-input" value="1" min="1" readonly>
+          <button id="pdpQtyInc" class="pdp-qty-btn">+</button>
+        </div>
+        <button class="pdp-btn-add-new" id="pdpBtnAdd" data-id="${p.id}">
+          ADD TO CART
+        </button>
+      `}
     </div>
     
     <div class="pdp-wishlist-row">
@@ -1218,19 +1293,26 @@ function openPDP(id) {
   const btnDec = $('#pdpQtyDec');
   const btnInc = $('#pdpQtyInc');
   
-  btnDec.addEventListener('click', () => {
-    let currentVal = parseInt(qtyInput.value) || 1;
-    if (currentVal > 1) {
-      qtyInput.value = currentVal - 1;
-    }
-  });
-  
-  btnInc.addEventListener('click', () => {
-    let currentVal = parseInt(qtyInput.value) || 1;
-    qtyInput.value = currentVal + 1;
-  });
+  if (qtyInput && btnDec && btnInc) {
+    btnDec.addEventListener('click', () => {
+      let currentVal = parseInt(qtyInput.value) || 1;
+      if (currentVal > 1) {
+        qtyInput.value = currentVal - 1;
+      }
+    });
+    
+    btnInc.addEventListener('click', () => {
+      let currentVal = parseInt(qtyInput.value) || 1;
+      qtyInput.value = currentVal + 1;
+    });
+  }
 
   $('#pdpBtnAdd').addEventListener('click', () => {
+    if (p.priceOnRequest) {
+      const text = `Hi VFS Jewels, I would like to inquire about the price of Kada: ${p.name} (SKU: ZU1-${p.id}).`;
+      window.open(`https://api.whatsapp.com/send?phone=919840757363&text=${encodeURIComponent(text)}`, '_blank');
+      return;
+    }
     const isGiftChecked = $('#pdpGiftWrap').checked;
     const qty = parseInt(qtyInput.value) || 1;
     addToCart(p.id, qty);
