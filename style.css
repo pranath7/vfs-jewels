@@ -338,7 +338,7 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   margin-bottom: 14px;
 }
 
-.hero-text h1 {
+.hero-text h1, .hero-text h2 {
   font-family: var(--font-heading);
   font-size: 4.2rem;
   font-weight: 400;
