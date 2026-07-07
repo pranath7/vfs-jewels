@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vfs-storefront-v25';
+const CACHE_NAME = 'vfs-storefront-v26';
 const ASSETS = [
   '/',
   '/index.html',
@@ -27,7 +27,16 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Serve from cache first, fallback to network
+  // Bypass caching for Firestore DB sync, CDN APIs, and non-GET writes
+  if (
+    e.request.method !== 'GET' || 
+    e.request.url.includes('googleapis.com') || 
+    e.request.url.includes('firebaseio.com') ||
+    e.request.url.includes('api.cloudinary.com')
+  ) {
+    return; // Pass through to network natively
+  }
+
   e.respondWith(
     caches.match(e.request).then(cached => {
       return cached || fetch(e.request).then(res => {

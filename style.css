@@ -3288,3 +3288,32 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   color: var(--color-primary);
   border-color: var(--color-secondary);
 }
+
+/* === PERFORMANCE OPTIMIZATIONS === */
+
+/* content-visibility skips layout & rendering of below-the-fold content until visible */
+.trust-section,
+.google-reviews-marquee-section,
+.banners-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 300px;
+}
+
+/* GPU Hardware Acceleration for buttery-smooth animations and zero-lag draws */
+.dw,
+.modal-bg,
+.pdp-overlay,
+.search-overlay {
+  will-change: transform, opacity;
+  transform: translateZ(0); /* Force 3D composition layer */
+}
+
+/* Optimize scroll rows to run at high refresh rate */
+.product-row-scroll {
+  will-change: transform;
+  -webkit-overflow-scrolling: touch; /* Inertial scroll for iOS */
+}
+
+.hero-slide {
+  will-change: opacity;
+}
