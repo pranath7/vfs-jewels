@@ -1,4 +1,4 @@
-const CACHE = 'vfs-admin-v5';
+const CACHE = 'vfs-admin-v6';
 const ASSETS = [
   '/admin/admin.html',
   '/admin/admin.css',
