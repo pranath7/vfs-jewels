@@ -491,8 +491,8 @@ $$('.cat-item').forEach(el => {
   });
 });
 
-// Mega menu filter links
-$$('.mega-menu a[data-filter]').forEach(a => {
+// All links with data-filter attributes
+$$('a[data-filter]').forEach(a => {
   a.addEventListener('click', (e) => {
     e.preventDefault();
     currentFilter = a.dataset.filter;

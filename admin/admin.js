@@ -521,10 +521,8 @@ window.renderSearchCatalog = function() {
                   <div class="edit-group">
                     <label>Category</label>
                     <select id="editCat_${p.id}">
-                      <option value="rings" ${p.cat === 'rings' ? 'selected' : ''}>Rings</option>
-                      <option value="earrings" ${p.cat === 'earrings' ? 'selected' : ''}>Earrings</option>
-                      <option value="necklaces" ${p.cat === 'necklaces' ? 'selected' : ''}>Necklaces</option>
-                      <option value="bracelets" ${p.cat === 'bracelets' ? 'selected' : ''}>Bracelets</option>
+                      <option value="kadas" ${p.cat === 'kadas' ? 'selected' : ''}>Kadas</option>
+                      <option value="chains" ${p.cat === 'chains' ? 'selected' : ''}>Chains</option>
                     </select>
                   </div>
                 </div>
@@ -1485,10 +1483,8 @@ function renderSingleProductForm() {
         <div class="form-group">
           <label>Category</label>
           <select id="singCategory" onchange="toggleCustomCategoryInput('sing', this)" required>
-            <option value="rings">Rings</option>
-            <option value="earrings">Earrings</option>
-            <option value="necklaces">Necklaces</option>
-            <option value="bracelets">Bracelets</option>
+            <option value="kadas">Kadas</option>
+            <option value="chains">Chains</option>
             <option value="__new__">+ Add New Category</option>
           </select>
           <input type="text" id="singCustomCategory" placeholder="Enter Category Name" style="display:none; margin-top:8px;">
@@ -1530,10 +1526,8 @@ function renderBulkProductsForm() {
         <div class="form-group">
           <label>Category</label>
           <select class="bulk-category" data-idx="${idx}" onchange="toggleCustomCategoryInput('bulk_${idx}', this)" required>
-            <option value="rings">Rings</option>
-            <option value="earrings">Earrings</option>
-            <option value="necklaces">Necklaces</option>
-            <option value="bracelets">Bracelets</option>
+            <option value="kadas">Kadas</option>
+            <option value="chains">Chains</option>
             <option value="__new__">+ Add New Category</option>
           </select>
           <input type="text" class="bulk-custom-category" id="bulkCustomCategory_${idx}" placeholder="Enter Category Name" style="display:none; margin-top:8px;">
@@ -1805,6 +1799,8 @@ function generateProductDescription(title, category) {
   ];
   
   const details = {
+    kadas: "Handcrafted with premium gold plating, this designer Kada features a secure closure and a sleek, comfortable fit for all-day wear.",
+    chains: "Finely crafted with premium daily-wear styling, this anti-tarnish chain offers high durability and is perfect for standalone wear or layering.",
     rings: "Precision-cast with a comfort-fit inner band, it features a brilliant, multi-faceted CZ crystal centerpiece that captures light beautifully like a real diamond.",
     earrings: "Hand-set with high-clarity Austrian crystals, they feature a lightweight, skin-safe hypoallergenic post designed for comfortable, all-day wear.",
     necklaces: "Featuring a dainty chain paired with a high-finish gold-plated pendant, it is designed for effortless layering.",
