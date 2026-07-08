@@ -3305,7 +3305,6 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .pdp-overlay,
 .search-overlay {
   will-change: transform, opacity;
-  transform: translateZ(0); /* Force 3D composition layer */
 }
 
 /* Optimize scroll rows to run at high refresh rate */
