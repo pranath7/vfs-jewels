@@ -286,6 +286,11 @@ const $$ = (sel) => document.querySelectorAll(sel);
 const fmt = (n) => '₹' + n.toLocaleString('en-IN');
 const pct = (price, mrp) => Math.round(((mrp - price) / mrp) * 100);
 const stars = (r) => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '');
+const clOpt = (url, width) => {
+  if (!url || !url.includes('cloudinary.com')) return url;
+  if (url.includes('/f_auto')) return url;
+  return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width}/`);
+};
 
 function saveState() {
   localStorage.setItem('vfs_cart', JSON.stringify(cart));
@@ -395,7 +400,7 @@ function renderProducts(filter) {
     const trackHtml = `
       <div class="category-track-row" data-category="${cat}">
         <!-- Category Banner -->
-        <div class="category-banner" style="background-image: url('${bannerInfo.img}')">
+        <div class="category-banner" style="background-image: url('${clOpt(bannerInfo.img, 1200)}')">
           <div class="category-banner-overlay">
             <h2>${bannerInfo.title}</h2>
             <p>${bannerInfo.desc}</p>
@@ -415,7 +420,7 @@ function renderProducts(filter) {
                   <svg viewBox="0 0 24 24" fill="${isWL ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
                 </button>
                 <div class="p-img">
-                  <img src="${p.img}" alt="${p.name}" loading="lazy">
+                  <img src="${clOpt(p.img, 400)}" alt="${p.name}" loading="lazy">
                   ${p.priceOnRequest ? `
                     <div class="p-quick inquire-btn" style="background:#25D366;color:#fff;">Request Price</div>
                   ` : `
@@ -525,7 +530,7 @@ function loadNextBatch(cat, list, scrollRow) {
           <svg viewBox="0 0 24 24" fill="${isWL ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
         </button>
         <div class="p-img">
-          <img src="${p.img}" alt="${p.name}" loading="lazy">
+          <img src="${clOpt(p.img, 400)}" alt="${p.name}" loading="lazy">
           ${p.priceOnRequest ? `
             <div class="p-quick inquire-btn" style="background:#25D366;color:#fff;">Request Price</div>
           ` : `
@@ -665,7 +670,7 @@ function renderCart() {
     total += p.price * ci.qty;
     return `
       <div class="dw-item" data-id="${p.id}">
-        <img class="dw-item-img dw-pdp-link" src="${p.img}" alt="${p.name}" style="cursor:pointer">
+        <img class="dw-item-img dw-pdp-link" src="${clOpt(p.img, 150)}" alt="${p.name}" style="cursor:pointer">
         <div>
           <div class="dw-item-meta">${p.meta}</div>
           <div class="dw-item-name dw-pdp-link" style="cursor:pointer">${p.name}</div>
@@ -735,7 +740,7 @@ function renderWishlist() {
     if (!p) return '';
     return `
       <div class="dw-item" data-id="${p.id}">
-        <img class="dw-item-img dw-pdp-link" src="${p.img}" alt="${p.name}" style="cursor:pointer">
+        <img class="dw-item-img dw-pdp-link" src="${clOpt(p.img, 150)}" alt="${p.name}" style="cursor:pointer">
         <div>
           <div class="dw-item-meta">${p.meta}</div>
           <div class="dw-item-name dw-pdp-link" style="cursor:pointer">${p.name}</div>
@@ -868,7 +873,7 @@ $('#searchInput').addEventListener('input', (e) => {
   results.innerHTML = matches.length
     ? matches.map(p => `
         <div class="sr-item" data-sr="${p.id}">
-          <img class="sr-img" src="${p.img}" alt="${p.name}">
+          <img class="sr-img" src="${clOpt(p.img, 150)}" alt="${p.name}">
           <div class="sr-info"><h4>${p.name}</h4><span>${p.priceOnRequest ? 'Price on Request' : fmt(p.price)}</span></div>
         </div>`).join('')
     : '<div style="padding:16px;text-align:center;color:#999;font-size:1.3rem">No results found</div>';
@@ -1222,7 +1227,7 @@ function openPDP(id) {
   mainImgContainer.innerHTML = `
     <div class="pdp-images-slider" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; width:100%; height:100%; scrollbar-width:none; -ms-overflow-style:none;">
       ${images.map((imgSrc, idx) => `
-        <img src="${imgSrc}" alt="${p.name} - Image ${idx+1}" style="flex:0 0 100%; width:100%; height:100%; object-fit:contain; scroll-snap-align:start; background:#fff;">
+        <img src="${clOpt(imgSrc, 800)}" alt="${p.name} - Image ${idx+1}" style="flex:0 0 100%; width:100%; height:100%; object-fit:contain; scroll-snap-align:start; background:#fff;">
       `).join('')}
     </div>
   `;
@@ -1480,7 +1485,7 @@ function openPDP(id) {
       <div class="tinder-badge dislike">NOPE</div>
       <div class="tinder-badge like">LIKE</div>
       <div class="tinder-img-box">
-        <img src="${product.img}" alt="${product.name}">
+        <img src="${clOpt(product.img, 450)}" alt="${product.name}">
       </div>
       <div class="tinder-card-info">
         <div>
