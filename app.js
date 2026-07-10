@@ -457,6 +457,48 @@ function renderProducts(filter) {
       });
     }
   });
+
+  // Attach action event listeners to both wishlists, quick adds, and pdp modal triggers
+  container.querySelectorAll('[data-wl]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = +btn.dataset.wl;
+      if (wishlist.includes(id)) {
+        wishlist = wishlist.filter(x => x !== id);
+        toast('Removed from wishlist');
+      } else {
+        wishlist.push(id);
+        toast('Added to wishlist ♡');
+      }
+      saveState();
+      updateCounts();
+      renderProducts(currentFilter);
+    });
+  });
+
+  container.querySelectorAll('.inquire-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = +btn.closest('.p-card').dataset.id;
+      const product = getFullCatalog().find(x => x.id === id);
+      const text = `Hi VFS Jewels, I would like to inquire about the price of Kada: ${product.name} (SKU: ZU1-${product.id}).`;
+      window.open(`https://api.whatsapp.com/send?phone=919840757363&text=${encodeURIComponent(text)}`, '_blank');
+    });
+  });
+
+  container.querySelectorAll('[data-add]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      addToCart(+btn.dataset.add);
+    });
+  });
+
+  container.querySelectorAll('.p-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = +card.dataset.id;
+      openPDP(id);
+    });
+  });
 }
 
 // ── Horizontal Infinite Scroll: Load and append next batch of items ──
@@ -558,50 +600,6 @@ function loadNextBatch(cat, list, scrollRow) {
     }
 
     // 4. Click card to open modal details
-    card.addEventListener('click', () => {
-      const id = +card.dataset.id;
-      openPDP(id);
-    });
-  });
-}
-
-
-  // Attach action event listeners to both wishlists, quick adds, and pdp modal triggers
-  container.querySelectorAll('[data-wl]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = +btn.dataset.wl;
-      if (wishlist.includes(id)) {
-        wishlist = wishlist.filter(x => x !== id);
-        toast('Removed from wishlist');
-      } else {
-        wishlist.push(id);
-        toast('Added to wishlist ♡');
-      }
-      saveState();
-      updateCounts();
-      renderProducts(currentFilter);
-    });
-  });
-
-  container.querySelectorAll('.inquire-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = +btn.closest('.p-card').dataset.id;
-      const product = getFullCatalog().find(x => x.id === id);
-      const text = `Hi VFS Jewels, I would like to inquire about the price of Kada: ${product.name} (SKU: ZU1-${product.id}).`;
-      window.open(`https://api.whatsapp.com/send?phone=919840757363&text=${encodeURIComponent(text)}`, '_blank');
-    });
-  });
-
-  container.querySelectorAll('[data-add]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      addToCart(+btn.dataset.add);
-    });
-  });
-
-  container.querySelectorAll('.p-card').forEach(card => {
     card.addEventListener('click', () => {
       const id = +card.dataset.id;
       openPDP(id);
