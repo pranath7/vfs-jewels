@@ -345,6 +345,10 @@ window.addEventListener('scroll', () => {
   setInterval(() => goSlide((cur + 1) % slides.length), 5000);
 })();
 
+// ── State for Lazy Loading / Horizontal Infinite Scroll ──
+const LOADED_COUNTS = {};
+const BATCH_SIZE = 12;
+
 // ── Render Product Grid (Horizontal Scrolling Categories) ──
 function renderProducts(filter) {
   const container = $('#categoryTracksContainer');
@@ -377,6 +381,10 @@ function renderProducts(filter) {
     const list = fullCatalog.filter(p => p.cat === cat);
     if (list.length === 0) return;
 
+    // Reset loaded count for this category when full catalog renders/filters
+    LOADED_COUNTS[cat] = BATCH_SIZE;
+    const visibleList = list.slice(0, BATCH_SIZE);
+
     const bannerInfo = CATEGORY_BANNERS[cat] || { 
       title: cat.charAt(0).toUpperCase() + cat.slice(1) + " Collection", 
       desc: "Premium handcrafted VFS creations.", 
@@ -395,7 +403,7 @@ function renderProducts(filter) {
         
         <!-- Horizontal Scroll Row -->
         <div class="product-row-scroll" id="scrollRow_${cat}">
-          ${list.map(p => {
+          ${visibleList.map(p => {
             const isWL = wishlist.includes(p.id);
             const isDiscounted = p.mrp && p.mrp > p.price;
             const off = isDiscounted ? pct(p.price, p.mrp) : 0;
@@ -435,7 +443,128 @@ function renderProducts(filter) {
       </div>
     `;
     container.insertAdjacentHTML('beforeend', trackHtml);
+
+    // Attach horizontal scroll listener for lazy loading (infinite scroll)
+    const scrollRow = document.getElementById(`scrollRow_${cat}`);
+    if (scrollRow) {
+      scrollRow.addEventListener('scroll', () => {
+        // If scrolled within 300px of the right end, load the next batch
+        if (scrollRow.scrollLeft + scrollRow.clientWidth >= scrollRow.scrollWidth - 300) {
+          if ((LOADED_COUNTS[cat] || BATCH_SIZE) < list.length) {
+            loadNextBatch(cat, list, scrollRow);
+          }
+        }
+      });
+    }
   });
+}
+
+// ── Horizontal Infinite Scroll: Load and append next batch of items ──
+function loadNextBatch(cat, list, scrollRow) {
+  const currentCount = LOADED_COUNTS[cat] || BATCH_SIZE;
+  if (currentCount >= list.length) return;
+
+  const nextCount = currentCount + BATCH_SIZE;
+  LOADED_COUNTS[cat] = nextCount;
+
+  const newItems = list.slice(currentCount, nextCount);
+  const newCardElements = [];
+
+  newItems.forEach(p => {
+    const isWL = wishlist.includes(p.id);
+    const isDiscounted = p.mrp && p.mrp > p.price;
+    const off = isDiscounted ? pct(p.price, p.mrp) : 0;
+    
+    const cardHtml = `
+      <div class="p-card" data-id="${p.id}">
+        ${p.badge ? `<span class="p-badge${p.badge === 'Sale' ? ' sale' : ''}">${p.badge}</span>` : ''}
+        <button class="p-wish${isWL ? ' active' : ''}" data-wl="${p.id}" aria-label="Wishlist">
+          <svg viewBox="0 0 24 24" fill="${isWL ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
+        </button>
+        <div class="p-img">
+          <img src="${p.img}" alt="${p.name}" loading="lazy">
+          ${p.priceOnRequest ? `
+            <div class="p-quick inquire-btn" style="background:#25D366;color:#fff;">Request Price</div>
+          ` : `
+            <div class="p-quick" data-add="${p.id}">Add to Cart</div>
+          `}
+        </div>
+        <div class="p-info">
+          <div class="p-meta">${p.meta}</div>
+          <div class="p-name">${p.name}</div>
+          <div class="p-rating"><span class="stars">${stars(p.rating)}</span><span class="count">(${p.reviews})</span></div>
+          <div class="p-prices">
+            ${p.priceOnRequest ? `
+              <span class="price-now" style="font-size: 1.25rem; font-weight:700; color:var(--color-secondary);">Price on Request</span>
+            ` : `
+              <span class="price-now">${fmt(p.price)}</span>
+              ${isDiscounted ? `
+                <span class="price-was">${fmt(p.mrp)}</span>
+                <span class="price-off">${off}% OFF</span>
+              ` : ''}
+            `}
+          </div>
+        </div>
+      </div>
+    `;
+    
+    const cardWrapper = document.createElement('div');
+    cardWrapper.innerHTML = cardHtml.trim();
+    const cardEl = cardWrapper.firstChild;
+    scrollRow.appendChild(cardEl);
+    newCardElements.push(cardEl);
+  });
+
+  // Bind local event listeners to the dynamically appended cards
+  newCardElements.forEach(card => {
+    // 1. Wishlist button
+    const wlBtn = card.querySelector('[data-wl]');
+    if (wlBtn) {
+      wlBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = +wlBtn.dataset.wl;
+        if (wishlist.includes(id)) {
+          wishlist = wishlist.filter(x => x !== id);
+          toast('Removed from wishlist');
+        } else {
+          wishlist.push(id);
+          toast('Added to wishlist ♡');
+        }
+        saveState();
+        updateCounts();
+        renderProducts(currentFilter);
+      });
+    }
+
+    // 2. Inquire button
+    const inquireBtn = card.querySelector('.inquire-btn');
+    if (inquireBtn) {
+      inquireBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = +card.dataset.id;
+        const product = getFullCatalog().find(x => x.id === id);
+        const text = `Hi VFS Jewels, I would like to inquire about the price of Kada: ${product.name} (SKU: ZU1-${product.id}).`;
+        window.open(`https://api.whatsapp.com/send?phone=919840757363&text=${encodeURIComponent(text)}`, '_blank');
+      });
+    }
+
+    // 3. Add to cart button
+    const addBtn = card.querySelector('[data-add]');
+    if (addBtn) {
+      addBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        addToCart(+addBtn.dataset.add);
+      });
+    }
+
+    // 4. Click card to open modal details
+    card.addEventListener('click', () => {
+      const id = +card.dataset.id;
+      openPDP(id);
+    });
+  });
+}
+
 
   // Attach action event listeners to both wishlists, quick adds, and pdp modal triggers
   container.querySelectorAll('[data-wl]').forEach(btn => {
