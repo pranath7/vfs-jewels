@@ -231,7 +231,8 @@ function getFullCatalog() {
 
 const CATEGORY_BANNERS = {
   kadas: { title: "Kadas Collection", desc: "Premium handcrafted daily-wear gold plated Kadas.", img: "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg" },
-  chains: { title: "Chains Collection", desc: "Classic and luxury gold-plated chains and necklaces.", img: "https://res.cloudinary.com/cwx4zame/image/upload/v1783178938/vza7byllycs7nmz8bwdq.jpg" }
+  chains: { title: "Chains Collection", desc: "Classic and luxury gold-plated chains and necklaces.", img: "https://res.cloudinary.com/cwx4zame/image/upload/v1783178938/vza7byllycs7nmz8bwdq.jpg" },
+  earrings: { title: "Ear Rings Collection", desc: "Dazzling handcrafted ear rings for every occasion.", img: "https://res.cloudinary.com/cwx4zame/image/upload/v1783694425/kuk50yyh9yzosthcsxkk.png" }
 };
 
 const TESTIMONIALS = [
@@ -366,7 +367,7 @@ function renderProducts(filter) {
     categories = Array.from(uniqueCats);
     
     // Sort standard ones first
-    const standardOrder = ['kadas', 'chains'];
+    const standardOrder = ['kadas', 'chains', 'earrings'];
     categories.sort((a, b) => {
       const idxA = standardOrder.indexOf(a);
       const idxB = standardOrder.indexOf(b);
@@ -1670,7 +1671,7 @@ function openPDP(id) {
     
     const optionsContainer = $('#catShiftOptions');
     // Get unique categories and filter out current
-    const standardCategories = ['kadas', 'chains'];
+    const standardCategories = ['kadas', 'chains', 'earrings'];
     const otherCats = standardCategories.filter(c => c !== swiperCategory);
     
     optionsContainer.innerHTML = otherCats.map(cat => `
@@ -2740,8 +2741,7 @@ function populateDrawerCategories() {
       document.body.style.overflow = '';
       
       // Filter products by category
-      const filtered = getFullCatalog().filter(p => p.cat.toLowerCase() === cat.toLowerCase());
-      renderProducts(filtered);
+      renderProducts(cat);
       
       // Scroll to catalog section
       const target = document.getElementById('products');
