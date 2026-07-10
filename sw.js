@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vfs-storefront-v28';
+const CACHE_NAME = 'vfs-storefront-v29';
 const ASSETS = [
   '/',
   '/index.html',
