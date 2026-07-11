@@ -975,6 +975,8 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   transform: scale(0.95);
   transition: transform 0.3s ease;
   position: relative;
+  max-height: 90dvh;
+  overflow-y: auto;
 }
 .modal-bg.active .pin-modal { transform: scale(1); }
 
@@ -2645,6 +2647,8 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
     width: 95% !important;
     padding: 35px;
     box-sizing: border-box;
+    max-height: 90dvh !important;
+    overflow-y: auto !important;
 }
 
 .checkout-modal-card input,
