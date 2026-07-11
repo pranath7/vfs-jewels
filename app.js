@@ -1455,10 +1455,11 @@ function openCheckout() {
   }
   
   if (shoppingMode === 'wholesale') {
+    const fullCatalog = getFullCatalog();
     const subtotal = cart.reduce((sum, item) => {
-      const p = getProduct(item.id);
+      const p = fullCatalog.find(x => x.id === item.id);
       if (!p) return sum;
-      const price = getWholesalePrice(p);
+      const price = getCurrentProductPrice(p);
       return sum + (price * item.qty);
     }, 0);
     
