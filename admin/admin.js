@@ -334,6 +334,59 @@ window.VFS_DB = {
     }
   },
 
+  // ── Reviews ──
+  getReviews: async function() {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        const snap = await window.db.collection('reviews').get();
+        const reviews = [];
+        snap.forEach(doc => {
+          reviews.push(doc.data());
+        });
+        return reviews;
+      } catch(e) {
+        console.error("Firestore read reviews error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_reviews');
+    return local ? JSON.parse(local) : [];
+  },
+
+  saveReview: async function(review) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        await window.db.collection('reviews').doc(review.id).set(review);
+        return;
+      } catch(e) {
+        console.error("Firestore write review error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_reviews');
+    let list = local ? JSON.parse(local) : [];
+    list.push(review);
+    localStorage.setItem('vfs_reviews', JSON.stringify(list));
+  },
+
+  updateReview: async function(reviewId, updates) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        await window.db.collection('reviews').doc(reviewId).update(updates);
+        return;
+      } catch(e) {
+        console.error("Firestore update review error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_reviews');
+    if (local) {
+      const list = JSON.parse(local);
+      const idx = list.findIndex(r => r.id === reviewId);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...updates };
+        localStorage.setItem('vfs_reviews', JSON.stringify(list));
+      }
+    }
+  },
+
   // ── Wallet Credits ──
   getWalletCredits: async function() {
     if (window.VFS_CLOUD_ACTIVE) {
@@ -647,12 +700,17 @@ function updateHeaderTitles() {
   const subtitle = $('#tabSubtitle');
   const kpis = $('#globalKpis');
   const smsPanel = $('#smsLogPanel');
+  const courierStats = $('#courierDistributionArea');
   
+  const isAltTab = (activeTab === 'catalog' || activeTab === 'search' || activeTab === 'returns' || activeTab === 'moderation');
   if (kpis) {
-    kpis.style.display = (activeTab === 'catalog' || activeTab === 'search' || activeTab === 'returns') ? 'none' : 'grid';
+    kpis.style.display = isAltTab ? 'none' : 'grid';
   }
   if (smsPanel) {
-    smsPanel.style.display = (activeTab === 'catalog' || activeTab === 'search' || activeTab === 'returns') ? 'none' : 'block';
+    smsPanel.style.display = isAltTab ? 'none' : 'block';
+  }
+  if (courierStats) {
+    courierStats.style.display = isAltTab ? 'none' : 'flex';
   }
   
   if (activeTab === 'unpaid') {
@@ -673,6 +731,9 @@ function updateHeaderTitles() {
   } else if (activeTab === 'returns') {
     title.textContent = 'Return Queries';
     subtitle.textContent = 'Verify unboxing videos and invoice screenshots to approve returns and credit points.';
+  } else if (activeTab === 'moderation') {
+    title.textContent = 'Reviews & Reels Moderation';
+    subtitle.textContent = 'Moderator panel to approve or reject video/photo reviews before publishing.';
   }
 }
 
@@ -681,10 +742,66 @@ $('#productSearchInput').addEventListener('input', () => {
   renderSearchCatalog();
 });
 
+// Attach courier filter change
+const courierFilterSelect = $('#courierFilterSelect');
+if (courierFilterSelect) {
+  courierFilterSelect.addEventListener('change', () => {
+    loadDashboard();
+  });
+}
+
 // ── Load / Render Orders Data ──
 async function loadDashboard() {
   const ordersList = await window.VFS_DB.getOrders();
   
+  // Normalize and backport legacy order statuses
+  ordersList.forEach(order => {
+    if (!order.status) {
+      order.status = order.trackingId ? 'dispatched' : 'unpaid';
+    } else if (order.status === 'paid' && order.trackingId) {
+      order.status = 'dispatched';
+    }
+  });
+
+  // Calculate Courier distribution (on all orders)
+  let countDTDC = 0;
+  let countST = 0;
+  let countFedEx = 0;
+  let countOthers = 0;
+
+  ordersList.forEach(order => {
+    const c = (order.carrier || '').trim().toLowerCase();
+    if (c === 'dtdc') countDTDC++;
+    else if (c === 'st courier') countST++;
+    else if (c === 'fedex') countFedEx++;
+    else countOthers++;
+  });
+
+  const statDTDC = $('#statDTDC');
+  const statST = $('#statST');
+  const statFedEx = $('#statFedEx');
+  const statOthers = $('#statOthers');
+  if (statDTDC) statDTDC.textContent = countDTDC;
+  if (statST) statST.textContent = countST;
+  if (statFedEx) statFedEx.textContent = countFedEx;
+  if (statOthers) statOthers.textContent = countOthers;
+
+  // Filter based on selected Courier Filter
+  const selectedFilter = ($('#courierFilterSelect')?.value || 'all');
+  let filteredOrders = ordersList;
+  if (selectedFilter !== 'all') {
+    filteredOrders = ordersList.filter(order => {
+      const c = (order.carrier || '').trim().toLowerCase();
+      if (selectedFilter === 'DTDC') return c === 'dtdc';
+      if (selectedFilter === 'ST Courier') return c === 'st courier';
+      if (selectedFilter === 'FedEx') return c === 'fedex';
+      if (selectedFilter === 'others') {
+        return c !== 'dtdc' && c !== 'st courier' && c !== 'fedex';
+      }
+      return true;
+    });
+  }
+
   // Calculate KPIs
   let totalSales = 0;
   let paidCount = 0;
@@ -699,19 +816,18 @@ async function loadDashboard() {
   paidContainer.innerHTML = '';
   shippedContainer.innerHTML = '';
   
-  ordersList.forEach(order => {
-    if (order.status === 'paid') {
-      totalSales += order.total;
-      if (order.trackingId) {
-        shippedCount++;
-        renderOrderCard(order, shippedContainer);
-      } else {
-        paidCount++;
-        renderOrderCard(order, paidContainer);
-      }
-    } else {
+  filteredOrders.forEach(order => {
+    if (order.status === 'unpaid') {
       unpaidCount++;
       renderOrderCard(order, unpaidContainer);
+    } else if (order.status === 'paid') {
+      totalSales += order.total;
+      paidCount++;
+      renderOrderCard(order, paidContainer);
+    } else if (order.status === 'dispatched' || order.status === 'delivered') {
+      totalSales += order.total;
+      shippedCount++;
+      renderOrderCard(order, shippedContainer);
     }
   });
   
@@ -734,6 +850,7 @@ async function loadDashboard() {
   }
   
   loadReturnQueries();
+  loadReviewsModeration();
 }
 
 function renderOrderCard(order, container) {
@@ -777,27 +894,39 @@ function renderOrderCard(order, container) {
         </button>
         <button class="btn-card-danger" onclick="deleteOrder('${order.id}')">Delete Order</button>
       </div>
+    ` : order.status === 'paid' ? `
+      <div class="card-actions">
+        <button class="btn-card-primary" onclick="openScanner('${order.id}')">Scan Barcode</button>
+        <button class="btn-card-secondary" onclick="printInvoice('${order.id}')">Print Invoice</button>
+        <button class="btn-card-whatsapp" onclick="shareOnWhatsApp('${order.id}')" style="grid-column: 1 / -1">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.46h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Send Receipt
+        </button>
+        <button class="btn-card-danger" onclick="deleteOrder('${order.id}')">Delete Order</button>
+      </div>
+    ` : order.status === 'dispatched' ? `
+      <div class="card-actions">
+        <div class="card-tracking-assigned" style="grid-column: 1 / -1; margin-bottom: 6px;">
+          <strong>Shipped via ${escapeHtml(order.carrier)}</strong><br>
+          Tracking ID: <code>${escapeHtml(order.trackingId)}</code>
+        </div>
+        <button class="btn-card-primary" onclick="markOrderDelivered('${order.id}')" style="background:#27ae60; border-color:#27ae60;">Mark Delivered</button>
+        <button class="btn-card-secondary" onclick="printInvoice('${order.id}')">Print Invoice</button>
+        <button class="btn-card-whatsapp" onclick="shareOnWhatsApp('${order.id}')" style="grid-column: 1 / -1">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.46h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Send WhatsApp
+        </button>
+      </div>
     ` : `
       <div class="card-actions">
-        ${order.trackingId ? `
-          <div class="card-tracking-assigned" style="grid-column: 1 / -1; margin-bottom: 6px;">
-            <strong>Shipped via ${escapeHtml(order.carrier)}</strong><br>
-            Tracking ID: <code>${escapeHtml(order.trackingId)}</code>
-          </div>
-          <button class="btn-card-primary" onclick="printInvoice('${order.id}')">Print Invoice</button>
-          <button class="btn-card-whatsapp" onclick="shareOnWhatsApp('${order.id}')">
-            <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.46h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            Send WhatsApp
-          </button>
-        ` : `
-          <button class="btn-card-primary" onclick="openScanner('${order.id}')">Scan Barcode</button>
-          <button class="btn-card-secondary" onclick="printInvoice('${order.id}')">Print Invoice</button>
-          <button class="btn-card-whatsapp" onclick="shareOnWhatsApp('${order.id}')" style="grid-column: 1 / -1">
-            <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.46h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            Send Receipt
-          </button>
-        `}
-        <button class="btn-card-danger" onclick="deleteOrder('${order.id}')">Delete Order</button>
+        <div class="card-tracking-assigned" style="grid-column: 1 / -1; margin-bottom: 6px; background:#e8f8f0; color:#27ae60; border-color:#27ae60; font-weight:700; text-align:center;">
+          ✓ Delivered Successfully
+        </div>
+        <button class="btn-card-primary" onclick="printInvoice('${order.id}')">Print Invoice</button>
+        <button class="btn-card-whatsapp" onclick="shareOnWhatsApp('${order.id}')" style="grid-column: 1 / -1">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.46h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Send WhatsApp
+        </button>
       </div>
     `}
   `;
@@ -2074,4 +2203,107 @@ window.checkCustomerWalletCredits = async function() {
     Customer Phone: <strong>+91 ${phone}</strong><br>
     VFS Account Credit Points: <strong style="color:var(--color-secondary);font-size:1.6rem;">${fmt(credits)}</strong>
   `;
+};
+
+// Helper: Log outbound SMS simulations locally
+function logSimulatedSMS(phone, text) {
+  const smsLogBody = $('#smsLogBody');
+  if (!smsLogBody) return;
+  const placeholder = smsLogBody.querySelector('.sms-log-placeholder');
+  if (placeholder) placeholder.remove();
+  const time = new Date().toLocaleTimeString();
+  const entry = document.createElement('div');
+  entry.className = 'sms-log-entry';
+  entry.innerHTML = `
+    <span class="sms-time">${time}</span> to <strong>+91 ${phone}</strong>:<br>
+    <span class="sms-text">${escapeHtml(text)}</span>
+  `;
+  smsLogBody.appendChild(entry);
+  smsLogBody.scrollTop = smsLogBody.scrollHeight;
+}
+
+window.markOrderDelivered = async function(orderId) {
+  const ordersList = await window.VFS_DB.getOrders();
+  const order = ordersList.find(o => o.id === orderId);
+  if (order) {
+    await window.VFS_DB.updateOrder(orderId, { status: 'delivered' });
+    adminToast(`Order ${orderId} marked as Delivered! 📦✓`);
+    
+    // Log Simulated SMS
+    const smsMsg = `VFS Jewels: Your Order ${order.id} has been delivered. Thank you for shopping with us!`;
+    logSimulatedSMS(order.phone, smsMsg);
+    
+    await loadDashboard();
+  }
+};
+
+async function loadReviewsModeration() {
+  const moderationContainer = $('#listModeration');
+  const countBadge = $('#countModeration');
+  if (!moderationContainer) return;
+  moderationContainer.innerHTML = '';
+
+  const reviewsList = await window.VFS_DB.getReviews();
+  const pendingReviews = reviewsList.filter(r => r.status === 'pending');
+
+  if (countBadge) {
+    countBadge.textContent = pendingReviews.length;
+  }
+
+  if (pendingReviews.length === 0) {
+    moderationContainer.innerHTML = `<div style="text-align:center;color:var(--color-muted);padding:40px 10px;font-size:1.3rem;">No pending reviews for moderation</div>`;
+    return;
+  }
+
+  pendingReviews.forEach(rev => {
+    const card = document.createElement('div');
+    card.className = 'order-card';
+    card.style.borderLeft = '4px solid var(--color-secondary)';
+    
+    let mediaHtml = '';
+    if (rev.fileUrl) {
+      if (rev.fileType === 'video') {
+        mediaHtml = `
+          <div style="margin-top:10px;">
+            <video src="${rev.fileUrl}" style="max-width:100%; max-height:160px; border-radius:6px;" controls></video>
+          </div>`;
+      } else {
+        mediaHtml = `
+          <div style="margin-top:10px;">
+            <img src="${rev.fileUrl}" style="max-width:100%; max-height:160px; border-radius:6px; object-fit:cover;">
+          </div>`;
+      }
+    }
+    
+    card.innerHTML = `
+      <div class="card-top">
+        <span class="order-id">${escapeHtml(rev.id)}</span>
+        <span class="order-date">${escapeHtml(rev.date)}</span>
+      </div>
+      <div class="card-customer" style="margin-bottom:8px;">
+        <span class="cust-name">${escapeHtml(rev.name)}</span>
+        <span class="cust-details" style="color:var(--color-secondary); font-size:1.4rem;">${'★'.repeat(rev.rating)}${'☆'.repeat(5-rev.rating)}</span>
+      </div>
+      <p style="font-size:1.3rem; line-height:1.4; color:#333; margin-bottom:8px;">"${escapeHtml(rev.text)}"</p>
+      ${mediaHtml}
+      <div class="card-actions" style="margin-top:12px; display:flex; gap:8px;">
+        <button class="btn-card-primary" onclick="approveReview('${rev.id}')" style="background:#27ae60; border-color:#27ae60;">Approve</button>
+        <button class="btn-card-danger" onclick="rejectReview('${rev.id}')">Reject</button>
+      </div>
+    `;
+    moderationContainer.appendChild(card);
+  });
+}
+
+window.approveReview = async function(reviewId) {
+  await window.VFS_DB.updateReview(reviewId, { status: 'approved' });
+  adminToast('Review approved and published! 🎉');
+  await loadDashboard();
+};
+
+window.rejectReview = async function(reviewId) {
+  if (!confirm('Are you sure you want to reject and delete this review?')) return;
+  await window.VFS_DB.updateReview(reviewId, { status: 'rejected' });
+  adminToast('Review rejected and archived.', 'error');
+  await loadDashboard();
 };

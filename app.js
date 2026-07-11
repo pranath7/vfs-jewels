@@ -153,6 +153,59 @@ window.VFS_DB = {
     localStorage.setItem('vfs_returns', JSON.stringify(list));
   },
 
+  // ── Reviews ──
+  getReviews: async function() {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        const snap = await window.db.collection('reviews').get();
+        const reviews = [];
+        snap.forEach(doc => {
+          reviews.push(doc.data());
+        });
+        return reviews;
+      } catch(e) {
+        console.error("Firestore read reviews error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_reviews');
+    return local ? JSON.parse(local) : [];
+  },
+
+  saveReview: async function(review) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        await window.db.collection('reviews').doc(review.id).set(review);
+        return;
+      } catch(e) {
+        console.error("Firestore write review error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_reviews');
+    let list = local ? JSON.parse(local) : [];
+    list.push(review);
+    localStorage.setItem('vfs_reviews', JSON.stringify(list));
+  },
+
+  updateReview: async function(reviewId, updates) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        await window.db.collection('reviews').doc(reviewId).update(updates);
+        return;
+      } catch(e) {
+        console.error("Firestore update review error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_reviews');
+    if (local) {
+      const list = JSON.parse(local);
+      const idx = list.findIndex(r => r.id === reviewId);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...updates };
+        localStorage.setItem('vfs_reviews', JSON.stringify(list));
+      }
+    }
+  },
+
   // ── Wallet Credits ──
   getWalletCredits: async function() {
     if (window.VFS_CLOUD_ACTIVE) {
@@ -985,21 +1038,59 @@ function renderWishlist() {
 
 // ── Testimonials ──
 // ── Google Reviews Auto-Scroll Marquee ──
-function renderTestimonials() {
+async function renderTestimonials() {
   const container = $('#googleReviewsMarquee');
   if (!container) return;
   
+  let approvedReviews = [];
+  try {
+    const list = await window.VFS_DB.getReviews();
+    approvedReviews = list.filter(r => r.status === 'approved');
+  } catch(e) {
+    console.error("Failed to load custom testimonials:", e);
+  }
+
+  const customTestimonials = approvedReviews.map(r => ({
+    name: r.name,
+    text: r.text,
+    rating: r.rating || 5,
+    fileUrl: r.fileUrl,
+    fileType: r.fileType
+  }));
+
+  const allReviews = [...TESTIMONIALS, ...customTestimonials];
+  
   // Duplicate list to achieve continuous infinite scroll loop
-  const list = [...TESTIMONIALS, ...TESTIMONIALS];
-  container.innerHTML = list.map(t => `
-    <div class="review-marquee-card">
-      <div class="rev-card-head">
-        <span class="rev-card-name">${t.name}</span>
-        <span class="rev-card-badge">Verified Buyer</span>
-      </div>
-      <div class="rev-card-stars">★★★★★</div>
-      <div class="rev-card-text">"${t.text}"</div>
-    </div>`).join('');
+  const list = [...allReviews, ...allReviews];
+  container.innerHTML = list.map(t => {
+    let mediaHtml = '';
+    if (t.fileUrl) {
+      if (t.fileType === 'video') {
+        mediaHtml = `
+          <div style="margin-top: 8px; text-align: center;">
+            <video src="${t.fileUrl}" style="max-height: 80px; max-width: 100%; border-radius: 4px;" controls muted></video>
+          </div>`;
+      } else {
+        mediaHtml = `
+          <div style="margin-top: 8px; text-align: center;">
+            <img src="${t.fileUrl}" style="max-height: 80px; max-width: 100%; border-radius: 4px; object-fit: cover;">
+          </div>`;
+      }
+    }
+
+    const starsHtml = '★'.repeat(t.rating || 5) + '☆'.repeat(5 - (t.rating || 5));
+
+    return `
+      <div class="review-marquee-card" style="min-width: 220px; display: inline-block; vertical-align: top; margin-right: 15px;">
+        <div class="rev-card-head">
+          <span class="rev-card-name">${t.name}</span>
+          <span class="rev-card-badge">Verified Buyer</span>
+        </div>
+        <div class="rev-card-stars" style="color: var(--color-secondary);">${starsHtml}</div>
+        <div class="rev-card-text">"${t.text}"</div>
+        ${mediaHtml}
+      </div>`;
+  }).join('');
 }
 
 // ── Update Badge Counts ──
@@ -2456,51 +2547,101 @@ function handleReviewSubmit() {
   const modalBody = $('.rev-modal-body');
   if (!modalBody) return;
   
-  const savedStars = selectedReviewStars;
-  
-  modalBody.innerHTML = `
-    <div class="review-success-state" style="text-align:center; padding:30px 10px; animation: fadeUp 0.3s ease;">
-      <div style="width:60px; height:60px; border-radius:50%; background:#27ae60; color:#fff; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:3rem">✓</div>
-      <h3 style="font-size:2rem; margin-bottom:10px; color:#121212">Review Submitted!</h3>
-      <p style="font-size:1.35rem; color:#666; margin-bottom:20px; line-height:1.5">
-        Thank you for your rating of <strong>${savedStars} Stars</strong>.<br>
-        Redirecting you to Google to post it officially...
-      </p>
-    </div>
-  `;
-  
-  // Open google writereview in new tab
-  setTimeout(() => {
-    window.open('https://www.google.com/maps/place/VFS+JEWELS+%7C+Jewellery+Wholesaler/@13.0901146,80.2750305,17z/data=!3m1!4b1!4m6!3m5!1s0x3a526f9d5c41e319:0x29aceb97e623fc2a!8m2!3d13.0901094!4d80.2799014!16s%2Fg%2F11vt81tvl1?entry=ttu&g_ep=EgoyMDI2MDYyOS4wIKXMDSoASAFQAw%3D%3D', '_blank');
-    closeReviewModal();
-    // Reset modal content after closing transition finishes
+  const submitBtn = $('#submitReviewModal');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+  }
+
+  const nameVal = $('#modalReviewName').value.trim() || 'Anonymous';
+  const textVal = $('#modalReviewText').value.trim() || '';
+  const fileInput = $('#modalReviewFile');
+  const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+
+  let fileUrl = '';
+  let fileType = '';
+
+  const processSubmit = async () => {
+    const reviewId = 'rev-' + Math.floor(100000 + Math.random() * 900000);
+    const newReviewObj = {
+      id: reviewId,
+      name: nameVal,
+      rating: selectedReviewStars,
+      text: textVal,
+      fileUrl: fileUrl,
+      fileType: fileType,
+      status: 'pending', // pending approval
+      date: new Date().toLocaleDateString('en-IN')
+    };
+
+    try {
+      await window.VFS_DB.saveReview(newReviewObj);
+      toast('Review submitted for moderation! ✓');
+    } catch(err) {
+      console.error("Save review failed:", err);
+    }
+
+    modalBody.innerHTML = `
+      <div class="review-success-state" style="text-align:center; padding:30px 10px; animation: fadeUp 0.3s ease;">
+        <div style="width:60px; height:60px; border-radius:50%; background:#27ae60; color:#fff; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:3rem">✓</div>
+        <h3 style="font-size:2rem; margin-bottom:10px; color:#121212">Review Submitted!</h3>
+        <p style="font-size:1.35rem; color:#666; margin-bottom:20px; line-height:1.5">
+          Thank you! Your review has been submitted to our moderators for verification and approval.
+        </p>
+      </div>
+    `;
+
     setTimeout(() => {
-      modalBody.innerHTML = `
-        <div class="rev-modal-stars" id="modalReviewStars">
-          <span class="star" data-value="1">★</span>
-          <span class="star" data-value="2">★</span>
-          <span class="star" data-value="3">★</span>
-          <span class="star" data-value="4">★</span>
-          <span class="star" data-value="5">★</span>
-        </div>
-        <p class="rev-stars-label" id="revStarsLabel">Excellent (5/5)</p>
-        <textarea id="modalReviewText" rows="5" placeholder="Share details of your experience..."></textarea>
-        <div class="rev-modal-actions">
-          <button class="btn-rev-cancel" id="cancelReviewModal">Cancel</button>
-          <button class="btn-rev-submit" id="submitReviewModal">Post Review</button>
-        </div>
-      `;
-      // Re-attach listeners
-      $('#cancelReviewModal').addEventListener('click', closeReviewModal);
-      $('#submitReviewModal').addEventListener('click', handleReviewSubmit);
-      $('#modalReviewStars').querySelectorAll('.star').forEach(s => {
-        s.addEventListener('click', () => {
-          const val = +s.dataset.value;
-          updateReviewStars(val);
+      closeReviewModal();
+      // Reset modal content after closing transition finishes
+      setTimeout(() => {
+        modalBody.innerHTML = `
+          <div class="rev-modal-stars" id="modalReviewStars">
+            <span class="star" data-value="1">★</span>
+            <span class="star" data-value="2">★</span>
+            <span class="star" data-value="3">★</span>
+            <span class="star" data-value="4">★</span>
+            <span class="star" data-value="5">★</span>
+          </div>
+          <p class="rev-stars-label" id="revStarsLabel">Excellent (5/5)</p>
+          <input type="text" id="modalReviewName" placeholder="Your Name (Optional)" style="width: 100%; padding: 10px; font-size: 1.3rem; border: 1px solid #ddd; border-radius: var(--rounded-sm); outline: none; margin-bottom: 12px;">
+          <textarea id="modalReviewText" rows="5" placeholder="Share details of your experience..."></textarea>
+          <div style="margin: 15px 0 10px; text-align: left;">
+            <label for="modalReviewFile" style="font-size: 1.25rem; font-weight: 700; color: #555; display: block; margin-bottom: 6px;">Upload Photo or Video (unboxing/reel)</label>
+            <input type="file" id="modalReviewFile" accept="image/*,video/*" style="font-size: 1.2rem; cursor: pointer;">
+          </div>
+          <div class="rev-modal-actions">
+            <button class="btn-rev-cancel" id="cancelReviewModal">Cancel</button>
+            <button class="btn-rev-submit" id="submitReviewModal">Post Review</button>
+          </div>
+        `;
+        // Re-attach listeners
+        $('#cancelReviewModal').addEventListener('click', closeReviewModal);
+        $('#submitReviewModal').addEventListener('click', handleReviewSubmit);
+        $('#modalReviewStars').querySelectorAll('.star').forEach(s => {
+          s.addEventListener('click', () => {
+            const val = +s.dataset.value;
+            updateReviewStars(val);
+          });
         });
-      });
-    }, 500);
-  }, 2000);
+      }, 500);
+    }, 2500);
+  };
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      fileUrl = e.target.result;
+      fileType = file.type.startsWith('video/') ? 'video' : 'image';
+      processSubmit();
+    };
+    reader.onerror = () => {
+      processSubmit();
+    };
+    reader.readAsDataURL(file);
+  } else {
+    processSubmit();
+  }
 }
 
 // Bind Review Modal events

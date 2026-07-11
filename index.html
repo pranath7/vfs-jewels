@@ -663,7 +663,14 @@
         </div>
         <p class="rev-stars-label" id="revStarsLabel">Excellent (5/5)</p>
         
+        <input type="text" id="modalReviewName" placeholder="Your Name (Optional)" style="width: 100%; padding: 10px; font-size: 1.3rem; border: 1px solid #ddd; border-radius: var(--rounded-sm); outline: none; margin-bottom: 12px;">
+        
         <textarea id="modalReviewText" rows="5" placeholder="Share details of your experience at this place..."></textarea>
+        
+        <div style="margin: 15px 0 10px; text-align: left;">
+          <label for="modalReviewFile" style="font-size: 1.25rem; font-weight: 700; color: #555; display: block; margin-bottom: 6px;">Upload Photo or Video (unboxing/reel)</label>
+          <input type="file" id="modalReviewFile" accept="image/*,video/*" style="font-size: 1.2rem; cursor: pointer;">
+        </div>
         
         <div class="rev-modal-actions">
           <button class="btn-rev-cancel" id="cancelReviewModal">Cancel</button>
