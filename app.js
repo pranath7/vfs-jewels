@@ -3327,7 +3327,7 @@ function setupShoppingMode() {
   if (startBtn) {
     startBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      modeSelectorModal.style.display = 'flex';
+      modeSelectorModal.classList.add('active');
     });
   }
 
@@ -3335,10 +3335,10 @@ function setupShoppingMode() {
   if (switchBtn) {
     switchBtn.addEventListener('click', () => {
       if (shoppingMode === 'retail') {
-        modeSelectorModal.style.display = 'flex';
+        modeSelectorModal.classList.add('active');
       } else {
         if (!wholesaleUnlocked) {
-          modeSelectorModal.style.display = 'flex';
+          modeSelectorModal.classList.add('active');
         } else {
           shoppingMode = 'retail';
           saveState();
@@ -3354,16 +3354,16 @@ function setupShoppingMode() {
   $('#selectRetailCard').addEventListener('click', () => {
     shoppingMode = 'retail';
     saveState();
-    modeSelectorModal.style.display = 'none';
+    modeSelectorModal.classList.remove('active');
     updateModeUI();
     renderProducts(null);
     toast('Switched to Retail Mode successfully!');
   });
 
   $('#selectWholesaleCard').addEventListener('click', () => {
-    modeSelectorModal.style.display = 'none';
+    modeSelectorModal.classList.remove('active');
     if (!wholesaleUser) {
-      wholesaleTermsModal.style.display = 'flex';
+      wholesaleTermsModal.classList.add('active');
     } else {
       shoppingMode = 'wholesale';
       saveState();
@@ -3396,24 +3396,24 @@ function setupShoppingMode() {
   }
 
   $('#btnCancelTerms').addEventListener('click', () => {
-    wholesaleTermsModal.style.display = 'none';
-    modeSelectorModal.style.display = 'flex';
+    wholesaleTermsModal.classList.remove('active');
+    modeSelectorModal.classList.add('active');
   });
 
   acceptTermsBtn.addEventListener('click', () => {
     if (!termsCheckbox.checked) return;
-    wholesaleTermsModal.style.display = 'none';
+    wholesaleTermsModal.classList.remove('active');
     $('#loginStepPhone').style.display = 'block';
     $('#loginStepOTP').style.display = 'none';
     $('#loginStepRegister').style.display = 'none';
     $('#wholesalePhoneInput').value = '';
     $('#wholesaleOtpInput').value = '';
-    wholesaleLoginModal.style.display = 'flex';
+    wholesaleLoginModal.classList.add('active');
   });
 
   $('#btnCancelLogin').addEventListener('click', () => {
-    wholesaleLoginModal.style.display = 'none';
-    modeSelectorModal.style.display = 'flex';
+    wholesaleLoginModal.classList.remove('active');
+    modeSelectorModal.classList.add('active');
   });
 
   // Send OTP
@@ -3443,7 +3443,7 @@ function setupShoppingMode() {
       wholesaleUser = mockUsers[tempPhone];
       shoppingMode = 'wholesale';
       saveState();
-      wholesaleLoginModal.style.display = 'none';
+      wholesaleLoginModal.classList.remove('active');
       updateModeUI();
       renderProducts(null);
       if (!wholesaleUnlocked) {
@@ -3482,7 +3482,7 @@ function setupShoppingMode() {
     
     shoppingMode = 'wholesale';
     saveState();
-    wholesaleLoginModal.style.display = 'none';
+    wholesaleLoginModal.classList.remove('active');
     updateModeUI();
     renderProducts(null);
     
@@ -3503,17 +3503,17 @@ function setupShoppingMode() {
       ? 'Pay ₹1,000 first order advance to unlock wholesale prices.'
       : 'Pay ₹500 advance to unlock wholesale prices for your next order.';
       
-    wholesaleUnlockModal.style.display = 'flex';
+    wholesaleUnlockModal.classList.add('active');
   }
 
   $('#btnCancelUnlock').addEventListener('click', () => {
-    wholesaleUnlockModal.style.display = 'none';
+    wholesaleUnlockModal.classList.remove('active');
   });
 
   function processUnlockSuccess() {
     wholesaleUnlocked = true;
     saveState();
-    wholesaleUnlockModal.style.display = 'none';
+    wholesaleUnlockModal.classList.remove('active');
     updateModeUI();
     renderProducts(null);
     toast('Wholesale prices unlocked! 🎉');
