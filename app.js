@@ -485,6 +485,7 @@ const clOpt = (url, width) => {
 // ── Shopping Mode State (Retail/Wholesale) ──
 let shoppingMode = localStorage.getItem('vfs_shopping_mode') || 'retail';
 let wholesaleUser = null;
+let tempPhone = '';
 try {
   const storedUser = localStorage.getItem('vfs_wholesale_user');
   wholesaleUser = storedUser ? JSON.parse(storedUser) : null;
@@ -512,8 +513,61 @@ async function checkWholesaleStatus() {
   }
 }
 
-// Call checkWholesaleStatus on startup
-setTimeout(checkWholesaleStatus, 2000);
+// Google redirect authentication handler on page load
+function handleGoogleRedirectResult() {
+  if (!window.firebase) return;
+  firebase.auth().getRedirectResult().then(async (result) => {
+    if (result && result.user) {
+      const user = result.user;
+      toast("Google Authentication successful! 🌸");
+      
+      let userData = null;
+      if (window.VFS_CLOUD_ACTIVE && window.db) {
+        const doc = await window.db.collection('wholesale_users').doc(user.uid).get();
+        if (doc.exists) {
+          userData = doc.data();
+        }
+      } else {
+        const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
+        if (mockUsers[user.uid]) userData = mockUsers[user.uid];
+      }
+      
+      if (userData) {
+        wholesaleUser = userData;
+        shoppingMode = 'wholesale';
+        wholesaleUnlocked = userData.unlocked === true;
+        saveState();
+        updateModeUI();
+        renderProducts(null);
+        if (!wholesaleUnlocked) {
+          if (window.VFS_OPEN_UNLOCK_MODAL) {
+            window.VFS_OPEN_UNLOCK_MODAL();
+          }
+        }
+      } else {
+        // Pre-fill profile registration
+        tempPhone = user.phoneNumber || '';
+        $('#regNameInput').value = user.displayName || '';
+        window._googleUser = user;
+        
+        // Show login modal directly on registration step
+        $('#loginStepPhone').style.display = 'none';
+        $('#loginStepOTP').style.display = 'none';
+        $('#loginStepRegister').style.display = 'block';
+        $('#wholesaleLoginModal').classList.add('active');
+      }
+    }
+  }).catch((err) => {
+    console.error("Redirect Sign-in error:", err);
+    toast("Sign in failed: " + err.message);
+  });
+}
+
+// Call check status and handle redirect on startup
+setTimeout(() => {
+  checkWholesaleStatus();
+  handleGoogleRedirectResult();
+}, 2000);
 
 function saveState() {
   localStorage.setItem('vfs_cart', JSON.stringify(cart));
@@ -4055,9 +4109,30 @@ function setupShoppingMode() {
   // Send OTP
   // Google Sign-In Listener
   $('#btnGoogleSignIn').addEventListener('click', async () => {
+    const btn = $('#btnGoogleSignIn');
+    if (btn.disabled) return;
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    btn.style.cursor = 'not-allowed';
+    btn.innerHTML = '<span>Connecting to Google...</span>';
+    
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await firebase.auth().signInWithPopup(provider);
+      let result;
+      try {
+        result = await firebase.auth().signInWithPopup(provider);
+      } catch (popupErr) {
+        // If popup is blocked, cancelled, or closed, redirect instead!
+        if (popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/cancelled-popup-request' || popupErr.code === 'auth/popup-closed-by-user') {
+          toast("Popup blocked/cancelled. Redirecting to Google login...");
+          await firebase.auth().signInWithRedirect(provider);
+          return;
+        } else {
+          throw popupErr;
+        }
+      }
+      
+      if (!result || !result.user) return;
       const user = result.user;
       
       let userData = null;
@@ -4097,11 +4172,18 @@ function setupShoppingMode() {
     } catch (err) {
       console.error("Google Sign-In failed:", err);
       toast("Sign in failed: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7l2.86 2.22c1.67-1.54 2.63-3.8 2.63-6.55z" fill="#4285F4"/><path d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.86-2.22C11.3 14.13 10.22 14.4 9 14.4c-2.34 0-4.33-1.57-5.03-3.69L1.03 13c1.5 2.98 4.58 5 8.1 5z" fill="#34A853"/><path d="M3.97 10.71A5.39 5.39 0 0 1 3.6 9c0-.59.1-1.17.28-1.71L1.03 5.07A8.99 8.99 0 0 0 0 9c0 1.45.35 2.82.97 4.04l3-2.33z" fill="#FBBC05"/><path d="M9 3.6c1.32 0 2.5.45 3.44 1.35l2.58-2.59C13.47.8 11.43 0 9 0 5.48 0 2.4 2.02.9 5.07l2.94 2.28c.7-2.12 2.69-3.69 5.03-3.69z" fill="#EA4335"/></svg>
+        <span style="font-weight:700;">Sign in with Google</span>
+      `;
     }
   });
 
   // Send OTP
-  let tempPhone = '';
   $('#btnSendOTP').addEventListener('click', () => {
     const phone = $('#wholesalePhoneInput').value.trim();
     if (phone.length !== 10 || isNaN(phone)) {
