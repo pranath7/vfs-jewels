@@ -673,7 +673,11 @@ function renderProducts(filter) {
           <div class="category-banner-overlay">
             <h2>${bannerInfo.title}</h2>
             <p>${bannerInfo.desc}</p>
-              ${visibleList.map(p => {
+          </div>
+        </div>
+        <!-- Horizontal Scroll Container -->
+        <div class="product-row-scroll" id="scrollRow_${cat}">
+          ${visibleList.map(p => {
             const isWL = wishlist.includes(p.id);
             
             const stockVal = window.VFS_STOCK_CACHE[p.id];
