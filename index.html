@@ -438,10 +438,15 @@
           <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
             <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Choose Delivery Partner</label>
             <select id="coCarrier" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;background:#fff;" required>
-              <option value="Delhivery" selected>Delhivery (Standard Express)</option>
-              <option value="BlueDart">BlueDart (Priority Air)</option>
-              <option value="DTDC">DTDC (Regional Surface)</option>
+              <option value="DTDC" selected>DTDC (Regional Surface)</option>
+              <option value="ST Courier">ST Courier (Express)</option>
+              <option value="FedEx">FedEx (Priority Air)</option>
+              <option value="others">Others (Alternative Partner)</option>
             </select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
+            <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">GST Number (Optional)</label>
+            <input type="text" id="coGST" placeholder="15-digit GSTIN (e.g. 22AAAAA0000A1Z5)" maxLength="15" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;text-transform:uppercase;">
           </div>
           <button type="submit" class="btn-primary" style="width:100%;margin-top:10px;padding:14px;font-size:1.3rem;">Proceed to Payment</button>
         </form>
@@ -451,10 +456,15 @@
       <div class="checkout-step" id="coStep2" style="display:none;text-align:center;">
         <div class="checkout-summary" style="background:#f9f9f9;padding:16px;border-radius:var(--rounded-md);margin-bottom:20px;text-align:left;font-size:1.35rem;">
           <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>Cart Total:</span><strong id="coSumSubtotal">₹0</strong></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>GST (3%):</span><strong id="coSumGST">₹0</strong></div>
           <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>Delivery Fee:</span><strong id="coSumShipping">₹0</strong></div>
           <!-- Dynamic discount row -->
           <div id="coSumDiscountRow" style="display:none;justify-content:space-between;margin-bottom:8px;color:#27ae60;">
             <span>Wallet Discount:</span><strong id="coSumDiscount">-₹0</strong>
+          </div>
+          <!-- Wholesale advance deduction row -->
+          <div id="coSumAdvanceRow" style="display:none;justify-content:space-between;margin-bottom:8px;color:#d35400;">
+            <span>Wholesale Advance Adjusted:</span><strong id="coSumAdvance">-₹0</strong>
           </div>
           <div style="display:flex;justify-content:space-between;border-top:1px dashed #ccc;padding-top:8px;margin-top:8px;font-size:1.6rem;color:var(--color-secondary);">
             <span>Grand Total:</span><strong id="coSumTotal">₹0</strong>

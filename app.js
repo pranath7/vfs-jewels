@@ -219,6 +219,48 @@ window.VFS_DB = {
     }
     const local = localStorage.getItem('vfs_custom_products');
     return local ? JSON.parse(local) : null;
+  },
+
+  // ── Product Stock ──
+  getProductStock: async function(productId) {
+    const idStr = String(productId);
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        const doc = await window.db.collection('product_stock').doc(idStr).get();
+        if (doc.exists) {
+          const val = doc.data().stock;
+          return val !== undefined ? val : 5;
+        }
+      } catch(e) {
+        console.error("Firestore read stock error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_product_stock');
+    const stockMap = local ? JSON.parse(local) : {};
+    if (stockMap[idStr] !== undefined) {
+      return stockMap[idStr];
+    }
+    // Default initial stock: product 401 has 1 stock for easy testing, others have 5
+    const initial = (productId === 401) ? 1 : 5;
+    stockMap[idStr] = initial;
+    localStorage.setItem('vfs_product_stock', JSON.stringify(stockMap));
+    return initial;
+  },
+
+  saveProductStock: async function(productId, stock) {
+    const idStr = String(productId);
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        await window.db.collection('product_stock').doc(idStr).set({ stock: stock });
+        return;
+      } catch(e) {
+        console.error("Firestore write stock error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_product_stock');
+    const stockMap = local ? JSON.parse(local) : {};
+    stockMap[idStr] = stock;
+    localStorage.setItem('vfs_product_stock', JSON.stringify(stockMap));
   }
 };
 
@@ -245,6 +287,7 @@ const TESTIMONIALS = [
 ];
 
 // ── State ──
+window.VFS_STOCK_CACHE = {};
 let cart = [];
 try {
   const storedCart = localStorage.getItem('vfs_cart');
@@ -373,6 +416,16 @@ window.addEventListener('scroll', () => {
 const LOADED_COUNTS = {};
 const BATCH_SIZE = 12;
 
+function isProductVisible(p) {
+  const now = Date.now();
+  const stock = window.VFS_STOCK_CACHE[p.id];
+  // If product is older than 7 days (1 week) and has stock > 0 (remains unsold), hide it
+  if (p.createdAt && (now - p.createdAt > 7 * 24 * 60 * 60 * 1000) && (stock > 0)) {
+    return false;
+  }
+  return true;
+}
+
 // ── Render Product Grid (Horizontal Scrolling Categories) ──
 function renderProducts(filter) {
   const container = $('#categoryTracksContainer');
@@ -402,7 +455,7 @@ function renderProducts(filter) {
   }
 
   categories.forEach(cat => {
-    const list = fullCatalog.filter(p => p.cat === cat);
+    const list = fullCatalog.filter(p => p.cat === cat && isProductVisible(p));
     if (list.length === 0) return;
 
     // Reset loaded count for this category when full catalog renders/filters
@@ -422,13 +475,11 @@ function renderProducts(filter) {
           <div class="category-banner-overlay">
             <h2>${bannerInfo.title}</h2>
             <p>${bannerInfo.desc}</p>
-          </div>
-        </div>
-        
-        <!-- Horizontal Scroll Row -->
-        <div class="product-row-scroll" id="scrollRow_${cat}">
-          ${visibleList.map(p => {
+              ${visibleList.map(p => {
             const isWL = wishlist.includes(p.id);
+            
+            const stockVal = window.VFS_STOCK_CACHE[p.id];
+            const isOOS = (stockVal !== undefined && stockVal <= 0);
             
             let priceHtml = '';
             let quickActionHtml = '';
@@ -467,9 +518,13 @@ function renderProducts(filter) {
               }
             }
             
+            if (isOOS) {
+              quickActionHtml = `<div class="p-quick" style="background:#555;color:#ccc;cursor:not-allowed;font-weight:700;">Sold Out</div>`;
+            }
+            
             return `
               <div class="p-card" data-id="${p.id}">
-                ${p.badge ? `<span class="p-badge${p.badge === 'Sale' ? ' sale' : ''}">${p.badge}</span>` : ''}
+                ${isOOS ? `<span class="p-badge" style="background:#ff3b30;color:#fff;">Sold Out</span>` : (p.badge ? `<span class="p-badge${p.badge === 'Sale' ? ' sale' : ''}">${p.badge}</span>` : '')}
                 <button class="p-wish${isWL ? ' active' : ''}" data-wl="${p.id}" aria-label="Wishlist">
                   <svg viewBox="0 0 24 24" fill="${isWL ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
                 </button>
@@ -609,9 +664,16 @@ function loadNextBatch(cat, list, scrollRow) {
       }
     }
     
+    const stockVal = window.VFS_STOCK_CACHE[p.id];
+    const isOOS = (stockVal !== undefined && stockVal <= 0);
+    
+    if (isOOS) {
+      quickActionHtml = `<div class="p-quick" style="background:#555;color:#ccc;cursor:not-allowed;font-weight:700;">Sold Out</div>`;
+    }
+    
     const cardHtml = `
       <div class="p-card" data-id="${p.id}">
-        ${p.badge ? `<span class="p-badge${p.badge === 'Sale' ? ' sale' : ''}">${p.badge}</span>` : ''}
+        ${isOOS ? `<span class="p-badge" style="background:#ff3b30;color:#fff;">Sold Out</span>` : (p.badge ? `<span class="p-badge${p.badge === 'Sale' ? ' sale' : ''}">${p.badge}</span>` : '')}
         <button class="p-wish${isWL ? ' active' : ''}" data-wl="${p.id}" aria-label="Wishlist">
           <svg viewBox="0 0 24 24" fill="${isWL ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
         </button>
@@ -894,6 +956,7 @@ function updateCounts() {
 // ── Drawer Open/Close ──
 function openDrawer(type) {
   if (type === 'cart') {
+    pruneCart();
     renderCart();
     $('#cartBG').classList.add('active');
     $('#cartDW').classList.add('active');
@@ -950,9 +1013,11 @@ $('#searchInput').addEventListener('input', (e) => {
 
   const fullCatalog = getFullCatalog();
   const matches = fullCatalog.filter(p =>
-    p.name.toLowerCase().includes(q) ||
-    p.cat.includes(q) ||
-    p.meta.toLowerCase().includes(q)
+    isProductVisible(p) && (
+      p.name.toLowerCase().includes(q) ||
+      p.cat.includes(q) ||
+      p.meta.toLowerCase().includes(q)
+    )
   );
 
   results.innerHTML = matches.length
@@ -1087,17 +1152,38 @@ $('#coPhone').addEventListener('change', checkWalletBalance);
 $('#coForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   
+  const gstIN = $('#coGST').value.trim().toUpperCase();
+  if (gstIN && gstIN.length !== 15) {
+    toast('Please enter a valid 15-digit GSTIN (or leave it blank)');
+    return;
+  }
+
   const fullCatalog = getFullCatalog();
   let subtotal = 0;
   
   const itemsList = cart.map(ci => {
     const p = fullCatalog.find(x => x.id === ci.id);
-    subtotal += p.price * ci.qty;
-    return { id: p.id, sku: p.sku || `SN-${String(p.id).padStart(4, '0')}`, name: p.name, price: p.price, qty: ci.qty };
+    let unitPrice = 0;
+    if (shoppingMode === 'retail') {
+      unitPrice = p.price || 499;
+    } else {
+      unitPrice = p.wholesalePrice || Math.round((p.price || 499) * 0.6);
+    }
+    subtotal += unitPrice * ci.qty;
+    return { id: p.id, sku: p.sku || `SN-${String(p.id).padStart(4, '0')}`, name: p.name, price: unitPrice, qty: ci.qty };
   });
   
+  const gstAmount = Math.round(subtotal * 0.03);
   const shippingCost = 90;
-  let grandTotal = subtotal + shippingCost;
+  
+  // Calculate Wholesale Advance Deduction if applicable
+  let advanceDeduction = 0;
+  if (shoppingMode === 'wholesale') {
+    const isFirst = !wholesaleUser || wholesaleUser.ordersCount === 0;
+    advanceDeduction = isFirst ? 1000 : 500;
+  }
+
+  let grandTotal = subtotal + gstAmount + shippingCost - advanceDeduction;
   
   // Calculate Wallet Discount
   let walletDiscount = 0;
@@ -1115,6 +1201,8 @@ $('#coForm').addEventListener('submit', async (e) => {
     }
   }
   
+  grandTotal = Math.max(0, grandTotal);
+
   // Create Order Structure
   const newOrder = {
     id: '#VF-' + Math.floor(1000 + Math.random() * 9000),
@@ -1128,6 +1216,9 @@ $('#coForm').addEventListener('submit', async (e) => {
     items: itemsList,
     subtotal: subtotal,
     shipping: shippingCost,
+    gstAmount: gstAmount,
+    gstNumber: gstIN,
+    advanceAdjusted: advanceDeduction,
     walletDiscount: walletDiscount,
     total: grandTotal,
     status: 'unpaid', // unpaid/paid
@@ -1138,13 +1229,23 @@ $('#coForm').addEventListener('submit', async (e) => {
 
   // Render Step 2 Payment details
   $('#coSumSubtotal').textContent = fmt(subtotal);
+  $('#coSumGST').textContent = fmt(gstAmount);
   $('#coSumShipping').textContent = fmt(shippingCost);
+  
   if (walletDiscount > 0) {
     $('#coSumDiscountRow').style.display = 'flex';
     $('#coSumDiscount').textContent = `-${fmt(walletDiscount)}`;
   } else {
     $('#coSumDiscountRow').style.display = 'none';
   }
+  
+  if (advanceDeduction > 0) {
+    $('#coSumAdvanceRow').style.display = 'flex';
+    $('#coSumAdvance').textContent = `-${fmt(advanceDeduction)}`;
+  } else {
+    $('#coSumAdvanceRow').style.display = 'none';
+  }
+  
   $('#coSumTotal').textContent = fmt(grandTotal);
   
   // Create UPI URI using your real payment receiver details (8939086608@fam)
@@ -1186,8 +1287,35 @@ $('#coConfirmBtn').addEventListener('click', async () => {
       const newBalance = Math.max(0, balance - activeCheckoutOrder.walletDiscount);
       await window.VFS_DB.saveWalletBalance(activeCheckoutOrder.phone, newBalance);
     }
+
+    // Deduct purchased items from stock ledger
+    const stockPromises = activeCheckoutOrder.items.map(async (item) => {
+      const currentStock = await window.VFS_DB.getProductStock(item.id);
+      const newStock = Math.max(0, currentStock - item.qty);
+      await window.VFS_DB.saveProductStock(item.id, newStock);
+      window.VFS_STOCK_CACHE[item.id] = newStock;
+    });
+    await Promise.all(stockPromises);
+
+    // If wholesale mode, increment ordersCount and relock prices (for next order)
+    if (shoppingMode === 'wholesale' && wholesaleUser) {
+      wholesaleUser.ordersCount = (wholesaleUser.ordersCount || 0) + 1;
+      localStorage.setItem('vfs_wholesale_user', JSON.stringify(wholesaleUser));
+      
+      const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
+      mockUsers[wholesaleUser.phone] = wholesaleUser;
+      localStorage.setItem('vfs_wholesale_users', JSON.stringify(mockUsers));
+      
+      // Auto lock pricing for next order
+      wholesaleUnlocked = false;
+      saveState();
+    }
+
+    // Trigger local products view re-render to reflect OOS / Sold Out statuses
+    renderProducts(currentFilter);
+
   } catch (err) {
-    console.error("Order submission or wallet debit failed:", err);
+    console.error("Order submission, wallet debit, or stock deduction failed:", err);
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Confirm & Place Order on WhatsApp';
@@ -1206,16 +1334,26 @@ $('#coConfirmBtn').addEventListener('click', async () => {
 *Customer:* ${activeCheckoutOrder.name}
 *Phone:* ${activeCheckoutOrder.phone}
 *Address:* ${activeCheckoutOrder.address}, ${activeCheckoutOrder.city} - ${activeCheckoutOrder.pincode}
-*Carrier Partner:* ${activeCheckoutOrder.carrier}
+*Carrier Partner:* ${activeCheckoutOrder.carrier}\n`;
 
+  if (activeCheckoutOrder.gstNumber) {
+    waMessage += `*GSTIN:* ${activeCheckoutOrder.gstNumber}\n`;
+  }
+
+  waMessage += `----------------------------------
 *Items Ordered:*
 ${itemsSummaryText}
 ----------------------------------
 *Subtotal:* ₹${activeCheckoutOrder.subtotal}
+*GST (3%):* ₹${activeCheckoutOrder.gstAmount}
 *Delivery Fee:* ₹${activeCheckoutOrder.shipping}\n`;
 
   if (activeCheckoutOrder.walletDiscount && activeCheckoutOrder.walletDiscount > 0) {
     waMessage += `*Wallet Discount:* -₹${activeCheckoutOrder.walletDiscount}\n`;
+  }
+  
+  if (activeCheckoutOrder.advanceAdjusted && activeCheckoutOrder.advanceAdjusted > 0) {
+    waMessage += `*Wholesale Advance Adjusted:* -₹${activeCheckoutOrder.advanceAdjusted}\n`;
   }
   
   waMessage += `*Grand Total:* *₹${activeCheckoutOrder.total}*
@@ -1428,6 +1566,16 @@ function openPDP(id) {
         </button>
       `;
     }
+  }
+
+  const stock = window.VFS_STOCK_CACHE[p.id];
+  const isOutOfStock = (stock !== undefined && stock <= 0);
+  if (isOutOfStock) {
+    qtyCartHtml = `
+      <button class="pdp-btn-add-new" disabled style="width: 100%; background: #ccc; border-color: #ccc; color: #666; cursor: not-allowed; font-weight: 700;">
+        SOLD OUT / OUT OF STOCK
+      </button>
+    `;
   }
 
   infoContainer.innerHTML = `
@@ -2792,11 +2940,72 @@ async function initApp() {
     console.error("Failed to load products from live catalog:", e);
   }
 
+  // Load stock cache and assign creation dates for unsold hiding simulation
+  const catalog = getFullCatalog();
+  const now = Date.now();
+  const loadPromises = catalog.map(async (p) => {
+    const stockVal = await window.VFS_DB.getProductStock(p.id);
+    window.VFS_STOCK_CACHE[p.id] = stockVal;
+
+    if (!p.createdAt) {
+      if (p.id % 5 === 0) {
+        // Created 10 days ago (older than 1 week)
+        p.createdAt = now - 10 * 24 * 60 * 60 * 1000;
+      } else {
+        // Created 1 day ago (visible)
+        p.createdAt = now - 1 * 24 * 60 * 60 * 1000;
+      }
+    }
+  });
+  await Promise.all(loadPromises);
+
+  // Execute 24-hour expiration and out of stock cart pruning
+  pruneCart();
+
   checkHashRoute();
   renderProducts(null);
   renderTestimonials();
   updateCounts();
   setupShoppingMode();
+}
+
+function pruneCart() {
+  const now = Date.now();
+  let expired = false;
+  let oosCount = 0;
+  const oosNames = [];
+  
+  cart = cart.filter(item => {
+    // Check 24-hour expiration
+    if (item.addedAt && (now - item.addedAt > 24 * 60 * 60 * 1000)) {
+      expired = true;
+      return false;
+    }
+    
+    // Check out-of-stock
+    const stock = window.VFS_STOCK_CACHE[item.id];
+    if (stock !== undefined && stock <= 0) {
+      oosCount++;
+      const fullCatalog = getFullCatalog();
+      const p = fullCatalog.find(x => x.id === item.id);
+      if (p) oosNames.push(p.name);
+      return false;
+    }
+    
+    return true;
+  });
+  
+  if (expired || oosCount > 0) {
+    saveState();
+    updateCounts();
+    renderCart();
+    if (expired) {
+      toast('Expired items (older than 24h) were removed from your cart');
+    }
+    if (oosCount > 0) {
+      toast(`Sold out items removed from cart: ${oosNames.join(', ')}`);
+    }
+  }
 }
 
 window.addEventListener('load', initApp);
