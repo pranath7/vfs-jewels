@@ -41,8 +41,6 @@ async function initCloudConfig() {
   }
 }
 
-// Call config initialization asynchronously
-initCloudConfig();
 
 window.uploadToCloudinary = async function(file) {
   if (!window.VFS_CONFIG.cloudinary || !window.VFS_CONFIG.cloudinary.cloudName || window.VFS_CONFIG.cloudinary.cloudName.startsWith("YOUR_")) {
@@ -3426,7 +3424,14 @@ function checkHashRoute() {
   }
 }
 
+let initAppCalled = false;
 async function initApp() {
+  if (initAppCalled) return;
+  initAppCalled = true;
+
+  // Ensure Cloud configuration (Firebase Firestore connection) resolves before loading storefront data
+  await initCloudConfig();
+
   // Clear any legacy client-side products caching to avoid conflicts
   try {
     localStorage.removeItem('vfs_products');
@@ -3434,7 +3439,7 @@ async function initApp() {
   } catch (e) {}
 
   try {
-    const res = await fetch(`/vfs-products.json?t=${Date.now()}`);
+    const res = await fetch(`vfs-products.json?t=${Date.now()}`);
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) {
@@ -3600,6 +3605,7 @@ function populateDrawerCategories() {
       document.body.style.overflow = '';
       
       // Filter products by category
+      currentFilter = cat;
       renderProducts(cat);
       
       // Scroll to catalog section
