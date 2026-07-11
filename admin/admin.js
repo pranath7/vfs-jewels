@@ -957,9 +957,9 @@ async function loadDashboard() {
     }
   });
   
-  $('#kpiSales').textContent = fmt(totalSales);
-  $('#kpiPaid').textContent = paidCount + shippedCount + preparingCount + readyCount + completedCount;
-  $('#kpiUnpaid').textContent = unpaidCount;
+  if ($('#kpiSales')) $('#kpiSales').textContent = fmt(totalSales);
+  if ($('#kpiPaid')) $('#kpiPaid').textContent = paidCount + shippedCount + preparingCount + readyCount + completedCount;
+  if ($('#kpiUnpaid')) $('#kpiUnpaid').textContent = unpaidCount;
   
   $('#countUnpaid').textContent = unpaidCount;
   $('#countPaid').textContent = paidCount;
