@@ -426,6 +426,57 @@ function isProductVisible(p) {
   return true;
 }
 
+function getRetailPriceInfo(p) {
+  const basePrice = p.price || 499;
+  const baseMrp = p.mrp || Math.round(basePrice * 1.5);
+  let currentPrice = basePrice;
+  let badge = p.badge || '';
+  let isSale = false;
+
+  if (p.createdAt) {
+    const now = Date.now();
+    const ageMs = now - p.createdAt;
+    const ageDays = ageMs / (1000 * 60 * 60 * 24);
+
+    // Calculate the first Sunday following the createdAt timestamp
+    const createdDate = new Date(p.createdAt);
+    const dayOfWeek = createdDate.getDay(); 
+    const daysToSunday = (7 - dayOfWeek) % 7;
+    
+    // Set first Sunday end timestamp (23:59:59.999)
+    const nextSunday = new Date(p.createdAt);
+    nextSunday.setDate(createdDate.getDate() + daysToSunday);
+    nextSunday.setHours(23, 59, 59, 999);
+
+    const firstSundayPassed = now > nextSunday.getTime();
+
+    if (ageDays >= 28) {
+      // 4 weeks: 50% price drop + Sale badge
+      currentPrice = Math.round(basePrice * 0.5);
+      badge = 'Sale';
+      isSale = true;
+    } else if (firstSundayPassed) {
+      // Unsold by next Sunday: 25% price drop
+      currentPrice = Math.round(basePrice * 0.75);
+    }
+  }
+
+  return {
+    price: currentPrice,
+    mrp: baseMrp,
+    badge: badge,
+    isSale: isSale
+  };
+}
+
+function getCurrentProductPrice(p) {
+  if (shoppingMode === 'retail') {
+    return getRetailPriceInfo(p).price;
+  } else {
+    return p.wholesalePrice || Math.round((p.price || 499) * 0.6);
+  }
+}
+
 // ── Render Product Grid (Horizontal Scrolling Categories) ──
 function renderProducts(filter) {
   const container = $('#categoryTracksContainer');
@@ -485,8 +536,9 @@ function renderProducts(filter) {
             let quickActionHtml = '';
             
             if (shoppingMode === 'retail') {
-              const retailPrice = p.price || 499;
-              const retailMrp = p.mrp || Math.round(retailPrice * 1.5);
+              const priceInfo = getRetailPriceInfo(p);
+              const retailPrice = priceInfo.price;
+              const retailMrp = priceInfo.mrp;
               const isDiscounted = retailMrp > retailPrice;
               const off = isDiscounted ? pct(retailPrice, retailMrp) : 0;
               
@@ -522,9 +574,11 @@ function renderProducts(filter) {
               quickActionHtml = `<div class="p-quick" style="background:#555;color:#ccc;cursor:not-allowed;font-weight:700;">Sold Out</div>`;
             }
             
+            const dynamicBadge = (shoppingMode === 'retail') ? getRetailPriceInfo(p).badge : (p.badge || '');
+            
             return `
               <div class="p-card" data-id="${p.id}">
-                ${isOOS ? `<span class="p-badge" style="background:#ff3b30;color:#fff;">Sold Out</span>` : (p.badge ? `<span class="p-badge${p.badge === 'Sale' ? ' sale' : ''}">${p.badge}</span>` : '')}
+                ${isOOS ? `<span class="p-badge" style="background:#ff3b30;color:#fff;">Sold Out</span>` : (dynamicBadge ? `<span class="p-badge${dynamicBadge === 'Sale' ? ' sale' : ''}">${dynamicBadge}</span>` : '')}
                 <button class="p-wish${isWL ? ' active' : ''}" data-wl="${p.id}" aria-label="Wishlist">
                   <svg viewBox="0 0 24 24" fill="${isWL ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
                 </button>
@@ -631,8 +685,9 @@ function loadNextBatch(cat, list, scrollRow) {
     let quickActionHtml = '';
     
     if (shoppingMode === 'retail') {
-      const retailPrice = p.price || 499;
-      const retailMrp = p.mrp || Math.round(retailPrice * 1.5);
+      const priceInfo = getRetailPriceInfo(p);
+      const retailPrice = priceInfo.price;
+      const retailMrp = priceInfo.mrp;
       const isDiscounted = retailMrp > retailPrice;
       const off = isDiscounted ? pct(retailPrice, retailMrp) : 0;
       
@@ -671,9 +726,11 @@ function loadNextBatch(cat, list, scrollRow) {
       quickActionHtml = `<div class="p-quick" style="background:#555;color:#ccc;cursor:not-allowed;font-weight:700;">Sold Out</div>`;
     }
     
+    const dynamicBadge = (shoppingMode === 'retail') ? getRetailPriceInfo(p).badge : (p.badge || '');
+    
     const cardHtml = `
       <div class="p-card" data-id="${p.id}">
-        ${isOOS ? `<span class="p-badge" style="background:#ff3b30;color:#fff;">Sold Out</span>` : (p.badge ? `<span class="p-badge${p.badge === 'Sale' ? ' sale' : ''}">${p.badge}</span>` : '')}
+        ${isOOS ? `<span class="p-badge" style="background:#ff3b30;color:#fff;">Sold Out</span>` : (dynamicBadge ? `<span class="p-badge${dynamicBadge === 'Sale' ? ' sale' : ''}">${dynamicBadge}</span>` : '')}
         <button class="p-wish${isWL ? ' active' : ''}" data-wl="${p.id}" aria-label="Wishlist">
           <svg viewBox="0 0 24 24" fill="${isWL ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
         </button>
@@ -814,14 +871,15 @@ function renderCart() {
   body.innerHTML = cart.map(ci => {
     const p = fullCatalog.find(x => x.id === ci.id);
     if (!p) return '';
-    total += p.price * ci.qty;
+    const unitPrice = getCurrentProductPrice(p);
+    total += unitPrice * ci.qty;
     return `
       <div class="dw-item" data-id="${p.id}">
         <img class="dw-item-img dw-pdp-link" src="${clOpt(p.img, 150)}" alt="${p.name}" style="cursor:pointer">
         <div>
           <div class="dw-item-meta">${p.meta}</div>
           <div class="dw-item-name dw-pdp-link" style="cursor:pointer">${p.name}</div>
-          <div class="dw-item-price">${fmt(p.price)}</div>
+          <div class="dw-item-price">${fmt(unitPrice)}</div>
           <div class="qty-ctrl">
             <button data-qty="${p.id}" data-d="-1">−</button>
             <span>${ci.qty}</span>
@@ -1117,7 +1175,7 @@ $('#closeCheckout').addEventListener('click', closeCheckout);
 $('#checkoutModal').addEventListener('click', (e) => {
   if (e.target === $('#checkoutModal')) closeCheckout();
 });
-// Automatically check wallet balance when phone number is entered
+// Automatically check wallet balance and coupons when phone number is entered
 async function checkWalletBalance() {
   const phoneVal = $('#coPhone').value.trim();
   const cleanPhone = phoneVal.replace(/\D/g, '').slice(-10);
@@ -1145,8 +1203,52 @@ async function checkWalletBalance() {
     walletCheckbox.checked = false;
   }
 }
-$('#coPhone').addEventListener('input', checkWalletBalance);
-$('#coPhone').addEventListener('change', checkWalletBalance);
+
+async function updateEligibleCoupons() {
+  const phoneVal = $('#coPhone').value.trim();
+  const cleanPhone = phoneVal.replace(/\D/g, '').slice(-10);
+  const couponSelect = $('#coCouponSelect');
+  if (!couponSelect) return;
+  
+  couponSelect.innerHTML = '<option value="">No Coupon Applied</option>';
+  
+  if (cleanPhone.length === 10) {
+    // 1. Birthday coupon
+    const bdayCoupon = localStorage.getItem(`vfs_bday_coupon_unlocked_${cleanPhone}`);
+    const bdayUsed = localStorage.getItem(`vfs_bday_coupon_used_${cleanPhone}`);
+    if (bdayCoupon === 'true' && bdayUsed !== 'true') {
+      couponSelect.insertAdjacentHTML('beforeend', '<option value="BDAY3">Birthday Reward Code: BDAY3 (3% OFF)</option>');
+    }
+    
+    // 2. Loyalty coupons based on lifetime purchases
+    try {
+      const orders = await window.VFS_DB.getOrders();
+      // Only completed (paid) orders
+      const completed = orders.filter(o => o.phone === cleanPhone && o.status === 'paid');
+      const totalSpend = completed.reduce((sum, o) => sum + o.total, 0);
+      
+      if (totalSpend >= 100000) {
+        couponSelect.insertAdjacentHTML('beforeend', '<option value="LOYAL100">Loyalty Tier 1: LOYAL100 (3% OFF)</option>');
+      }
+      
+      const extraIntervals = Math.floor((totalSpend - 100000) / 50000);
+      for (let i = 1; i <= extraIntervals; i++) {
+        const code = `LOYAL${100 + i * 50}`;
+        couponSelect.insertAdjacentHTML('beforeend', `<option value="${code}">Loyalty Tier ${i+1}: ${code} (3% OFF)</option>`);
+      }
+    } catch (err) {
+      console.warn("Loyalty coupon lookup failed:", err);
+    }
+  }
+}
+
+function handlePhoneInput() {
+  checkWalletBalance();
+  updateEligibleCoupons();
+}
+
+$('#coPhone').addEventListener('input', handlePhoneInput);
+$('#coPhone').addEventListener('change', handlePhoneInput);
 
 // Checkout Step 1 Shipping form submission
 $('#coForm').addEventListener('submit', async (e) => {
@@ -1163,12 +1265,7 @@ $('#coForm').addEventListener('submit', async (e) => {
   
   const itemsList = cart.map(ci => {
     const p = fullCatalog.find(x => x.id === ci.id);
-    let unitPrice = 0;
-    if (shoppingMode === 'retail') {
-      unitPrice = p.price || 499;
-    } else {
-      unitPrice = p.wholesalePrice || Math.round((p.price || 499) * 0.6);
-    }
+    const unitPrice = getCurrentProductPrice(p);
     subtotal += unitPrice * ci.qty;
     return { id: p.id, sku: p.sku || `SN-${String(p.id).padStart(4, '0')}`, name: p.name, price: unitPrice, qty: ci.qty };
   });
@@ -1183,7 +1280,15 @@ $('#coForm').addEventListener('submit', async (e) => {
     advanceDeduction = isFirst ? 1000 : 500;
   }
 
-  let grandTotal = subtotal + gstAmount + shippingCost - advanceDeduction;
+  // Calculate Coupon Discount (3% of subtotal)
+  let couponDiscount = 0;
+  const couponSelect = $('#coCouponSelect');
+  const couponCode = couponSelect ? couponSelect.value : '';
+  if (couponCode) {
+    couponDiscount = Math.round(subtotal * 0.03);
+  }
+
+  let grandTotal = subtotal + gstAmount + shippingCost - advanceDeduction - couponDiscount;
   
   // Calculate Wallet Discount
   let walletDiscount = 0;
@@ -1219,6 +1324,8 @@ $('#coForm').addEventListener('submit', async (e) => {
     gstAmount: gstAmount,
     gstNumber: gstIN,
     advanceAdjusted: advanceDeduction,
+    couponCode: couponCode,
+    couponDiscount: couponDiscount,
     walletDiscount: walletDiscount,
     total: grandTotal,
     status: 'unpaid', // unpaid/paid
@@ -1237,6 +1344,14 @@ $('#coForm').addEventListener('submit', async (e) => {
     $('#coSumDiscount').textContent = `-${fmt(walletDiscount)}`;
   } else {
     $('#coSumDiscountRow').style.display = 'none';
+  }
+  
+  if (couponDiscount > 0) {
+    $('#coSumCouponRow').style.display = 'flex';
+    $('#coSumCouponCode').textContent = couponCode;
+    $('#coSumCouponAmount').textContent = `-${fmt(couponDiscount)}`;
+  } else {
+    $('#coSumCouponRow').style.display = 'none';
   }
   
   if (advanceDeduction > 0) {
@@ -1286,6 +1401,12 @@ $('#coConfirmBtn').addEventListener('click', async () => {
       const balance = await window.VFS_DB.getCustomerWalletBalance(activeCheckoutOrder.phone);
       const newBalance = Math.max(0, balance - activeCheckoutOrder.walletDiscount);
       await window.VFS_DB.saveWalletBalance(activeCheckoutOrder.phone, newBalance);
+    }
+
+    // Mark birthday coupon as used if applied
+    if (activeCheckoutOrder.couponCode === 'BDAY3') {
+      localStorage.setItem(`vfs_bday_coupon_used_${activeCheckoutOrder.phone}`, 'true');
+      localStorage.removeItem(`vfs_bday_coupon_unlocked_${activeCheckoutOrder.phone}`);
     }
 
     // Deduct purchased items from stock ledger
@@ -1350,6 +1471,10 @@ ${itemsSummaryText}
 
   if (activeCheckoutOrder.walletDiscount && activeCheckoutOrder.walletDiscount > 0) {
     waMessage += `*Wallet Discount:* -₹${activeCheckoutOrder.walletDiscount}\n`;
+  }
+  
+  if (activeCheckoutOrder.couponCode && activeCheckoutOrder.couponDiscount > 0) {
+    waMessage += `*Coupon Discount (${activeCheckoutOrder.couponCode}):* -₹${activeCheckoutOrder.couponDiscount}\n`;
   }
   
   if (activeCheckoutOrder.advanceAdjusted && activeCheckoutOrder.advanceAdjusted > 0) {
@@ -1508,8 +1633,9 @@ function openPDP(id) {
   let qtyCartHtml = '';
   
   if (shoppingMode === 'retail') {
-    const retailPrice = p.price || 499;
-    const retailMrp = p.mrp || Math.round(retailPrice * 1.5);
+    const priceInfo = getRetailPriceInfo(p);
+    const retailPrice = priceInfo.price;
+    const retailMrp = priceInfo.mrp;
     const isDisc = retailMrp > retailPrice;
     const offPct = isDisc ? pct(retailPrice, retailMrp) : 0;
     
@@ -2967,6 +3093,7 @@ async function initApp() {
   renderTestimonials();
   updateCounts();
   setupShoppingMode();
+  setupBirthdayCircle();
 }
 
 function pruneCart() {
@@ -3740,4 +3867,58 @@ function setupShoppingMode() {
   });
 
   window.VFS_OPEN_UNLOCK_MODAL = openWholesaleUnlockModal;
+}
+
+function setupBirthdayCircle() {
+  const bdayForm = $('#birthdayForm');
+  const bdayInputPhone = $('#bdayInputPhone');
+  const bdayInputDate = $('#bdayInputDate');
+  const bdayResultText = $('#bdayResultText');
+  const bdayCelebrationModal = $('#birthdayCelebrationModal');
+  const closeBdayCeleb = $('#closeBdayCeleb');
+  const btnClaimBday = $('#btnClaimBday');
+
+  if (bdayForm) {
+    bdayForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const phone = bdayInputPhone.value.trim();
+      const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+      if (cleanPhone.length !== 10) {
+        toast('Please enter a valid 10-digit mobile number');
+        return;
+      }
+      
+      const dateVal = bdayInputDate.value;
+      if (!dateVal) return;
+
+      // Save registration state
+      localStorage.setItem(`vfs_birthday_phone_${cleanPhone}`, dateVal);
+      localStorage.setItem(`vfs_bday_coupon_unlocked_${cleanPhone}`, 'true');
+
+      // Display results success message in line
+      bdayResultText.innerHTML = `Successfully joined! 🎁 Coupon code BDAY3 has been unlocked for phone: ${cleanPhone}`;
+      bdayResultText.style.display = 'block';
+      bdayForm.reset();
+
+      // Trigger Happy Birthday Celebration Modal immediately!
+      if (bdayCelebrationModal) {
+        bdayCelebrationModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+  }
+
+  const closeCeleb = () => {
+    if (bdayCelebrationModal) {
+      bdayCelebrationModal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  };
+
+  if (closeBdayCeleb) {
+    closeBdayCeleb.addEventListener('click', closeCeleb);
+  }
+  if (btnClaimBday) {
+    btnClaimBday.addEventListener('click', closeCeleb);
+  }
 }
