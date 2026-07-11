@@ -2537,8 +2537,14 @@ async function loadCustomers() {
     }
  
     custBody.innerHTML = filtered.map((c, i) => {
-      const phone = c.phone || c.id || '';
-      const custOrders = orders.filter(o => (o.phone || '').replace(/\D/g,'').slice(-10) === phone.slice(-10));
+      const phoneDisplay = c.phone || '-';
+      const custOrders = orders.filter(o => {
+        if (o.uid && c.uid && o.uid === c.uid) return true;
+        if (o.phone && c.phone) {
+          return o.phone.replace(/\D/g,'').slice(-10) === c.phone.replace(/\D/g,'').slice(-10);
+        }
+        return false;
+      });
       const completedOrders = custOrders.filter(o => ['paid','dispatched','delivered','completed'].includes(o.status));
       const totalSpend = completedOrders.reduce((s, o) => s + (o.total || 0), 0);
       const orderCount = custOrders.length;
@@ -2566,7 +2572,7 @@ async function loadCustomers() {
       return `<tr>
         <td>${i + 1}</td>
         <td><strong>${escapeHtml(c.name || '-')}</strong></td>
-        <td>${escapeHtml(phone)}</td>
+        <td>${escapeHtml(phoneDisplay)}</td>
         <td>${escapeHtml(c.shopName || c.shop || c.businessName || '-')}</td>
         <td>${escapeHtml(c.city || '-')}</td>
         <td>${joined}</td>

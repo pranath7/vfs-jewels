@@ -548,6 +548,7 @@ function handleGoogleRedirectResult() {
         // Pre-fill profile registration
         tempPhone = user.phoneNumber || '';
         $('#regNameInput').value = user.displayName || '';
+        $('#regPhoneInput').value = tempPhone;
         window._googleUser = user;
         
         // Show login modal directly on registration step
@@ -1631,6 +1632,7 @@ $('#coForm').addEventListener('submit', async (e) => {
     date: new Date().toLocaleDateString('en-IN'),
     name: $('#coName').value.trim(),
     phone: cleanPhone,
+    uid: wholesaleUser ? wholesaleUser.uid : null,
     address: $('#coAddress').value.trim(),
     city: $('#coCity').value.trim(),
     pincode: $('#coPincode').value.trim(),
@@ -4188,6 +4190,7 @@ function setupShoppingMode() {
         // First-time signup with Google
         tempPhone = user.phoneNumber || '';
         $('#regNameInput').value = user.displayName || '';
+        $('#regPhoneInput').value = tempPhone;
         window._googleUser = user;
         
         $('#loginStepPhone').style.display = 'none';
@@ -4245,6 +4248,7 @@ function setupShoppingMode() {
       }
     } else {
       $('#loginStepOTP').style.display = 'none';
+      $('#regPhoneInput').value = tempPhone;
       $('#loginStepRegister').style.display = 'block';
     }
   });
@@ -4254,20 +4258,25 @@ function setupShoppingMode() {
     const name = $('#regNameInput').value.trim();
     const business = $('#regBusinessInput').value.trim();
     const address = $('#regAddressInput').value.trim();
+    const phoneVal = $('#regPhoneInput').value.trim().replace(/\D/g, '');
     
-    if (!name || !business || !address) {
+    if (!name || !business || !address || !phoneVal) {
       toast('Please fill all fields');
+      return;
+    }
+    if (phoneVal.length !== 10) {
+      toast('Please enter a valid 10-digit WhatsApp number');
       return;
     }
     
     const googleUser = window._googleUser;
-    const uid = googleUser ? googleUser.uid : ('phone-' + tempPhone);
+    const uid = googleUser ? googleUser.uid : ('phone-' + phoneVal);
     const email = googleUser ? googleUser.email : '';
     
     wholesaleUser = {
       uid: uid,
       email: email,
-      phone: tempPhone || '',
+      phone: phoneVal,
       name: name,
       businessName: business,
       shopName: business, // keep backward compatibility
