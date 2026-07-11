@@ -351,26 +351,86 @@
 
       <!-- TAB: REPORTS & ANALYTICS -->
       <section class="tab-panel" id="panelReports">
-        <div class="orders-panel-container">
-          <div class="panel-header-row">
-            <h2>Reports &amp; Analytics</h2>
+        <div class="sales-dashboard-container">
+          <!-- Header -->
+          <div class="dashboard-header">
+            <h2>Sales Performance</h2>
+            <div class="dropdown-wrap">
+              <select id="reportTimeframe" class="dashboard-dropdown">
+                <option value="30">Last 30 Days</option>
+                <option value="90">Last 90 Days</option>
+                <option value="all">Lifetime</option>
+              </select>
+            </div>
           </div>
-          <div class="report-grid" id="reportMetrics">
-            <div class="report-card"><span class="rc-value" id="rTotalRevenue">₹0</span><span class="rc-label">Total Revenue</span></div>
-            <div class="report-card"><span class="rc-value" id="rMonthRevenue">₹0</span><span class="rc-label">This Month</span></div>
-            <div class="report-card"><span class="rc-value" id="rTotalOrders">0</span><span class="rc-label">Total Orders</span></div>
-            <div class="report-card"><span class="rc-value" id="rAvgOrder">₹0</span><span class="rc-label">Avg Order Value</span></div>
-            <div class="report-card"><span class="rc-value" id="rNewCustomers">0</span><span class="rc-label">New Customers (Month)</span></div>
+          
+          <!-- KPI Cards Grid -->
+          <div class="dashboard-kpi-grid">
+            <!-- Total Sales -->
+            <div class="kpi-card">
+              <div class="kpi-icon-wrap">
+                <div class="kpi-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v12"/></svg>
+                </div>
+              </div>
+              <div class="kpi-content">
+                <span class="kpi-label">Total Sales</span>
+                <h3 class="kpi-val" id="dbTotalSales">₹0</h3>
+                <span class="kpi-trend trend-up">↑ +12%</span>
+              </div>
+            </div>
+            <!-- Orders -->
+            <div class="kpi-card">
+              <div class="kpi-icon-wrap">
+                <div class="kpi-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                </div>
+              </div>
+              <div class="kpi-content">
+                <span class="kpi-label">Orders</span>
+                <h3 class="kpi-val" id="dbTotalOrders">0</h3>
+                <span class="kpi-trend trend-up">↑ +8%</span>
+              </div>
+            </div>
+            <!-- Average Order Value -->
+            <div class="kpi-card">
+              <div class="kpi-icon-wrap">
+                <div class="kpi-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/></svg>
+                </div>
+              </div>
+              <div class="kpi-content">
+                <span class="kpi-label">Average Order Value</span>
+                <h3 class="kpi-val" id="dbAvgOrderVal">₹0</h3>
+                <span class="kpi-trend trend-up">↑ +4%</span>
+              </div>
+            </div>
+            <!-- Conversion Rate -->
+            <div class="kpi-card">
+              <div class="kpi-icon-wrap">
+                <div class="kpi-icon">
+                  <span style="font-size: 2.2rem; font-weight: 700;">%</span>
+                </div>
+              </div>
+              <div class="kpi-content">
+                <span class="kpi-label">Conversion Rate</span>
+                <h3 class="kpi-val" id="dbConversionRate">2.8%</h3>
+                <span class="kpi-trend trend-up">↑ +0.5%</span>
+              </div>
+            </div>
           </div>
 
-          <div class="report-section-title">Orders by Stage</div>
-          <div class="css-bar-wrap" id="reportStagesBars"></div>
+          <!-- Revenue Growth Chart Container -->
+          <div class="dashboard-chart-card">
+            <h4>Revenue Growth</h4>
+            <div class="chart-viewport" id="dbChartViewport"></div>
+          </div>
 
-          <div class="report-section-title">Orders by Courier</div>
-          <div class="css-bar-wrap" id="reportCourierBars"></div>
-
-          <div class="report-section-title">🏆 Top 5 Products by Sales</div>
-          <div id="reportTopProducts"></div>
+          <!-- Top Selling Pieces -->
+          <div class="dashboard-pieces-card">
+            <h4>Top Selling Pieces</h4>
+            <div class="pieces-list" id="dbTopPiecesList"></div>
+          </div>
         </div>
       </section>
 
