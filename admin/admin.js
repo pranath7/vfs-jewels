@@ -1582,6 +1582,30 @@ window.printInvoice = async function(orderId) {
             <td>Shipping Fee:</td>
             <td>${fmt(order.shipping)}</td>
           </tr>
+          ${order.gstAmount ? `
+            <tr>
+              <td>GST (3%):</td>
+              <td>${fmt(order.gstAmount)}</td>
+            </tr>
+          ` : ''}
+          ${order.couponDiscount ? `
+            <tr style="color: green;">
+              <td>Coupon Discount (${order.couponCode || ''}):</td>
+              <td>-${fmt(order.couponDiscount)}</td>
+            </tr>
+          ` : ''}
+          ${(order.advanceAdjusted || order.advanceDeducted) ? `
+            <tr style="color: green;">
+              <td>Advance Adjusted:</td>
+              <td>-${fmt(order.advanceAdjusted || order.advanceDeducted)}</td>
+            </tr>
+          ` : ''}
+          ${order.walletDiscount ? `
+            <tr style="color: green;">
+              <td>Wallet Points Adjusted:</td>
+              <td>-${fmt(order.walletDiscount)}</td>
+            </tr>
+          ` : ''}
           <tr class="grand-total">
             <td>Grand Total:</td>
             <td>${fmt(order.total)}</td>
@@ -2572,7 +2596,12 @@ async function loadReports() {
       (!o.createdAt || o.createdAt >= cutoffMs)
     );
 
-    const totalRevenue = paidOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+    const getOrderRevenue = (o) => {
+      const calculated = (o.subtotal || 0) + (o.shipping || 0) + (o.gstAmount || 0) - (o.couponDiscount || 0) - (o.walletDiscount || 0);
+      return Math.max(o.total || 0, calculated);
+    };
+
+    const totalRevenue = paidOrders.reduce((sum, o) => sum + getOrderRevenue(o), 0);
     const avgOrder = paidOrders.length ? Math.round(totalRevenue / paidOrders.length) : 0;
     const ordersCount = paidOrders.length;
 
@@ -2608,7 +2637,7 @@ async function loadReports() {
         const t = o.createdAt || 0;
         return t >= startMs && t <= endMs;
       });
-      finalSegments[i] = segmentOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+      finalSegments[i] = segmentOrders.reduce((sum, o) => sum + getOrderRevenue(o), 0);
     }
 
     // Baseline fallbacks for premium client presentation if there are no real sales
