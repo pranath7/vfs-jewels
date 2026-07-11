@@ -633,7 +633,7 @@ function renderProducts(filter) {
   const fullCatalog = getFullCatalog();
   
   let categories = [];
-  if (filter && filter !== 'all') {
+  if (filter && filter !== 'all' && filter !== 'sale') {
     categories = [filter];
   } else {
     // Extract unique categories present in the catalog dynamically
@@ -653,7 +653,13 @@ function renderProducts(filter) {
   }
 
   categories.forEach(cat => {
-    const list = fullCatalog.filter(p => p.cat === cat && isProductVisible(p));
+    let list = fullCatalog.filter(p => p.cat === cat && isProductVisible(p));
+    if (filter === 'sale') {
+      list = list.filter(p => {
+        const info = getRetailPriceInfo(p);
+        return info && info.badge === '50% OFF';
+      });
+    }
     if (list.length === 0) return;
 
     // Reset loaded count for this category when full catalog renders/filters
@@ -988,6 +994,13 @@ $$('a[data-filter]').forEach(a => {
     document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
   });
 });
+
+window.filterCat = function(cat) {
+  currentFilter = cat;
+  renderProducts(cat);
+  const el = document.getElementById('products');
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+};
 
 // ── Cart Logic ──
 function addToCart(id, qty = 1) {
@@ -4279,132 +4292,186 @@ async function renderProductShelves() {
   }
 }
 
-// ── PDF Invoice Download ──
-function downloadInvoicePDF(order) {
+// ── PDF Invoice Download (using html2pdf.js) ──
+window.downloadInvoicePDF = async function(order) {
   if (!order) return;
-  try {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    const pageW = 210;
-    let y = 20;
 
-    // Header
-    doc.setFillColor(17, 17, 17);
-    doc.rect(0, 0, pageW, 40, 'F');
-    doc.setTextColor(212, 175, 55);
-    doc.setFontSize(22);
-    doc.setFont('helvetica', 'bold');
-    doc.text('VFS JEWELS', 20, 18);
-    doc.setFontSize(9);
-    doc.setTextColor(200, 200, 200);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Premium Imitation Jewellery | Sowcarpet, Chennai', 20, 25);
-    doc.text('📞 +91 98407 57363 | vfsjewels.store', 20, 31);
+  toast("Generating invoice PDF... 📄");
 
-    // Invoice Title
-    doc.setTextColor(212, 175, 55);
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`INVOICE #${order.id || 'N/A'}`, pageW - 20, 18, { align: 'right' });
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(200, 200, 200);
-    const orderDate = order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN');
-    doc.text(`Date: ${orderDate}`, pageW - 20, 25, { align: 'right' });
-    doc.text(`Mode: ${(order.mode || 'retail').toUpperCase()}`, pageW - 20, 31, { align: 'right' });
+  // Create invisible wrapper container to force layout painting
+  const wrapper = document.createElement('div');
+  wrapper.style.position = 'absolute';
+  wrapper.style.top = '0';
+  wrapper.style.left = '-9999px';
+  wrapper.style.width = '750px';
+  wrapper.style.height = 'auto';
+  wrapper.style.overflow = 'visible';
+  wrapper.style.zIndex = '-9999';
+  wrapper.style.pointerEvents = 'none';
 
-    y = 50;
+  const tempDiv = document.createElement('div');
+  tempDiv.style.width = '750px';
+  tempDiv.style.background = '#ffffff';
+  tempDiv.style.color = '#000000';
+  tempDiv.style.padding = '30px';
+  tempDiv.style.fontFamily = "'Lato', sans-serif";
 
-    // Customer details
-    doc.setTextColor(30, 30, 30);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text('BILL TO:', 20, y);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    y += 6;
-    doc.text(`Name: ${order.name || '-'}`, 20, y); y += 5;
-    doc.text(`Phone: ${order.phone || '-'}`, 20, y); y += 5;
-    doc.text(`Address: ${order.address || '-'}`, 20, y); y += 5;
-    if (order.gstin) { doc.text(`GSTIN: ${order.gstin}`, 20, y); y += 5; }
-    if (order.courier) { doc.text(`Courier: ${order.courier}`, 20, y); y += 5; }
+  const tableRows = order.items.map((item, idx) => `
+    <tr style="border-bottom: 1px solid #eeeeee;">
+      <td style="padding: 12px 10px; font-size: 10pt; color: #000000;">${idx + 1}</td>
+      <td style="padding: 12px 10px; font-size: 10pt; color: #000000;"><strong>${item.name}</strong><br><span style="font-size:8pt;color:#666">Imitation Fashion Jewellery</span></td>
+      <td style="padding: 12px 10px; font-size: 10pt; color: #000000;">${fmt(item.price)}</td>
+      <td style="padding: 12px 10px; font-size: 10pt; color: #000000;">${item.qty}</td>
+      <td style="padding: 12px 10px; font-size: 10pt; text-align: right; color: #000000;">${fmt(item.price * item.qty)}</td>
+    </tr>
+  `).join('');
 
-    y += 6;
+  // Calculate totals
+  const subtotal = order.subtotal || (order.items || []).reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+  const shipping = order.shipping || 90;
+  const gstAmt = order.gstAmount || 0;
+  const advanceAmt = order.advanceDeducted || 0;
+  const couponAmt = order.couponDiscount || 0;
+  const total = order.total || subtotal;
 
-    // Table Header
-    doc.setFillColor(240, 240, 240);
-    doc.rect(15, y, pageW - 30, 8, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(30, 30, 30);
-    doc.text('Item', 18, y + 5.5);
-    doc.text('Qty', 130, y + 5.5, { align: 'right' });
-    doc.text('Price', 155, y + 5.5, { align: 'right' });
-    doc.text('Total', pageW - 18, y + 5.5, { align: 'right' });
-    y += 10;
-
-    // Items
-    doc.setFont('helvetica', 'normal');
-    (order.items || []).forEach(item => {
-      if (y > 260) { doc.addPage(); y = 20; }
-      doc.setTextColor(40, 40, 40);
-      const name = (item.name || '').substring(0, 45);
-      doc.text(name, 18, y);
-      doc.text(String(item.qty || 1), 130, y, { align: 'right' });
-      const itemPrice = item.price || 0;
-      doc.text(`Rs.${itemPrice}`, 155, y, { align: 'right' });
-      doc.text(`Rs.${(itemPrice * (item.qty || 1))}`, pageW - 18, y, { align: 'right' });
-      y += 7;
-      doc.setDrawColor(235, 235, 235);
-      doc.line(15, y - 1, pageW - 15, y - 1);
-    });
-
-    y += 5;
-
-    // Totals
-    const subtotal = order.subtotal || (order.items || []).reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
-    const shipping = order.shipping || 90;
-    const gstAmt = order.gstAmount || 0;
-    const advanceAmt = order.advanceDeducted || 0;
-    const couponAmt = order.couponDiscount || 0;
-    const total = order.total || subtotal;
-
-    const addRow = (label, value, bold = false, color = [30, 30, 30]) => {
-      doc.setFont('helvetica', bold ? 'bold' : 'normal');
-      doc.setTextColor(...color);
-      doc.text(label, pageW - 80, y);
-      doc.text(`Rs.${value}`, pageW - 18, y, { align: 'right' });
-      y += 6;
-    };
-
-    addRow('Subtotal:', subtotal);
-    addRow('Shipping:', shipping);
-    if (gstAmt) addRow('GST (3%):', gstAmt);
-    if (couponAmt) addRow(`Coupon Discount (${order.couponCode || ''}):-`, couponAmt, false, [46, 139, 87]);
-    if (advanceAmt) addRow('Advance Deducted:-', advanceAmt, false, [46, 139, 87]);
-
-    doc.setDrawColor(212, 175, 55);
-    doc.setLineWidth(0.5);
-    doc.line(pageW - 85, y, pageW - 15, y);
-    y += 5;
-    addRow('TOTAL PAYABLE:', total, true, [17, 17, 17]);
-
-    // Footer
-    if (y < 255) {
-      y = 265;
-      doc.setFont('helvetica', 'italic');
-      doc.setFontSize(8);
-      doc.setTextColor(150, 150, 150);
-      doc.text('Thank you for shopping with VFS Jewels! For returns/support: wa.me/919840757363', pageW / 2, y, { align: 'center' });
-    }
-
-    doc.save(`VFS-Invoice-${order.id || 'order'}.pdf`);
-    toast('📄 Invoice PDF downloaded!');
-  } catch (err) {
-    console.error('PDF generation error:', err);
-    toast('PDF download failed. Please try again.');
+  let totalsHtml = `
+    <tr>
+      <td style="padding: 4px 0; color: #000000;">Subtotal:</td>
+      <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(subtotal)}</td>
+    </tr>
+    <tr>
+      <td style="padding: 4px 0; color: #000000;">Shipping Fee:</td>
+      <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(shipping)}</td>
+    </tr>
+  `;
+  if (gstAmt) {
+    totalsHtml += `
+      <tr>
+        <td style="padding: 4px 0; color: #000000;">GST (3%):</td>
+        <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(gstAmt)}</td>
+      </tr>
+    `;
   }
-}
+  if (couponAmt) {
+    totalsHtml += `
+      <tr>
+        <td style="padding: 4px 0; color: green;">Coupon Discount (${order.couponCode || ''}):</td>
+        <td style="text-align: right; font-weight: 700; padding: 4px 0; color: green;">-${fmt(couponAmt)}</td>
+      </tr>
+    `;
+  }
+  if (advanceAmt) {
+    totalsHtml += `
+      <tr>
+        <td style="padding: 4px 0; color: green;">Advance Deducted:</td>
+        <td style="text-align: right; font-weight: 700; padding: 4px 0; color: green;">-${fmt(advanceAmt)}</td>
+      </tr>
+    `;
+  }
+  totalsHtml += `
+    <tr style="font-size: 11pt; font-weight: 900; border-top: 1px solid #dddddd; color: #000000;">
+      <td style="padding: 8px 0 0 0; color: #000000;">Grand Total:</td>
+      <td style="text-align: right; padding: 8px 0 0 0; color: #000000;">${fmt(total)}</td>
+    </tr>
+  `;
+
+  tempDiv.innerHTML = `
+    <div style="border: 1px solid #dddddd; padding: 30px; background: #ffffff; color: #000000;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #D4AF37; padding-bottom: 20px; margin-bottom: 20px;">
+        <div>
+          <div style="font-size: 26px; font-weight: 900; letter-spacing: 2px; color: #000000;">VFS<span style="color:#D4AF37;">.</span></div>
+          <p style="font-size: 8.5pt; color: #666666; margin: 4px 0 0 0;">Handcrafted Premium Imitation Jewellery</p>
+        </div>
+        <div style="text-align: right; font-size: 9.5pt; line-height: 1.4; color: #000000;">
+          <h2 style="color: #D4AF37; text-transform: uppercase; font-size: 16px; margin: 0 0 6px 0;">Retail Tax Invoice</h2>
+          <p style="margin: 2px 0;"><strong>Invoice ID:</strong> INV-${order.id.replace('#', '')}</p>
+          <p style="margin: 2px 0;"><strong>Order ID:</strong> ${order.id}</p>
+          <p style="margin: 2px 0;"><strong>Date:</strong> ${order.date || new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
+          <p style="margin: 2px 0;"><strong>Status:</strong> <span style="color:#27AE60;font-weight:700;text-transform:uppercase;">${order.status}</span></p>
+        </div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 35px; font-size: 9.5pt; line-height: 1.5; color: #000000;">
+        <div>
+          <h4 style="margin: 0 0 6px 0; font-weight: 700; text-transform: uppercase; color: #555555;">Sold By:</h4>
+          <strong>VFS Jewels Main Store</strong><br>
+          42, 2nd Floor, Natwar Kurpa Complex,<br>
+          Narayana Mudali Street, Sowcarpet, George Town,<br>
+          Chennai, Tamil Nadu - 600001<br>
+          Email: accounts@vfsjewels.in | GSTIN: 33AAFVC8491A1ZX
+        </div>
+        <div>
+          <h4 style="margin: 0 0 6px 0; font-weight: 700; text-transform: uppercase; color: #555555;">Ship To:</h4>
+          <strong>${order.name}</strong><br>
+          Address: ${order.address}<br>
+          City: ${order.city} - ${order.pincode}<br>
+          Phone: +91 ${order.phone}
+          ${order.gstin ? `<br>GSTIN: ${order.gstin}` : ''}
+        </div>
+      </div>
+      
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; color: #000000;">
+        <thead>
+          <tr style="background: #fcfcfc; border-bottom: 2px solid #dddddd;">
+            <th style="width: 8%; text-align: left; padding: 10px; font-size: 9pt; text-transform: uppercase; color: #000000;">S.No</th>
+            <th style="text-align: left; padding: 10px; font-size: 9pt; text-transform: uppercase; color: #000000;">Description of Goods</th>
+            <th style="width: 15%; text-align: left; padding: 10px; font-size: 9pt; text-transform: uppercase; color: #000000;">Rate</th>
+            <th style="width: 10%; text-align: left; padding: 10px; font-size: 9pt; text-transform: uppercase; color: #000000;">Qty</th>
+            <th style="width: 18%; text-align: right; padding: 10px; font-size: 9pt; text-transform: uppercase; color: #000000;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+        </tbody>
+      </table>
+      
+      <div style="display: flex; justify-content: flex-end; color: #000000; margin-bottom: 20px;">
+        <table style="width: 250px; font-size: 9.5pt; line-height: 1.6; border-collapse: collapse;">
+          ${totalsHtml}
+        </table>
+      </div>
+      
+      ${order.trackingId ? `
+        <div style="text-align: center; margin: 25px 0; color: #000000;">
+          <p style="font-size: 8pt; color: #666666; margin: 0 0 6px 0;">Shipping Partner: <strong>${order.carrier}</strong></p>
+          <div style="display: inline-flex; height: 35px; align-items: stretch; width: 180px;">
+            ${Array.from({length: 34}).map(() => {
+              const width = [1, 2, 3][Math.floor(Math.random() * 3)];
+              const space = [1, 2][Math.floor(Math.random() * 2)];
+              return `<div style="background:#000000;width:${width}px;margin-right:${space}px;height:100%"></div>`;
+            }).join('')}
+          </div>
+          <div style="font-family: monospace; font-size: 9pt; letter-spacing: 5px; margin-top: 6px; color: #000000;">${order.trackingId}</div>
+        </div>
+      ` : ''}
+      
+      <div style="text-align: center; font-size: 8.5pt; color: #777777; margin-top: 40px; border-top: 1px dashed #dddddd; padding-top: 15px;">
+        <p style="margin: 0 0 4px 0;">This is a computer-generated tax invoice. No signature required.</p>
+        <p style="margin: 0; font-weight: 700; color: #000000;">Thank you for your business! VFS Jewellery Sowcarpet</p>
+      </div>
+    </div>
+  `;
+  
+  wrapper.appendChild(tempDiv);
+  document.body.appendChild(wrapper);
+  
+  const opt = {
+    margin:       [0.4, 0.4],
+    filename:     `VFS_Invoice_${order.id.replace('#', '')}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, scrollY: 0, scrollX: 0 },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+  
+  html2pdf().set(opt).from(tempDiv).save().then(() => {
+    wrapper.remove();
+    toast(`PDF invoice downloaded! 📄`);
+  }).catch(err => {
+    console.error("PDF generation error:", err);
+    wrapper.remove();
+    alert("PDF generation failed: " + err.message);
+  });
+};
 
 // Make PDF function globally accessible
 window.downloadInvoicePDF = downloadInvoicePDF;

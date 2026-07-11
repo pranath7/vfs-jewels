@@ -461,6 +461,68 @@ window.VFS_DB = {
         console.error("Firestore delete product error:", e);
       }
     }
+  },
+
+  // ── Customers (Wholesale) ──
+  getCustomers: async function() {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        const snap = await window.db.collection('wholesale_users').get();
+        const customers = [];
+        snap.forEach(doc => customers.push({ id: doc.id, ...doc.data() }));
+        return customers;
+      } catch(e) {
+        console.error("Firestore read customers error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_wholesale_users');
+    return local ? Object.values(JSON.parse(local)) : [];
+  },
+
+  // ── Banners ──
+  getBanners: async function() {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        const snap = await window.db.collection('banners').get();
+        const list = [];
+        snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+        return list;
+      } catch(e) {
+        console.error("Firestore read banners error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_banners');
+    return local ? JSON.parse(local) : [];
+  },
+
+  saveBanner: async function(banner) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        await window.db.collection('banners').doc(banner.id).set(banner);
+        return;
+      } catch(e) {
+        console.error("Firestore write banner error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_banners');
+    let list = local ? JSON.parse(local) : [];
+    list.push(banner);
+    localStorage.setItem('vfs_banners', JSON.stringify(list));
+  },
+
+  deleteBanner: async function(bannerId) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        await window.db.collection('banners').doc(bannerId).delete();
+        return;
+      } catch(e) {
+        console.error("Firestore delete banner error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_banners');
+    const list = local ? JSON.parse(local) : [];
+    const filtered = list.filter(b => b.id !== bannerId);
+    localStorage.setItem('vfs_banners', JSON.stringify(filtered));
   }
 };
 
@@ -1364,7 +1426,7 @@ async function assignTrackingId(orderId, trackingId) {
   const ordersList = await window.VFS_DB.getOrders();
   const order = ordersList.find(o => o.id === orderId);
   if (order) {
-    await window.VFS_DB.updateOrder(orderId, { trackingId: trackingId });
+    await window.VFS_DB.updateOrder(orderId, { trackingId: trackingId, status: 'dispatched' });
     
     // Log Simulated SMS
     const smsMsg = `VFS Jewels: Order ${order.id} shipped via ${order.carrier}. Tracking ID: ${order.trackingId}. Track at http://localhost:8283/index.html`;
@@ -1429,8 +1491,8 @@ $('#manualTrackingId').addEventListener('keydown', (e) => {
 });
 
 // On-demand simulation for barcode scanning
-$('#btnSimulateScan').addEventListener('click', () => {
-  const carrier = getOrderCarrier(activeScanOrderId);
+$('#btnSimulateScan').addEventListener('click', async () => {
+  const carrier = await getOrderCarrier(activeScanOrderId);
   const prefix = carrier === 'BlueDart' ? 'BD-' : (carrier === 'Delhivery' ? 'DL-' : 'DT-');
   const dummyCode = prefix + Math.floor(1000000 + Math.random() * 9000000) + '-IN';
   
