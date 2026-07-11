@@ -2233,12 +2233,12 @@ function renderReturnCard(ret, container, ordersList) {
 
     <div class="card-prices" style="margin-top:0;">
       <span>Refund Value (Grand Total)</span>
-      <strong class="total-amt" style="color:var(--color-secondary);">${order ? fmt(order.total) : 'N/A'}</strong>
+      <strong class="total-amt" style="color:var(--color-secondary);">${order ? fmt(order.total + (order.advanceAdjusted || 0)) : 'N/A'}</strong>
     </div>
 
     <div class="card-actions" style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
       ${ret.status === 'pending' ? `
-        <button class="btn-card-primary" onclick="approveReturnRequest('${ret.id}', ${order ? order.total : 0})" style="background:#27ae60;border-color:#27ae60;">Approve Return</button>
+        <button class="btn-card-primary" onclick="approveReturnRequest('${ret.id}', ${order ? (order.total + (order.advanceAdjusted || 0)) : 0})" style="background:#27ae60;border-color:#27ae60;">Approve Return</button>
         <button class="btn-card-danger" onclick="rejectReturnRequest('${ret.id}')">Reject Return</button>
         <button class="btn-card-danger" onclick="deleteReturnRequest('${ret.id}')" style="grid-column: 1 / -1; background:#8b0000; border-color:#8b0000; margin-top:4px;">Delete Request</button>
       ` : `
