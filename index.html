@@ -728,7 +728,11 @@
   <div class="dw" id="cartDW">
     <div class="dw-head"><h3>Cart (<span id="cartCT">0</span>)</h3><button class="dw-close" id="closeCartDW"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
     <div class="dw-body" id="cartBody"></div>
-    <div class="dw-foot" id="cartFoot" style="display:none"><div class="dw-total"><span>Total</span><span id="cartTotal">₹0</span></div><button class="dw-checkout" id="checkoutBtn">Proceed to Checkout</button></div>
+    <div class="dw-foot" id="cartFoot" style="display:none">
+      <div id="cartMoqWarning" style="display:none; padding: 10px 14px; background: rgba(234, 67, 53, 0.1); border: 1px solid rgba(234, 67, 53, 0.3); border-radius: 8px; color: #EA4335; font-size: 13px; font-weight: 500; margin-bottom: 12px; line-height: 1.4; text-align: center;"></div>
+      <div class="dw-total"><span>Total</span><span id="cartTotal">₹0</span></div>
+      <button class="dw-checkout" id="checkoutBtn">Proceed to Checkout</button>
+    </div>
   </div>
 
   <!-- WISHLIST DRAWER -->

@@ -1132,6 +1132,29 @@ function renderCart() {
 
   $('#cartTotal').textContent = fmt(total);
 
+  const moqWarning = $('#cartMoqWarning');
+  const checkoutBtn = $('#checkoutBtn');
+  if (shoppingMode === 'wholesale') {
+    const minOrder = 4000;
+    if (total < minOrder) {
+      const remaining = minOrder - total;
+      if (moqWarning) {
+        moqWarning.textContent = `Wholesale MOQ is ₹4,000. Add ${fmt(remaining)} more to proceed.`;
+        moqWarning.style.display = 'block';
+      }
+      checkoutBtn.style.opacity = '0.5';
+      checkoutBtn.style.cursor = 'not-allowed';
+    } else {
+      if (moqWarning) moqWarning.style.display = 'none';
+      checkoutBtn.style.opacity = '1';
+      checkoutBtn.style.cursor = 'pointer';
+    }
+  } else {
+    if (moqWarning) moqWarning.style.display = 'none';
+    checkoutBtn.style.opacity = '1';
+    checkoutBtn.style.cursor = 'pointer';
+  }
+
   // Qty buttons
   body.querySelectorAll('[data-qty]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1440,7 +1463,7 @@ function openCheckout() {
     }, 0);
     
     if (subtotal < 4000) {
-      alert('Wholesale Minimum Order Value (MOQ) is ₹4,000. Your current cart subtotal is ' + fmt(subtotal) + '. Please add more items to proceed.');
+      toast(`Wholesale MOQ is ₹4,000. Add ${fmt(4000 - subtotal)} more to proceed.`);
       return;
     }
   }
