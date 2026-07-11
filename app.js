@@ -493,6 +493,28 @@ try {
 }
 let wholesaleUnlocked = localStorage.getItem('vfs_wholesale_unlocked') === 'true';
 
+async function checkWholesaleStatus() {
+  if (!wholesaleUser) return;
+  if (window.VFS_CLOUD_ACTIVE && window.db) {
+    try {
+      const uid = wholesaleUser.uid || ('phone-' + wholesaleUser.phone);
+      const doc = await window.db.collection('wholesale_users').doc(uid).get();
+      if (doc.exists) {
+        const data = doc.data();
+        wholesaleUser = data;
+        wholesaleUnlocked = data.unlocked === true;
+        saveState();
+        updateModeUI();
+      }
+    } catch (e) {
+      console.warn("Error syncing wholesale status:", e);
+    }
+  }
+}
+
+// Call checkWholesaleStatus on startup
+setTimeout(checkWholesaleStatus, 2000);
+
 function saveState() {
   localStorage.setItem('vfs_cart', JSON.stringify(cart));
   localStorage.setItem('vfs_wl', JSON.stringify(wishlist));
@@ -1354,6 +1376,21 @@ function openCheckout() {
     toast('Your cart is empty! Add products first.');
     return;
   }
+  
+  if (shoppingMode === 'wholesale') {
+    const subtotal = cart.reduce((sum, item) => {
+      const p = getProduct(item.id);
+      if (!p) return sum;
+      const price = getWholesalePrice(p);
+      return sum + (price * item.qty);
+    }, 0);
+    
+    if (subtotal < 4000) {
+      alert('Wholesale Minimum Order Value (MOQ) is ₹4,000. Your current cart subtotal is ' + fmt(subtotal) + '. Please add more items to proceed.');
+      return;
+    }
+  }
+  
   closeDrawer('cart');
   
   // Show shipping form (step 1) and reset other steps
@@ -4016,6 +4053,54 @@ function setupShoppingMode() {
   });
 
   // Send OTP
+  // Google Sign-In Listener
+  $('#btnGoogleSignIn').addEventListener('click', async () => {
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const result = await firebase.auth().signInWithPopup(provider);
+      const user = result.user;
+      
+      let userData = null;
+      if (window.VFS_CLOUD_ACTIVE && window.db) {
+        const doc = await window.db.collection('wholesale_users').doc(user.uid).get();
+        if (doc.exists) {
+          userData = doc.data();
+        }
+      } else {
+        const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
+        if (mockUsers[user.uid]) userData = mockUsers[user.uid];
+      }
+      
+      if (userData) {
+        wholesaleUser = userData;
+        shoppingMode = 'wholesale';
+        wholesaleUnlocked = userData.unlocked === true;
+        saveState();
+        wholesaleLoginModal.classList.remove('active');
+        updateModeUI();
+        renderProducts(null);
+        
+        if (!wholesaleUnlocked) {
+          openWholesaleUnlockModal();
+        } else {
+          toast(`Welcome back, ${wholesaleUser.name}!`);
+        }
+      } else {
+        // First-time signup with Google
+        tempPhone = user.phoneNumber || '';
+        $('#regNameInput').value = user.displayName || '';
+        window._googleUser = user;
+        
+        $('#loginStepPhone').style.display = 'none';
+        $('#loginStepRegister').style.display = 'block';
+      }
+    } catch (err) {
+      console.error("Google Sign-In failed:", err);
+      toast("Sign in failed: " + err.message);
+    }
+  });
+
+  // Send OTP
   let tempPhone = '';
   $('#btnSendOTP').addEventListener('click', () => {
     const phone = $('#wholesalePhoneInput').value.trim();
@@ -4037,10 +4122,12 @@ function setupShoppingMode() {
       return;
     }
     
+    const uid = 'phone-' + tempPhone;
     const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
-    if (mockUsers[tempPhone]) {
-      wholesaleUser = mockUsers[tempPhone];
+    if (mockUsers[uid]) {
+      wholesaleUser = mockUsers[uid];
       shoppingMode = 'wholesale';
+      wholesaleUnlocked = wholesaleUser.unlocked === true;
       saveState();
       wholesaleLoginModal.classList.remove('active');
       updateModeUI();
@@ -4057,7 +4144,7 @@ function setupShoppingMode() {
   });
 
   // Complete Registration
-  $('#btnRegisterUser').addEventListener('click', () => {
+  $('#btnRegisterUser').addEventListener('click', async () => {
     const name = $('#regNameInput').value.trim();
     const business = $('#regBusinessInput').value.trim();
     const address = $('#regAddressInput').value.trim();
@@ -4067,16 +4154,34 @@ function setupShoppingMode() {
       return;
     }
     
+    const googleUser = window._googleUser;
+    const uid = googleUser ? googleUser.uid : ('phone-' + tempPhone);
+    const email = googleUser ? googleUser.email : '';
+    
     wholesaleUser = {
-      phone: tempPhone,
+      uid: uid,
+      email: email,
+      phone: tempPhone || '',
       name: name,
       businessName: business,
+      shopName: business, // keep backward compatibility
       address: address,
+      unlocked: false,
+      paymentStatus: 'none',
+      registeredAt: Date.now(),
       ordersCount: 0
     };
     
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
+      try {
+        await window.db.collection('wholesale_users').doc(uid).set(wholesaleUser);
+      } catch (err) {
+        console.error("Firestore save failed:", err);
+      }
+    }
+    
     const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
-    mockUsers[tempPhone] = wholesaleUser;
+    mockUsers[uid] = wholesaleUser;
     localStorage.setItem('vfs_wholesale_users', JSON.stringify(mockUsers));
     
     shoppingMode = 'wholesale';
@@ -4109,22 +4214,42 @@ function setupShoppingMode() {
     wholesaleUnlockModal.classList.remove('active');
   });
 
-  function processUnlockSuccess() {
-    wholesaleUnlocked = true;
+  async function requestWholesaleUnlock() {
+    if (!wholesaleUser) {
+      toast("Error: wholesale user not logged in");
+      return;
+    }
+    
+    wholesaleUser.paymentStatus = 'pending';
+    wholesaleUser.unlocked = false;
+    
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
+      try {
+        await window.db.collection('wholesale_users').doc(wholesaleUser.uid).update({
+          paymentStatus: 'pending',
+          unlocked: false
+        });
+      } catch (err) {
+        console.error("Firestore unlock request failed:", err);
+      }
+    }
+    
+    const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
+    mockUsers[wholesaleUser.uid] = wholesaleUser;
+    localStorage.setItem('vfs_wholesale_users', JSON.stringify(mockUsers));
     saveState();
+    
+    alert("Payment submitted successfully! Admin will verify your payment and grant access. Once approved, wholesale prices will unlock automatically.");
     wholesaleUnlockModal.classList.remove('active');
-    updateModeUI();
-    renderProducts(null);
-    toast('Wholesale prices unlocked! 🎉');
   }
 
-  $('#btnSimulateSuccess').addEventListener('click', processUnlockSuccess);
+  $('#btnSimulateSuccess').addEventListener('click', requestWholesaleUnlock);
   
   document.querySelectorAll('.upi-pay-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       toast(`Connecting to ${btn.dataset.method.toUpperCase()}...`);
       setTimeout(() => {
-        processUnlockSuccess();
+        requestWholesaleUnlock();
       }, 1200);
     });
   });

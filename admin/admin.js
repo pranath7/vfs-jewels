@@ -2508,62 +2508,75 @@ async function loadCustomers() {
   const custBody = $('#customerTableBody');
   const countEl = $('#countCustomers');
   if (!custBody) return;
-
-  custBody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#aaa;">Loading...</td></tr>';
-
+ 
+  custBody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:#aaa;">Loading...</td></tr>';
+ 
   try {
     // Get all customers from Firestore wholesale_users collection
     let customers = await window.VFS_DB.getCustomers();
-
+ 
     // If no Firestore data, fall back to reading localStorage wholesale customers
     if (!customers || customers.length === 0) {
       const local = localStorage.getItem('vfs_wholesale_users');
       customers = local ? Object.values(JSON.parse(local)) : [];
     }
-
+ 
     // Get orders for spend calculation
     const orders = await window.VFS_DB.getOrders();
-
+ 
     if (countEl) countEl.textContent = customers.length;
-
+ 
     const searchVal = ($('#custSearchInput')?.value || '').toLowerCase();
     const filtered = customers.filter(c =>
       !searchVal || (c.name || '').toLowerCase().includes(searchVal) || (c.phone || '').includes(searchVal)
     );
-
+ 
     if (filtered.length === 0) {
-      custBody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:#aaa;">No customers found</td></tr>';
+      custBody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;color:#aaa;">No customers found</td></tr>';
       return;
     }
-
+ 
     custBody.innerHTML = filtered.map((c, i) => {
       const phone = c.phone || c.id || '';
       const custOrders = orders.filter(o => (o.phone || '').replace(/\D/g,'').slice(-10) === phone.slice(-10));
       const completedOrders = custOrders.filter(o => ['paid','dispatched','delivered','completed'].includes(o.status));
       const totalSpend = completedOrders.reduce((s, o) => s + (o.total || 0), 0);
       const orderCount = custOrders.length;
-
+ 
       // Tier logic
       let tier = 'Bronze', tierClass = 'cust-tier-bronze';
       if (totalSpend >= 200000) { tier = 'Platinum'; tierClass = 'cust-tier-platinum'; }
       else if (totalSpend >= 100000) { tier = 'Gold'; tierClass = 'cust-tier-gold'; }
       else if (totalSpend >= 50000) { tier = 'Silver'; tierClass = 'cust-tier-silver'; }
-
+ 
       const joined = c.registeredAt ? new Date(c.registeredAt).toLocaleDateString('en-IN') : '-';
-
+      
+      // Wholesale Portal Status & Approval Action
+      let statusHtml = '';
+      if (c.unlocked) {
+        statusHtml = `<span style="color:#27AE60; font-weight:700;">Approved / Unlocked</span>`;
+      } else {
+        if (c.paymentStatus === 'pending') {
+          statusHtml = `<button class="btn-card-primary" onclick="approveWholesaleUser('${c.uid || c.phone || c.id}')" style="font-size:1.15rem; padding:6px 12px; border-radius:4px; font-weight:700; cursor:pointer;">Accept Payment & Unlock</button>`;
+        } else {
+          statusHtml = `<span style="color:#e67e22; font-weight:700;">Locked (No Payment)</span>`;
+        }
+      }
+ 
       return `<tr>
         <td>${i + 1}</td>
         <td><strong>${escapeHtml(c.name || '-')}</strong></td>
         <td>${escapeHtml(phone)}</td>
-        <td>${escapeHtml(c.shopName || c.shop || '-')}</td>
+        <td>${escapeHtml(c.shopName || c.shop || c.businessName || '-')}</td>
         <td>${escapeHtml(c.city || '-')}</td>
         <td>${joined}</td>
         <td>${orderCount}</td>
         <td>${fmt(totalSpend)}</td>
         <td><span class="cust-tier-badge ${tierClass}">${tier}</span></td>
+        <td>${statusHtml}</td>
       </tr>`;
     }).join('');
-
+ 
     // Search live
     const searchInput = $('#custSearchInput');
     if (searchInput && !searchInput._vfsListener) {
@@ -2571,10 +2584,41 @@ async function loadCustomers() {
       searchInput.addEventListener('input', loadCustomers);
     }
   } catch(e) {
-    custBody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:#e74c3c;">Error loading customers: ${e.message}</td></tr>`;
+    custBody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:20px;color:#e74c3c;">Error loading customers: ${e.message}</td></tr>`;
   }
 }
 window.loadCustomers = loadCustomers;
+
+// Accept Payment and Unlock Wholesale access
+window.approveWholesaleUser = async function(uid) {
+  if (!uid) return;
+  if (!confirm("Are you sure you want to accept this payment and unlock wholesale portal access for this customer?")) return;
+  
+  try {
+    if (window.VFS_CLOUD_ACTIVE) {
+      await window.db.collection('wholesale_users').doc(uid).update({
+        unlocked: true,
+        paymentStatus: 'accepted'
+      });
+    }
+    
+    // Update local storage fallback
+    const local = localStorage.getItem('vfs_wholesale_users');
+    if (local) {
+      const mockUsers = JSON.parse(local);
+      if (mockUsers[uid]) {
+        mockUsers[uid].unlocked = true;
+        mockUsers[uid].paymentStatus = 'accepted';
+        localStorage.setItem('vfs_wholesale_users', JSON.stringify(mockUsers));
+      }
+    }
+    
+    adminToast("Wholesale customer unlocked successfully! 🎉", "success");
+    loadCustomers();
+  } catch (err) {
+    alert("Approval failed: " + err.message);
+  }
+};
 
 // ── Reports & Analytics ──
 async function loadReports() {
