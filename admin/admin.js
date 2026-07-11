@@ -685,12 +685,24 @@ $$('.bottom-nav-btn').forEach(btn => {
     $$('.tab-panel').forEach(p => p.classList.remove('active'));
     
     btn.classList.add('active');
-    $(`#panel${targetTab.charAt(0).toUpperCase() + targetTab.slice(1)}`).classList.add('active');
+    
+    // Map targetTab to correct panel ID
+    let panelId = `panel${targetTab.charAt(0).toUpperCase() + targetTab.slice(1)}`;
+    const panelEl = $(`#${panelId}`);
+    if (panelEl) {
+      panelEl.classList.add('active');
+    }
     
     activeTab = targetTab;
     updateHeaderTitles();
     if (activeTab === 'search') {
       renderSearchCatalog();
+    } else if (activeTab === 'customers') {
+      loadCustomers();
+    } else if (activeTab === 'reports') {
+      loadReports();
+    } else if (activeTab === 'banners') {
+      loadBanners();
     }
   });
 });
@@ -702,15 +714,17 @@ function updateHeaderTitles() {
   const smsPanel = $('#smsLogPanel');
   const courierStats = $('#courierDistributionArea');
   
-  const isAltTab = (activeTab === 'catalog' || activeTab === 'search' || activeTab === 'returns' || activeTab === 'moderation');
+  const isAltTab = ['catalog', 'search', 'returns', 'moderation', 'customers', 'reports', 'banners'].includes(activeTab);
+  const isAltStages = ['preparing', 'ready', 'completed', 'cancelled'].includes(activeTab);
+  
   if (kpis) {
-    kpis.style.display = isAltTab ? 'none' : 'grid';
+    kpis.style.display = (isAltTab || isAltStages) ? 'none' : 'grid';
   }
   if (smsPanel) {
-    smsPanel.style.display = isAltTab ? 'none' : 'block';
+    smsPanel.style.display = (isAltTab || isAltStages) ? 'none' : 'block';
   }
   if (courierStats) {
-    courierStats.style.display = isAltTab ? 'none' : 'flex';
+    courierStats.style.display = (isAltTab || isAltStages) ? 'none' : 'flex';
   }
   
   if (activeTab === 'unpaid') {
@@ -718,10 +732,22 @@ function updateHeaderTitles() {
     subtitle.textContent = 'View and confirm customer payments for unpaid order requests.';
   } else if (activeTab === 'paid') {
     title.textContent = 'Paid (Processing) Orders';
-    subtitle.textContent = 'Scan shipping barcodes for paid customer orders to process delivery.';
+    subtitle.textContent = 'Start preparation or print invoices for paid customer orders.';
+  } else if (activeTab === 'preparing') {
+    title.textContent = 'Preparing Orders';
+    subtitle.textContent = 'View orders currently being packaged and prepared.';
+  } else if (activeTab === 'ready') {
+    title.textContent = 'Ready to Dispatch';
+    subtitle.textContent = 'Scan shipping barcodes or dispatch ready orders.';
   } else if (activeTab === 'shipped') {
     title.textContent = 'Shipped Orders';
     subtitle.textContent = 'Track shipped customer shipments and print invoices/receipts.';
+  } else if (activeTab === 'completed') {
+    title.textContent = 'Completed Orders';
+    subtitle.textContent = 'View historical completed orders.';
+  } else if (activeTab === 'cancelled') {
+    title.textContent = 'Cancelled Orders';
+    subtitle.textContent = 'View cancelled orders.';
   } else if (activeTab === 'search') {
     title.textContent = 'Search Product';
     subtitle.textContent = 'Look up any product by its SN code or name.';
@@ -734,6 +760,15 @@ function updateHeaderTitles() {
   } else if (activeTab === 'moderation') {
     title.textContent = 'Reviews & Reels Moderation';
     subtitle.textContent = 'Moderator panel to approve or reject video/photo reviews before publishing.';
+  } else if (activeTab === 'customers') {
+    title.textContent = 'Customer Database';
+    subtitle.textContent = 'View all registered wholesale resellers, their purchase metrics, and loyalty tiers.';
+  } else if (activeTab === 'reports') {
+    title.textContent = 'Reports & Analytics';
+    subtitle.textContent = 'View sales, month-over-month revenue, courier distribution, and product trends.';
+  } else if (activeTab === 'banners') {
+    title.textContent = 'Banner Manager';
+    subtitle.textContent = 'Manage home page marketing and promotion banners.';
   }
 }
 
@@ -807,47 +842,79 @@ async function loadDashboard() {
   let paidCount = 0;
   let unpaidCount = 0;
   let shippedCount = 0;
+  let preparingCount = 0;
+  let readyCount = 0;
+  let completedCount = 0;
+  let cancelledCount = 0;
   
   const unpaidContainer = $('#listUnpaid');
   const paidContainer = $('#listPaid');
   const shippedContainer = $('#listShipped');
+  const preparingContainer = $('#listPreparing');
+  const readyContainer = $('#listReady');
+  const completedContainer = $('#listCompleted');
+  const cancelledContainer = $('#listCancelled');
   
-  unpaidContainer.innerHTML = '';
-  paidContainer.innerHTML = '';
-  shippedContainer.innerHTML = '';
+  if (unpaidContainer) unpaidContainer.innerHTML = '';
+  if (paidContainer) paidContainer.innerHTML = '';
+  if (shippedContainer) shippedContainer.innerHTML = '';
+  if (preparingContainer) preparingContainer.innerHTML = '';
+  if (readyContainer) readyContainer.innerHTML = '';
+  if (completedContainer) completedContainer.innerHTML = '';
+  if (cancelledContainer) cancelledContainer.innerHTML = '';
   
   filteredOrders.forEach(order => {
     if (order.status === 'unpaid') {
       unpaidCount++;
-      renderOrderCard(order, unpaidContainer);
+      if (unpaidContainer) renderOrderCard(order, unpaidContainer);
     } else if (order.status === 'paid') {
-      totalSales += order.total;
+      totalSales += order.total || 0;
       paidCount++;
-      renderOrderCard(order, paidContainer);
+      if (paidContainer) renderOrderCard(order, paidContainer);
+    } else if (order.status === 'preparing') {
+      totalSales += order.total || 0;
+      preparingCount++;
+      if (preparingContainer) renderOrderCard(order, preparingContainer);
+    } else if (order.status === 'ready') {
+      totalSales += order.total || 0;
+      readyCount++;
+      if (readyContainer) renderOrderCard(order, readyContainer);
     } else if (order.status === 'dispatched' || order.status === 'delivered') {
-      totalSales += order.total;
+      totalSales += order.total || 0;
       shippedCount++;
-      renderOrderCard(order, shippedContainer);
+      if (shippedContainer) renderOrderCard(order, shippedContainer);
+    } else if (order.status === 'completed') {
+      totalSales += order.total || 0;
+      completedCount++;
+      if (completedContainer) renderOrderCard(order, completedContainer);
+    } else if (order.status === 'cancelled') {
+      cancelledCount++;
+      if (cancelledContainer) renderOrderCard(order, cancelledContainer);
+    } else if (order.status === 'returned') {
+      if (shippedContainer) renderOrderCard(order, shippedContainer);
     }
   });
   
   $('#kpiSales').textContent = fmt(totalSales);
-  $('#kpiPaid').textContent = paidCount + shippedCount;
+  $('#kpiPaid').textContent = paidCount + shippedCount + preparingCount + readyCount + completedCount;
   $('#kpiUnpaid').textContent = unpaidCount;
   
   $('#countUnpaid').textContent = unpaidCount;
   $('#countPaid').textContent = paidCount;
   $('#countShipped').textContent = shippedCount;
+  if ($('#countPreparing')) $('#countPreparing').textContent = preparingCount;
+  if ($('#countReady')) $('#countReady').textContent = readyCount;
+  if ($('#countCompleted')) $('#countCompleted').textContent = completedCount;
+  if ($('#countCancelled')) $('#countCancelled').textContent = cancelledCount;
   
-  if (unpaidCount === 0) {
-    unpaidContainer.innerHTML = `<div style="text-align:center;color:var(--color-muted);padding:40px 10px;font-size:1.3rem;">No pending unpaid orders</div>`;
-  }
-  if (paidCount === 0) {
-    paidContainer.innerHTML = `<div style="text-align:center;color:var(--color-muted);padding:40px 10px;font-size:1.3rem;">No paid orders processing</div>`;
-  }
-  if (shippedCount === 0) {
-    shippedContainer.innerHTML = `<div style="text-align:center;color:var(--color-muted);padding:40px 10px;font-size:1.3rem;">No shipped orders</div>`;
-  }
+  const empty = (el, msg) => { if (el && el.innerHTML.trim() === '') el.innerHTML = `<div style="text-align:center;color:var(--color-muted);padding:40px 10px;font-size:1.3rem;">${msg}</div>`; };
+  empty(unpaidContainer, 'No pending unpaid orders');
+  empty(paidContainer, 'No paid orders processing');
+  empty(shippedContainer, 'No shipped orders');
+  empty(preparingContainer, 'No orders being prepared');
+  empty(readyContainer, 'No orders ready to dispatch');
+  empty(completedContainer, 'No completed orders');
+  empty(cancelledContainer, 'No cancelled orders');
   
   loadReturnQueries();
   loadReviewsModeration();
@@ -892,17 +959,27 @@ function renderOrderCard(order, container) {
           <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.46h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           Send Receipt
         </button>
-        <button class="btn-card-danger" onclick="deleteOrder('${order.id}')">Delete Order</button>
+        <button class="btn-card-danger" onclick="cancelOrder('${order.id}')">Cancel Order</button>
       </div>
     ` : order.status === 'paid' ? `
       <div class="card-actions">
-        <button class="btn-card-primary" onclick="openScanner('${order.id}')">Scan Barcode</button>
+        <button class="btn-card-primary" onclick="advanceOrderStage('${order.id}','preparing')" style="background:#e67e22;border-color:#e67e22;">Start Preparing</button>
         <button class="btn-card-secondary" onclick="printInvoice('${order.id}')">Print Invoice</button>
         <button class="btn-card-whatsapp" onclick="shareOnWhatsApp('${order.id}')" style="grid-column: 1 / -1">
           <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.46h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           Send Receipt
         </button>
-        <button class="btn-card-danger" onclick="deleteOrder('${order.id}')">Delete Order</button>
+        <button class="btn-card-danger" onclick="cancelOrder('${order.id}')">Cancel Order</button>
+      </div>
+    ` : order.status === 'preparing' ? `
+      <div class="card-actions">
+        <button class="btn-card-primary" onclick="advanceOrderStage('${order.id}','ready')" style="background:#8e44ad;border-color:#8e44ad;">Mark Ready to Dispatch</button>
+        <button class="btn-card-secondary" onclick="printInvoice('${order.id}')">Print Invoice</button>
+      </div>
+    ` : order.status === 'ready' ? `
+      <div class="card-actions">
+        <button class="btn-card-primary" onclick="openScanner('${order.id}')">Scan Barcode & Dispatch</button>
+        <button class="btn-card-secondary" onclick="printInvoice('${order.id}')">Print Invoice</button>
       </div>
     ` : order.status === 'dispatched' ? `
       <div class="card-actions">
@@ -917,16 +994,33 @@ function renderOrderCard(order, container) {
           Send WhatsApp
         </button>
       </div>
-    ` : `
+    ` : order.status === 'delivered' ? `
       <div class="card-actions">
         <div class="card-tracking-assigned" style="grid-column: 1 / -1; margin-bottom: 6px; background:#e8f8f0; color:#27ae60; border-color:#27ae60; font-weight:700; text-align:center;">
           ✓ Delivered Successfully
         </div>
+        <button class="btn-card-primary" onclick="advanceOrderStage('${order.id}','completed')" style="background:#1565c0;border-color:#1565c0;">Mark Completed</button>
+        <button class="btn-card-secondary" onclick="printInvoice('${order.id}')">Print Invoice</button>
+      </div>
+    ` : order.status === 'completed' ? `
+      <div class="card-actions">
+        <div class="card-tracking-assigned" style="grid-column: 1 / -1; background:#e8f0ff; color:#1565c0; border-color:#1565c0; font-weight:700; text-align:center;">
+          ✓ Order Completed
+        </div>
+        <button class="btn-card-secondary" onclick="printInvoice('${order.id}')">Print Invoice</button>
+      </div>
+    ` : order.status === 'cancelled' ? `
+      <div class="card-actions">
+        <div class="card-tracking-assigned" style="grid-column: 1 / -1; background:#fff0f0; color:#e74c3c; border-color:#e74c3c; font-weight:700; text-align:center;">
+          ✗ Order Cancelled
+        </div>
+      </div>
+    ` : `
+      <div class="card-actions">
+        <div class="card-tracking-assigned" style="grid-column: 1 / -1; margin-bottom: 6px; background:#e8f8f0; color:#27ae60; border-color:#27ae60; font-weight:700; text-align:center;">
+          ✓ Delivered / Returned
+        </div>
         <button class="btn-card-primary" onclick="printInvoice('${order.id}')">Print Invoice</button>
-        <button class="btn-card-whatsapp" onclick="shareOnWhatsApp('${order.id}')" style="grid-column: 1 / -1">
-          <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.46h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          Send WhatsApp
-        </button>
       </div>
     `}
   `;
@@ -2307,3 +2401,237 @@ window.rejectReview = async function(reviewId) {
   adminToast('Review rejected and archived.', 'error');
   await loadDashboard();
 };
+
+// ── Order Stage Helper ──
+window.advanceOrderStage = async function(orderId, newStatus) {
+  await window.VFS_DB.updateOrder(orderId, { status: newStatus });
+  adminToast(`Order moved to: ${newStatus.toUpperCase()} ✅`);
+  await loadDashboard();
+};
+
+// ── Cancel Order ──
+window.cancelOrder = async function(orderId) {
+  if (!confirm('Cancel this order? This cannot be undone.')) return;
+  await window.VFS_DB.updateOrder(orderId, { status: 'cancelled' });
+  adminToast('Order cancelled.', 'error');
+  await loadDashboard();
+};
+
+// ── Customer Database ──
+async function loadCustomers() {
+  const custBody = $('#customerTableBody');
+  const countEl = $('#countCustomers');
+  if (!custBody) return;
+
+  custBody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#aaa;">Loading...</td></tr>';
+
+  try {
+    // Get all customers from Firestore wholesale_users collection
+    let customers = await window.VFS_DB.getCustomers();
+
+    // If no Firestore data, fall back to reading localStorage wholesale customers
+    if (!customers || customers.length === 0) {
+      const local = localStorage.getItem('vfs_wholesale_users');
+      customers = local ? Object.values(JSON.parse(local)) : [];
+    }
+
+    // Get orders for spend calculation
+    const orders = await window.VFS_DB.getOrders();
+
+    if (countEl) countEl.textContent = customers.length;
+
+    const searchVal = ($('#custSearchInput')?.value || '').toLowerCase();
+    const filtered = customers.filter(c =>
+      !searchVal || (c.name || '').toLowerCase().includes(searchVal) || (c.phone || '').includes(searchVal)
+    );
+
+    if (filtered.length === 0) {
+      custBody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:#aaa;">No customers found</td></tr>';
+      return;
+    }
+
+    custBody.innerHTML = filtered.map((c, i) => {
+      const phone = c.phone || c.id || '';
+      const custOrders = orders.filter(o => (o.phone || '').replace(/\D/g,'').slice(-10) === phone.slice(-10));
+      const completedOrders = custOrders.filter(o => ['paid','dispatched','delivered','completed'].includes(o.status));
+      const totalSpend = completedOrders.reduce((s, o) => s + (o.total || 0), 0);
+      const orderCount = custOrders.length;
+
+      // Tier logic
+      let tier = 'Bronze', tierClass = 'cust-tier-bronze';
+      if (totalSpend >= 200000) { tier = 'Platinum'; tierClass = 'cust-tier-platinum'; }
+      else if (totalSpend >= 100000) { tier = 'Gold'; tierClass = 'cust-tier-gold'; }
+      else if (totalSpend >= 50000) { tier = 'Silver'; tierClass = 'cust-tier-silver'; }
+
+      const joined = c.registeredAt ? new Date(c.registeredAt).toLocaleDateString('en-IN') : '-';
+
+      return `<tr>
+        <td>${i + 1}</td>
+        <td><strong>${escapeHtml(c.name || '-')}</strong></td>
+        <td>${escapeHtml(phone)}</td>
+        <td>${escapeHtml(c.shopName || c.shop || '-')}</td>
+        <td>${escapeHtml(c.city || '-')}</td>
+        <td>${joined}</td>
+        <td>${orderCount}</td>
+        <td>${fmt(totalSpend)}</td>
+        <td><span class="cust-tier-badge ${tierClass}">${tier}</span></td>
+      </tr>`;
+    }).join('');
+
+    // Search live
+    const searchInput = $('#custSearchInput');
+    if (searchInput && !searchInput._vfsListener) {
+      searchInput._vfsListener = true;
+      searchInput.addEventListener('input', loadCustomers);
+    }
+  } catch(e) {
+    custBody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:#e74c3c;">Error loading customers: ${e.message}</td></tr>`;
+  }
+}
+window.loadCustomers = loadCustomers;
+
+// ── Reports & Analytics ──
+async function loadReports() {
+  try {
+    const orders = await window.VFS_DB.getOrders();
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+
+    const paidOrders = orders.filter(o => ['paid','dispatched','delivered','completed','preparing','ready'].includes(o.status));
+    const totalRevenue = paidOrders.reduce((s, o) => s + (o.total || 0), 0);
+    const monthOrders = paidOrders.filter(o => {
+      if (!o.createdAt) return false;
+      const d = new Date(o.createdAt);
+      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    });
+    const monthRevenue = monthOrders.reduce((s, o) => s + (o.total || 0), 0);
+    const avgOrder = paidOrders.length ? Math.round(totalRevenue / paidOrders.length) : 0;
+
+    // New customers this month
+    let customers = await window.VFS_DB.getCustomers();
+    const newCusts = customers.filter(c => {
+      if (!c.registeredAt) return false;
+      const d = new Date(c.registeredAt);
+      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    }).length;
+
+    if ($('#rTotalRevenue')) $('#rTotalRevenue').textContent = fmt(totalRevenue);
+    if ($('#rMonthRevenue')) $('#rMonthRevenue').textContent = fmt(monthRevenue);
+    if ($('#rTotalOrders')) $('#rTotalOrders').textContent = orders.length;
+    if ($('#rAvgOrder')) $('#rAvgOrder').textContent = fmt(avgOrder);
+    if ($('#rNewCustomers')) $('#rNewCustomers').textContent = newCusts;
+
+    // Orders by stage
+    const stages = ['unpaid','paid','preparing','ready','dispatched','delivered','completed','cancelled','returned'];
+    const stageLabels = { unpaid:'Unpaid', paid:'Paid', preparing:'Preparing', ready:'Ready', dispatched:'Dispatched', delivered:'Delivered', completed:'Completed', cancelled:'Cancelled', returned:'Returned' };
+    const stageCounts = {};
+    stages.forEach(s => stageCounts[s] = 0);
+    orders.forEach(o => { if (stageCounts[o.status] !== undefined) stageCounts[o.status]++; });
+    const maxStage = Math.max(...Object.values(stageCounts), 1);
+
+    const stagesEl = $('#reportStagesBars');
+    if (stagesEl) {
+      stagesEl.innerHTML = stages.map(s => `
+        <div class="css-bar-row">
+          <span class="css-bar-label">${stageLabels[s]}</span>
+          <div class="css-bar-track"><div class="css-bar-fill" style="width:${Math.round((stageCounts[s] / maxStage) * 100)}%"></div></div>
+          <span class="css-bar-count">${stageCounts[s]}</span>
+        </div>`).join('');
+    }
+
+    // Orders by courier
+    const couriers = { 'DTDC': 0, 'ST Courier': 0, 'FedEx': 0, 'Others': 0 };
+    orders.forEach(o => {
+      const c = (o.carrier || '').trim().toLowerCase();
+      if (c === 'dtdc') couriers['DTDC']++;
+      else if (c === 'st courier') couriers['ST Courier']++;
+      else if (c === 'fedex') couriers['FedEx']++;
+      else couriers['Others']++;
+    });
+    const maxCourier = Math.max(...Object.values(couriers), 1);
+    const courierEl = $('#reportCourierBars');
+    if (courierEl) {
+      courierEl.innerHTML = Object.entries(couriers).map(([name, count]) => `
+        <div class="css-bar-row">
+          <span class="css-bar-label">${name}</span>
+          <div class="css-bar-track"><div class="css-bar-fill" style="width:${Math.round((count / maxCourier) * 100)}%"></div></div>
+          <span class="css-bar-count">${count}</span>
+        </div>`).join('');
+    }
+
+    // Top 5 products
+    const saleCounts = {};
+    paidOrders.forEach(o => {
+      (o.items || []).forEach(item => {
+        if (!saleCounts[item.id]) saleCounts[item.id] = { name: item.name, img: item.img || '', count: 0 };
+        saleCounts[item.id].count += (item.qty || 1);
+      });
+    });
+    const top5 = Object.values(saleCounts).sort((a,b) => b.count - a.count).slice(0, 5);
+    const topEl = $('#reportTopProducts');
+    if (topEl) {
+      topEl.innerHTML = top5.map((p, i) => `
+        <div class="top-product-row">
+          <span class="top-product-rank">#${i+1}</span>
+          ${p.img ? `<img class="top-product-img" src="${p.img}" alt="${p.name}">` : ''}
+          <span class="top-product-name">${escapeHtml(p.name)}</span>
+          <span class="top-product-count">${p.count} sold</span>
+        </div>`).join('') || '<p style="color:#aaa;font-size:1.3rem;padding:20px 0;">No sales data yet</p>';
+    }
+  } catch(e) {
+    adminToast('Error loading reports: ' + e.message, 'error');
+  }
+}
+window.loadReports = loadReports;
+
+// ── Banner Manager ──
+async function loadBanners() {
+  const grid = $('#bannerManagerGrid');
+  if (!grid) return;
+  grid.innerHTML = '<p style="color:#aaa;font-size:1.3rem;">Loading banners...</p>';
+  const banners = await window.VFS_DB.getBanners();
+  if (banners.length === 0) {
+    grid.innerHTML = '<p style="color:#aaa;font-size:1.3rem;padding:20px 0;">No custom banners uploaded yet. Upload one above!</p>';
+    return;
+  }
+  grid.innerHTML = banners.map(b => `
+    <div class="banner-manager-card">
+      <img src="${b.url}" alt="Banner">
+      <div class="banner-manager-card-info">
+        <span>${new Date(b.createdAt).toLocaleDateString('en-IN')}</span>
+        <button class="btn-delete-banner" onclick="deleteBanner('${b.id}')">Delete</button>
+      </div>
+    </div>`).join('');
+}
+window.loadBanners = loadBanners;
+
+window.deleteBanner = async function(bannerId) {
+  if (!confirm('Delete this banner?')) return;
+  await window.VFS_DB.deleteBanner(bannerId);
+  adminToast('Banner deleted.');
+  loadBanners();
+};
+
+// Setup Banner upload listener
+document.addEventListener('DOMContentLoaded', () => {
+  const bannerInput = $('#bannerFileInput');
+  if (bannerInput) {
+    bannerInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      adminToast('Uploading banner...');
+      try {
+        const url = await window.uploadToCloudinary(file);
+        const banner = { id: 'banner_' + Date.now(), url, createdAt: Date.now() };
+        await window.VFS_DB.saveBanner(banner);
+        adminToast('Banner uploaded successfully! 🖼️');
+        loadBanners();
+      } catch(err) {
+        adminToast('Upload failed: ' + err.message, 'error');
+      }
+      bannerInput.value = '';
+    });
+  }
+});
+

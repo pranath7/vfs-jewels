@@ -69,7 +69,9 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="style.css?v=16">
+  <link rel="stylesheet" href="style.css?v=17">
+  <!-- jsPDF for PDF Invoice -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -229,6 +231,104 @@
         <div class="banner-card"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1783178938/vza7byllycs7nmz8bwdq.jpg" alt="Chains Collection" style="object-fit:cover;"><div class="banner-overlay"><h3>Chains Collection</h3><p>Classic and luxury gold-plated chains and necklaces</p><a href="#products" data-filter="chains" class="shop-link">Explore Collection →</a></div></div>
         <div class="banner-card"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_500/v1783694425/kuk50yyh9yzosthcsxkk.png" alt="Ear Rings Collection" style="object-fit:cover;"><div class="banner-overlay"><h3>Ear Rings Collection</h3><p>Dazzling handcrafted ear rings for every occasion</p><a href="#products" data-filter="earrings" class="shop-link">Explore Collection →</a></div></div>
       </div>
+    </div>
+  </section>
+
+  <!-- BRAND STORY SECTION -->
+  <section class="brand-story-section" id="brand-story">
+    <div class="page-width">
+      <div class="section-head">
+        <h2>Our Story</h2>
+        <p>From Sowcarpet to Your Doorstep</p>
+        <div class="line"></div>
+      </div>
+      <div class="brand-story-grid">
+        <div class="brand-story-text">
+          <p class="brand-lead">VFS Jewels was born in the heart of Sowcarpet, Chennai's oldest and most trusted jewellery district — where craftsmen have shaped gold and gems for centuries.</p>
+          <p>Founded by a family with deep roots in the jewellery trade, VFS started as a small wholesale supplier serving local boutiques and resellers. Over the years, driven by customer love and a passion for accessible luxury, we grew into one of Chennai's most trusted names in premium imitation jewellery.</p>
+          <p>Every piece we craft carries our promise: the brilliance of real jewellery, at a price that doesn't compromise your budget.</p>
+          <div class="brand-story-quote">
+            <span>"Luxury is not about price. It's about craft, care, and confidence."</span>
+            <small>— VFS Jewels Founders</small>
+          </div>
+        </div>
+        <div class="brand-story-timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <span class="timeline-year">2018</span>
+              <h4>The Beginning</h4>
+              <p>Started as a wholesale supplier for local Chennai boutiques in Sowcarpet market.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <span class="timeline-year">2020</span>
+              <h4>Anti-Tarnish Innovation</h4>
+              <p>Launched our signature protective coating — making our jewellery last 10x longer than competitors.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <span class="timeline-year">2023</span>
+              <h4>Pan-India Expansion</h4>
+              <p>Began shipping to 500+ cities. Partnered with DTDC, ST Courier & FedEx for express delivery.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot active"></div>
+            <div class="timeline-content">
+              <span class="timeline-year">2026</span>
+              <h4>Digital Storefront</h4>
+              <p>Launched vfsjewels.store — bringing wholesale and retail together on one platform for 300+ happy customers.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEW ARRIVALS SHELF -->
+  <section class="product-shelf-section" id="shelfNewArrivals" style="display:none">
+    <div class="page-width">
+      <div class="shelf-header">
+        <div>
+          <h2 class="shelf-title">✨ New Arrivals</h2>
+          <p class="shelf-sub">Fresh pieces added this week</p>
+        </div>
+        <button class="shelf-viewall-btn" onclick="filterCat('all')" id="viewAllNew">View All →</button>
+      </div>
+      <div class="shelf-scroll" id="shelfNewArrivalsGrid"></div>
+    </div>
+  </section>
+
+  <!-- BEST SELLERS SHELF -->
+  <section class="product-shelf-section" id="shelfBestSellers" style="display:none">
+    <div class="page-width">
+      <div class="shelf-header">
+        <div>
+          <h2 class="shelf-title">🏆 Best Sellers</h2>
+          <p class="shelf-sub">Most loved by our customers</p>
+        </div>
+        <button class="shelf-viewall-btn" onclick="filterCat('all')">View All →</button>
+      </div>
+      <div class="shelf-scroll" id="shelfBestSellersGrid"></div>
+    </div>
+  </section>
+
+  <!-- SALE SHELF -->
+  <section class="product-shelf-section sale-shelf" id="shelfSale" style="display:none">
+    <div class="page-width">
+      <div class="shelf-header">
+        <div>
+          <h2 class="shelf-title">🔥 Sale — Up to 50% Off</h2>
+          <p class="shelf-sub">Grab these before they're gone</p>
+        </div>
+        <button class="shelf-viewall-btn sale-btn" onclick="filterCat('sale')">View All Sale →</button>
+      </div>
+      <div class="shelf-scroll" id="shelfSaleGrid"></div>
     </div>
   </section>
 
@@ -535,6 +635,10 @@
 
         <button class="dw-checkout" id="successWaBtn" style="width:100%;background:#25D366;border-color:#25D366;color:#FFFFFF;font-size:1.3rem;padding:14px;font-weight:800;margin-bottom:12px;">
           Open WhatsApp to Confirm
+        </button>
+
+        <button id="successPdfBtn" style="width:100%;padding:12px;font-size:1.3rem;font-weight:700;background:#fff;border:1.5px solid var(--color-secondary);color:var(--color-secondary);border-radius:4px;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
+          📄 Download Invoice PDF
         </button>
 
         <button class="btn-primary" id="successCloseBtn" style="width:100%;padding:14px;font-size:1.3rem;justify-content:center;background:#121212;color:#FFFFFF;border:none;cursor:pointer;">

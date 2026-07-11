@@ -314,8 +314,102 @@ window.VFS_DB = {
     const stockMap = local ? JSON.parse(local) : {};
     stockMap[idStr] = stock;
     localStorage.setItem('vfs_product_stock', JSON.stringify(stockMap));
+  },
+
+  // ── Birthday ──
+  getBirthday: async function(phone) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        const doc = await window.db.collection('customer_birthdays').doc(phone).get();
+        if (doc.exists) return doc.data();
+        return null;
+      } catch(e) {
+        console.error("Firestore read birthday error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_birthdays');
+    const map = local ? JSON.parse(local) : {};
+    return map[phone] || null;
+  },
+
+  saveBirthday: async function(phone, data) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        await window.db.collection('customer_birthdays').doc(phone).set(data);
+        return;
+      } catch(e) {
+        console.error("Firestore write birthday error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_birthdays');
+    const map = local ? JSON.parse(local) : {};
+    map[phone] = data;
+    localStorage.setItem('vfs_birthdays', JSON.stringify(map));
+  },
+
+  // ── Banners ──
+  getBanners: async function() {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        const snap = await window.db.collection('banners').orderBy('createdAt', 'desc').get();
+        const banners = [];
+        snap.forEach(doc => banners.push({ id: doc.id, ...doc.data() }));
+        return banners;
+      } catch(e) {
+        console.error("Firestore read banners error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_banners');
+    return local ? JSON.parse(local) : [];
+  },
+
+  saveBanner: async function(banner) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        await window.db.collection('banners').doc(banner.id).set(banner);
+        return;
+      } catch(e) {
+        console.error("Firestore write banner error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_banners');
+    const list = local ? JSON.parse(local) : [];
+    list.unshift(banner);
+    localStorage.setItem('vfs_banners', JSON.stringify(list));
+  },
+
+  deleteBanner: async function(bannerId) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        await window.db.collection('banners').doc(bannerId).delete();
+        return;
+      } catch(e) {
+        console.error("Firestore delete banner error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_banners');
+    const list = local ? JSON.parse(local) : [];
+    const filtered = list.filter(b => b.id !== bannerId);
+    localStorage.setItem('vfs_banners', JSON.stringify(filtered));
+  },
+
+  // ── Customers (Wholesale) ──
+  getCustomers: async function() {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        const snap = await window.db.collection('wholesale_users').get();
+        const customers = [];
+        snap.forEach(doc => customers.push({ id: doc.id, ...doc.data() }));
+        return customers;
+      } catch(e) {
+        console.error("Firestore read customers error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_wholesale_customers');
+    return local ? JSON.parse(local) : [];
   }
 };
+
 
 function getFullCatalog() {
   if (window.VFS_PRODUCTS_CACHE && window.VFS_PRODUCTS_CACHE.length > 0) {
@@ -1609,6 +1703,16 @@ _I have attached my UPI Transaction Screenshot below to verify payment._`;
       $('#coStep3').style.display = 'none';
     }, 400);
   });
+
+  // PDF Invoice Download button
+  const pdfBtn = $('#successPdfBtn');
+  if (pdfBtn) {
+    const newPdfBtn = pdfBtn.cloneNode(true);
+    pdfBtn.parentNode.replaceChild(newPdfBtn, pdfBtn);
+    newPdfBtn.addEventListener('click', () => {
+      downloadInvoicePDF(activeCheckoutOrder);
+    });
+  }
 
   // Reset cart
   cart = [];
@@ -3232,6 +3336,7 @@ async function initApp() {
   checkHashRoute();
   renderProducts(null);
   renderTestimonials();
+  renderProductShelves();
   updateCounts();
   setupShoppingMode();
   setupBirthdayCircle();
@@ -4020,7 +4125,7 @@ function setupBirthdayCircle() {
   const btnClaimBday = $('#btnClaimBday');
 
   if (bdayForm) {
-    bdayForm.addEventListener('submit', (e) => {
+    bdayForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const phone = bdayInputPhone.value.trim();
       const cleanPhone = phone.replace(/\D/g, '').slice(-10);
@@ -4032,12 +4137,26 @@ function setupBirthdayCircle() {
       const dateVal = bdayInputDate.value;
       if (!dateVal) return;
 
-      // Save registration state
+      // CHECK if birthday already registered (Firestore-backed lock)
+      const existing = await window.VFS_DB.getBirthday(cleanPhone);
+      if (existing) {
+        bdayResultText.innerHTML = `🎂 Birthday already registered for this number! Your BDAY3 coupon is unlocked.`;
+        bdayResultText.style.color = '#e67e22';
+        bdayResultText.style.display = 'block';
+        return;
+      }
+
+      // Save to Firestore (locks birthday permanently)
+      const bdayData = { phone: cleanPhone, birthday: dateVal, registeredAt: Date.now() };
+      await window.VFS_DB.saveBirthday(cleanPhone, bdayData);
+
+      // Also save locally for coupon access
       localStorage.setItem(`vfs_birthday_phone_${cleanPhone}`, dateVal);
       localStorage.setItem(`vfs_bday_coupon_unlocked_${cleanPhone}`, 'true');
 
       // Display results success message in line
-      bdayResultText.innerHTML = `Successfully joined! 🎁 Coupon code BDAY3 has been unlocked for phone: ${cleanPhone}`;
+      bdayResultText.innerHTML = `🎁 Successfully joined! Coupon code BDAY3 has been unlocked for phone: ${cleanPhone}`;
+      bdayResultText.style.color = '#2ecc71';
       bdayResultText.style.display = 'block';
       bdayForm.reset();
 
@@ -4063,3 +4182,225 @@ function setupBirthdayCircle() {
     btnClaimBday.addEventListener('click', closeCeleb);
   }
 }
+
+// ── Product Shelves: New Arrivals / Best Sellers / Sale ──
+async function renderProductShelves() {
+  const catalog = getFullCatalog();
+  const now = Date.now();
+  const mode = shoppingMode;
+
+  // Helper: make a mini card HTML for shelf
+  function shelfCard(p, badge) {
+    const priceInfo = getRetailPriceInfo(p);
+    const displayPrice = mode === 'wholesale'
+      ? (wholesaleUnlocked ? fmt(p.wsPrice || Math.round(p.price * 0.7)) : '🔒 Login to view')
+      : fmt(priceInfo.price);
+    const oldPrice = mode === 'retail' && priceInfo.mrp && priceInfo.mrp !== priceInfo.price
+      ? `<span style="text-decoration:line-through;color:#aaa;font-size:1.1rem;margin-left:4px;">${fmt(priceInfo.mrp)}</span>` : '';
+    const badgeHtml = badge ? `<span class="sale-ribbon">${badge}</span>` : '';
+    return `
+      <div class="p-card" style="cursor:pointer;position:relative;" onclick="openPDP(${p.id})">
+        ${badgeHtml}
+        <div class="p-img">
+          <img src="${clOpt(p.img, 300)}" alt="${p.name}" loading="lazy" style="width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;">
+        </div>
+        <div class="p-info" style="padding:10px 8px;">
+          <div class="p-meta" style="font-size:1.1rem;color:#888;">${p.meta || ''}</div>
+          <div class="p-name" style="font-size:1.3rem;font-weight:700;margin:3px 0;">${p.name}</div>
+          <div class="p-prices" style="font-size:1.4rem;font-weight:700;color:var(--color-secondary);">${displayPrice}${oldPrice}</div>
+        </div>
+      </div>`;
+  }
+
+  // 1. NEW ARRIVALS: newest 8 products by createdAt
+  const newArrivalsSection = $('#shelfNewArrivals');
+  const newArrivalsGrid = $('#shelfNewArrivalsGrid');
+  if (newArrivalsSection && newArrivalsGrid) {
+    const sorted = [...catalog]
+      .filter(p => window.VFS_STOCK_CACHE[p.id] === undefined || window.VFS_STOCK_CACHE[p.id] > 0)
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+      .slice(0, 8);
+    if (sorted.length > 0) {
+      newArrivalsGrid.innerHTML = sorted.map(p => shelfCard(p, 'New')).join('');
+      newArrivalsSection.style.display = 'block';
+    }
+  }
+
+  // 2. BEST SELLERS: products with most completed orders
+  const bestSellersSection = $('#shelfBestSellers');
+  const bestSellersGrid = $('#shelfBestSellersGrid');
+  if (bestSellersSection && bestSellersGrid) {
+    try {
+      const orders = await window.VFS_DB.getOrders();
+      const completedOrders = orders.filter(o => ['paid', 'dispatched', 'delivered', 'completed'].includes(o.status));
+      const saleCounts = {};
+      completedOrders.forEach(o => {
+        (o.items || []).forEach(item => {
+          saleCounts[item.id] = (saleCounts[item.id] || 0) + (item.qty || 1);
+        });
+      });
+      const topIds = Object.entries(saleCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8)
+        .map(([id]) => Number(id));
+      const topProducts = topIds
+        .map(id => catalog.find(p => p.id === id))
+        .filter(Boolean)
+        .filter(p => window.VFS_STOCK_CACHE[p.id] === undefined || window.VFS_STOCK_CACHE[p.id] > 0);
+      
+      if (topProducts.length > 0) {
+        bestSellersGrid.innerHTML = topProducts.map(p => shelfCard(p, '🏆')).join('');
+        bestSellersSection.style.display = 'block';
+      }
+    } catch(e) {
+      console.error("Failed to load best sellers:", e);
+    }
+  }
+
+  // 3. SALE: products with 50% decay badge
+  const saleSection = $('#shelfSale');
+  const saleGrid = $('#shelfSaleGrid');
+  if (saleSection && saleGrid) {
+    const saleProducts = catalog
+      .filter(p => {
+        const info = getRetailPriceInfo(p);
+        return info && info.badge === '50% OFF';
+      })
+      .filter(p => window.VFS_STOCK_CACHE[p.id] === undefined || window.VFS_STOCK_CACHE[p.id] > 0)
+      .slice(0, 8);
+    if (saleProducts.length > 0) {
+      saleGrid.innerHTML = saleProducts.map(p => shelfCard(p, '50% OFF')).join('');
+      saleSection.style.display = 'block';
+    }
+  }
+}
+
+// ── PDF Invoice Download ──
+function downloadInvoicePDF(order) {
+  if (!order) return;
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const pageW = 210;
+    let y = 20;
+
+    // Header
+    doc.setFillColor(17, 17, 17);
+    doc.rect(0, 0, pageW, 40, 'F');
+    doc.setTextColor(212, 175, 55);
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    doc.text('VFS JEWELS', 20, 18);
+    doc.setFontSize(9);
+    doc.setTextColor(200, 200, 200);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Premium Imitation Jewellery | Sowcarpet, Chennai', 20, 25);
+    doc.text('📞 +91 98407 57363 | vfsjewels.store', 20, 31);
+
+    // Invoice Title
+    doc.setTextColor(212, 175, 55);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`INVOICE #${order.id || 'N/A'}`, pageW - 20, 18, { align: 'right' });
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(200, 200, 200);
+    const orderDate = order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN');
+    doc.text(`Date: ${orderDate}`, pageW - 20, 25, { align: 'right' });
+    doc.text(`Mode: ${(order.mode || 'retail').toUpperCase()}`, pageW - 20, 31, { align: 'right' });
+
+    y = 50;
+
+    // Customer details
+    doc.setTextColor(30, 30, 30);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('BILL TO:', 20, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    y += 6;
+    doc.text(`Name: ${order.name || '-'}`, 20, y); y += 5;
+    doc.text(`Phone: ${order.phone || '-'}`, 20, y); y += 5;
+    doc.text(`Address: ${order.address || '-'}`, 20, y); y += 5;
+    if (order.gstin) { doc.text(`GSTIN: ${order.gstin}`, 20, y); y += 5; }
+    if (order.courier) { doc.text(`Courier: ${order.courier}`, 20, y); y += 5; }
+
+    y += 6;
+
+    // Table Header
+    doc.setFillColor(240, 240, 240);
+    doc.rect(15, y, pageW - 30, 8, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(30, 30, 30);
+    doc.text('Item', 18, y + 5.5);
+    doc.text('Qty', 130, y + 5.5, { align: 'right' });
+    doc.text('Price', 155, y + 5.5, { align: 'right' });
+    doc.text('Total', pageW - 18, y + 5.5, { align: 'right' });
+    y += 10;
+
+    // Items
+    doc.setFont('helvetica', 'normal');
+    (order.items || []).forEach(item => {
+      if (y > 260) { doc.addPage(); y = 20; }
+      doc.setTextColor(40, 40, 40);
+      const name = (item.name || '').substring(0, 45);
+      doc.text(name, 18, y);
+      doc.text(String(item.qty || 1), 130, y, { align: 'right' });
+      const itemPrice = item.price || 0;
+      doc.text(`Rs.${itemPrice}`, 155, y, { align: 'right' });
+      doc.text(`Rs.${(itemPrice * (item.qty || 1))}`, pageW - 18, y, { align: 'right' });
+      y += 7;
+      doc.setDrawColor(235, 235, 235);
+      doc.line(15, y - 1, pageW - 15, y - 1);
+    });
+
+    y += 5;
+
+    // Totals
+    const subtotal = order.subtotal || (order.items || []).reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+    const shipping = order.shipping || 90;
+    const gstAmt = order.gstAmount || 0;
+    const advanceAmt = order.advanceDeducted || 0;
+    const couponAmt = order.couponDiscount || 0;
+    const total = order.total || subtotal;
+
+    const addRow = (label, value, bold = false, color = [30, 30, 30]) => {
+      doc.setFont('helvetica', bold ? 'bold' : 'normal');
+      doc.setTextColor(...color);
+      doc.text(label, pageW - 80, y);
+      doc.text(`Rs.${value}`, pageW - 18, y, { align: 'right' });
+      y += 6;
+    };
+
+    addRow('Subtotal:', subtotal);
+    addRow('Shipping:', shipping);
+    if (gstAmt) addRow('GST (3%):', gstAmt);
+    if (couponAmt) addRow(`Coupon Discount (${order.couponCode || ''}):-`, couponAmt, false, [46, 139, 87]);
+    if (advanceAmt) addRow('Advance Deducted:-', advanceAmt, false, [46, 139, 87]);
+
+    doc.setDrawColor(212, 175, 55);
+    doc.setLineWidth(0.5);
+    doc.line(pageW - 85, y, pageW - 15, y);
+    y += 5;
+    addRow('TOTAL PAYABLE:', total, true, [17, 17, 17]);
+
+    // Footer
+    if (y < 255) {
+      y = 265;
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text('Thank you for shopping with VFS Jewels! For returns/support: wa.me/919840757363', pageW / 2, y, { align: 'center' });
+    }
+
+    doc.save(`VFS-Invoice-${order.id || 'order'}.pdf`);
+    toast('📄 Invoice PDF downloaded!');
+  } catch (err) {
+    console.error('PDF generation error:', err);
+    toast('PDF download failed. Please try again.');
+  }
+}
+
+// Make PDF function globally accessible
+window.downloadInvoicePDF = downloadInvoicePDF;
