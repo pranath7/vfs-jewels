@@ -90,6 +90,16 @@
     </div>
   </div>
 
+  <!-- SHOPPING MODE STATUS BAR -->
+  <div class="mode-status-bar" id="modeStatusBar">
+    <div class="page-width mode-status-inner">
+      <div class="mode-badge">
+        <span class="mode-dot"></span> Active Mode: <strong id="activeModeLabel">Retail (Personal Use)</strong>
+      </div>
+      <button class="switch-mode-btn" id="switchModeBtn">Switch Mode</button>
+    </div>
+  </div>
+
   <!-- HEADER -->
   <header class="site-header" id="siteHeader">
     <div class="page-width">
@@ -154,7 +164,7 @@
           <span class="tag">New Arrivals 2026</span>
           <h1>VFS Jewels — Premium Imitation Jewellery</h1>
           <p>Handcrafted 18K gold-plated jewellery with A++ Austrian crystals &amp; anti-tarnish shield.</p>
-          <a href="#products" class="btn-primary">Shop Bestsellers →</a>
+          <a href="#products" class="btn-primary" id="btnStartShopping">Start Shopping →</a>
         </div></div>
       </div>
       <div class="hero-slide">
@@ -750,6 +760,167 @@
       <button class="btn-primary" id="btnPolicyCloseShipping" style="width:100%;margin-top:20px;font-size:1.3rem;padding:12px;background:#121212;color:#D4AF37;border:1px solid #D4AF37;cursor:pointer;justify-content:center;">
         Close Policy
       </button>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       SHOPPING MODE MODALS (RETAIL VS WHOLESALE)
+       ========================================================= -->
+  
+  <!-- MODE SELECTOR MODAL -->
+  <div class="modal-bg" id="modeSelectorModal" style="display:none;">
+    <div class="pin-modal mode-modal" style="max-width:650px;padding:30px;">
+      <h3 style="font-size:2.2rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;text-align:center;color:#121212;">Welcome to VFS Jewels</h3>
+      <p style="font-size:1.3rem;color:#666;margin-bottom:24px;text-align:center;">Please select your shopping mode to proceed</p>
+      
+      <div class="mode-cards-container" style="display:flex;gap:20px;margin-bottom:20px;">
+        <!-- Retail Card -->
+        <div class="mode-selection-card" id="selectRetailCard" style="flex:1;border:2px solid #ccc;border-radius:8px;padding:20px;cursor:pointer;transition:all 0.3s ease;text-align:center;">
+          <div style="font-size:3rem;margin-bottom:10px;">🛍️</div>
+          <h4 style="font-size:1.6rem;font-weight:700;margin-bottom:8px;color:#121212;">Retail Customer</h4>
+          <p style="font-size:1.2rem;color:#666;line-height:1.4;">For personal use.<br>Standard pricing.<br>No minimum order.</p>
+          <button class="btn-primary" style="margin-top:15px;width:100%;font-size:1.2rem;padding:8px;background:#121212;color:#D4AF37;">Shop Retail</button>
+        </div>
+        
+        <!-- Wholesale Card -->
+        <div class="mode-selection-card" id="selectWholesaleCard" style="flex:1;border:2px solid #ccc;border-radius:8px;padding:20px;cursor:pointer;transition:all 0.3s ease;text-align:center;">
+          <div style="font-size:3rem;margin-bottom:10px;">💼</div>
+          <h4 style="font-size:1.6rem;font-weight:700;margin-bottom:8px;color:#121212;">Wholesale Buyer</h4>
+          <p style="font-size:1.2rem;color:#666;line-height:1.4;">For resellers/businesses.<br>Wholesale pricing.<br>Login & Advance required.</p>
+          <button class="btn-primary" style="margin-top:15px;width:100%;font-size:1.2rem;padding:8px;background:#D4AF37;color:#121212;border:none;">Shop Wholesale</button>
+        </div>
+      </div>
+      
+      <div style="font-size:1.1rem;color:#777;text-align:center;line-height:1.4;">
+        Note: You can switch between Retail and Wholesale modes at any time using the toggle bar in the header.
+      </div>
+    </div>
+  </div>
+
+  <!-- WHOLESALE TERMS MODAL -->
+  <div class="modal-bg" id="wholesaleTermsModal" style="display:none;">
+    <div class="pin-modal" style="max-width:550px;padding:30px;">
+      <h3 style="font-size:2.2rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;text-align:center;color:#121212;">Wholesale T&amp;C 📜</h3>
+      <p style="font-size:1.3rem;color:#666;margin-bottom:20px;text-align:center;">Please read and accept the terms to unlock wholesale prices.</p>
+      
+      <div style="max-height:250px;overflow-y:auto;border:1px solid #ddd;padding:15px;border-radius:6px;font-size:1.2rem;line-height:1.5;color:#444;margin-bottom:20px;background:#fdfdfd;">
+        <strong>1. Wholesale Eligibility</strong><br>
+        Wholesale accounts are strictly for resellers, shop owners, and boutique operators buying for resale purposes only. Personal-use orders under wholesale pricing are prohibited.<br><br>
+        
+        <strong>2. Advance Payment System</strong><br>
+        To unlock wholesale prices and place orders, buyers must pay an advance:
+        <ul>
+          <li>First order: ₹1,000 advance payment.</li>
+          <li>Subsequent orders: ₹500 advance payment per order.</li>
+        </ul>
+        This advance amount is automatically adjusted (deducted) in the final invoice/bill generated by admin.<br><br>
+        
+        <strong>3. Damaged or Missing Claims Policy</strong><br>
+        An uninterrupted **unboxing video** starting from showing the sealed package address label to opening and inspecting every item is strictly required for damaged or missing product claims. Claims without a complete unboxing video will not be approved.<br><br>
+        
+        <strong>4. Returns &amp; Exchange</strong><br>
+        We do not offer returns/exchanges unless the product is defective or damaged in transit, verified via unboxing video.
+      </div>
+      
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;cursor:pointer;">
+        <input type="checkbox" id="agreeWholesaleTerms" style="width:18px;height:18px;cursor:pointer;">
+        <label for="agreeWholesaleTerms" style="font-size:1.2rem;font-weight:700;color:#121212;cursor:pointer;">I agree to the Wholesale Terms &amp; Conditions</label>
+      </div>
+      
+      <div style="display:flex;gap:12px;">
+        <button class="btn-primary" id="btnCancelTerms" style="flex:1;font-size:1.3rem;padding:10px;background:#ccc;color:#333;border:none;">Go Back</button>
+        <button class="btn-primary" id="btnAcceptTerms" style="flex:2;font-size:1.3rem;padding:10px;background:#121212;color:#D4AF37;opacity:0.6;cursor:not-allowed;" disabled>Accept &amp; Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHOLESALE LOGIN MODAL -->
+  <div class="modal-bg" id="wholesaleLoginModal" style="display:none;">
+    <div class="pin-modal" style="max-width:450px;padding:30px;">
+      <h3 style="font-size:2.2rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;text-align:center;color:#121212;">Wholesale Login 🔑</h3>
+      <p style="font-size:1.3rem;color:#666;margin-bottom:20px;text-align:center;">Enter your mobile number to log in or register.</p>
+      
+      <div id="loginStepPhone">
+        <div style="margin-bottom:15px;">
+          <label style="display:block;font-size:1.2rem;font-weight:700;margin-bottom:6px;color:#121212;">Mobile Number</label>
+          <input type="tel" id="wholesalePhoneInput" placeholder="Enter 10-digit mobile number" maxlength="10" style="width:100%;padding:10px;font-size:1.4rem;border:1px solid #ccc;border-radius:4px;">
+        </div>
+        <button class="btn-primary" id="btnSendOTP" style="width:100%;font-size:1.3rem;padding:10px;background:#121212;color:#D4AF37;">Send OTP</button>
+      </div>
+      
+      <div id="loginStepOTP" style="display:none;">
+        <div style="margin-bottom:15px;">
+          <label style="display:block;font-size:1.2rem;font-weight:700;margin-bottom:6px;color:#121212;">Enter OTP</label>
+          <input type="text" id="wholesaleOtpInput" placeholder="Enter 4-digit OTP" maxlength="4" style="width:100%;padding:10px;font-size:1.4rem;border:1px solid #ccc;border-radius:4px;text-align:center;letter-spacing:10px;">
+          <span style="display:block;font-size:1.1rem;color:#888;margin-top:6px;text-align:center;">Hint: Enter mock code 1234 to verify.</span>
+        </div>
+        <button class="btn-primary" id="btnVerifyOTP" style="width:100%;font-size:1.3rem;padding:10px;background:#121212;color:#D4AF37;">Verify OTP</button>
+      </div>
+
+      <div id="loginStepRegister" style="display:none;">
+        <h4 style="font-size:1.4rem;font-weight:700;color:#121212;margin-bottom:12px;border-bottom:1px solid #eee;padding-bottom:6px;">Complete Registration</h4>
+        <div style="margin-bottom:10px;">
+          <label style="display:block;font-size:1.1rem;font-weight:700;margin-bottom:4px;color:#121212;">Contact Person Name</label>
+          <input type="text" id="regNameInput" placeholder="Enter your full name" style="width:100%;padding:8px;font-size:1.2rem;border:1px solid #ccc;border-radius:4px;">
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="display:block;font-size:1.1rem;font-weight:700;margin-bottom:4px;color:#121212;">Business / Shop Name</label>
+          <input type="text" id="regBusinessInput" placeholder="Enter business name" style="width:100%;padding:8px;font-size:1.2rem;border:1px solid #ccc;border-radius:4px;">
+        </div>
+        <div style="margin-bottom:15px;">
+          <label style="display:block;font-size:1.1rem;font-weight:700;margin-bottom:4px;color:#121212;">Full Shipping Address</label>
+          <textarea id="regAddressInput" placeholder="Enter detailed address for shipping" rows="2" style="width:100%;padding:8px;font-size:1.2rem;border:1px solid #ccc;border-radius:4px;resize:none;"></textarea>
+        </div>
+        <button class="btn-primary" id="btnRegisterUser" style="width:100%;font-size:1.3rem;padding:10px;background:#D4AF37;color:#121212;border:none;">Complete Registration</button>
+      </div>
+      
+      <button class="btn-primary" id="btnCancelLogin" style="width:100%;margin-top:12px;font-size:1.2rem;padding:8px;background:#eee;color:#333;border:none;">Cancel</button>
+    </div>
+  </div>
+
+  <!-- WHOLESALE UNLOCK MODAL -->
+  <div class="modal-bg" id="wholesaleUnlockModal" style="display:none;">
+    <div class="pin-modal" style="max-width:500px;padding:30px;">
+      <h3 style="font-size:2.2rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;text-align:center;color:#121212;">Unlock Prices 🔐</h3>
+      <p style="font-size:1.3rem;color:#666;margin-bottom:20px;text-align:center;" id="unlockPriceText">Please pay advance to activate wholesale view.</p>
+      
+      <div style="border:1px dashed #D4AF37;background:#FFFDF0;padding:15px;border-radius:6px;font-size:1.2rem;line-height:1.4;color:#6d5a15;margin-bottom:20px;">
+        <strong>Advance Payment System Rules:</strong><br>
+        Wholesale customers must pay a small advance to unlock prices and place orders. The advance is adjusted in the final bill. The first order requires ₹1,000, and every order after that requires ₹500.
+      </div>
+      
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:1.4rem;color:#121212;font-weight:700;margin-bottom:6px;">Payable Advance Amount</div>
+        <div style="font-size:3rem;font-weight:700;color:#D4AF37;" id="unlockAmountLabel">₹1,000</div>
+      </div>
+      
+      <!-- UPI Simulation UI -->
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+        <div style="font-size:1.2rem;font-weight:700;color:#121212;margin-bottom:4px;">Select payment option:</div>
+        <button class="btn-primary upi-pay-btn" data-method="gpay" style="padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.3rem;background:#4285F4;color:#fff;border:none;">
+          <span>Pay with Google Pay</span>
+        </button>
+        <button class="btn-primary upi-pay-btn" data-method="phonepe" style="padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.3rem;background:#5f259f;color:#fff;border:none;">
+          <span>Pay with PhonePe</span>
+        </button>
+        <button class="btn-primary upi-pay-btn" data-method="paytm" style="padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.3rem;background:#00baf2;color:#fff;border:none;">
+          <span>Pay with Paytm</span>
+        </button>
+        
+        <div style="display:flex;align-items:center;justify-content:center;margin:8px 0;font-size:1.1rem;color:#888;">— OR SCAN QR CODE —</div>
+        
+        <!-- Mock QR Code visual -->
+        <div style="display:flex;justify-content:center;align-items:center;margin-bottom:10px;">
+          <div style="width:140px;height:140px;border:1px solid #ddd;border-radius:4px;padding:8px;background:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;">
+            <!-- Simple simulated QR Grid -->
+            <div style="width:100%;height:100%;background-image:linear-gradient(45deg, #121212 25%, transparent 25%), linear-gradient(-45deg, #121212 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #121212 75%), linear-gradient(-45deg, transparent 75%, #121212 75%);background-size:20px 20px;opacity:0.8;"></div>
+          </div>
+        </div>
+        
+        <button class="btn-primary" id="btnSimulateSuccess" style="padding:12px;font-size:1.3rem;background:#25D366;color:#fff;border:none;font-weight:700;">Simulate Payment Success (UPI)</button>
+      </div>
+      
+      <button class="btn-primary" id="btnCancelUnlock" style="width:100%;font-size:1.2rem;padding:8px;background:#eee;color:#333;border:none;">Close</button>
     </div>
   </div>
 

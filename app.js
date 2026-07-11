@@ -292,9 +292,27 @@ const clOpt = (url, width) => {
   return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width}/`);
 };
 
+// ── Shopping Mode State (Retail/Wholesale) ──
+let shoppingMode = localStorage.getItem('vfs_shopping_mode') || 'retail';
+let wholesaleUser = null;
+try {
+  const storedUser = localStorage.getItem('vfs_wholesale_user');
+  wholesaleUser = storedUser ? JSON.parse(storedUser) : null;
+} catch (e) {
+  wholesaleUser = null;
+}
+let wholesaleUnlocked = localStorage.getItem('vfs_wholesale_unlocked') === 'true';
+
 function saveState() {
   localStorage.setItem('vfs_cart', JSON.stringify(cart));
   localStorage.setItem('vfs_wl', JSON.stringify(wishlist));
+  localStorage.setItem('vfs_shopping_mode', shoppingMode);
+  if (wholesaleUser) {
+    localStorage.setItem('vfs_wholesale_user', JSON.stringify(wholesaleUser));
+  } else {
+    localStorage.removeItem('vfs_wholesale_user');
+  }
+  localStorage.setItem('vfs_wholesale_unlocked', wholesaleUnlocked ? 'true' : 'false');
 }
 
 // ── Toast ──
@@ -411,8 +429,44 @@ function renderProducts(filter) {
         <div class="product-row-scroll" id="scrollRow_${cat}">
           ${visibleList.map(p => {
             const isWL = wishlist.includes(p.id);
-            const isDiscounted = p.mrp && p.mrp > p.price;
-            const off = isDiscounted ? pct(p.price, p.mrp) : 0;
+            
+            let priceHtml = '';
+            let quickActionHtml = '';
+            
+            if (shoppingMode === 'retail') {
+              const retailPrice = p.price || 499;
+              const retailMrp = p.mrp || Math.round(retailPrice * 1.5);
+              const isDiscounted = retailMrp > retailPrice;
+              const off = isDiscounted ? pct(retailPrice, retailMrp) : 0;
+              
+              priceHtml = `
+                <span class="price-now">${fmt(retailPrice)}</span>
+                ${isDiscounted ? `
+                  <span class="price-was">${fmt(retailMrp)}</span>
+                  <span class="price-off">${off}% OFF</span>
+                ` : ''}
+              `;
+              
+              quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
+            } else {
+              // Wholesale mode
+              if (!wholesaleUnlocked) {
+                priceHtml = `<span class="price-now" style="font-size:1.15rem; color:#ff3b30; font-weight:700;">🔒 Locked (Pay Advance)</span>`;
+                quickActionHtml = `<div class="p-quick unlock-prices-btn" style="background:#D4AF37; color:#121212; font-weight:700;">Unlock Prices</div>`;
+              } else {
+                const wsPrice = p.wholesalePrice || Math.round((p.price || 499) * 0.6);
+                const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
+                const off = pct(wsPrice, retailMrp);
+                
+                priceHtml = `
+                  <span class="price-now" style="color:var(--color-primary);">${fmt(wsPrice)}</span>
+                  <span class="price-was">${fmt(retailMrp)}</span>
+                  <span class="price-off">${off}% OFF</span>
+                `;
+                quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
+              }
+            }
+            
             return `
               <div class="p-card" data-id="${p.id}">
                 ${p.badge ? `<span class="p-badge${p.badge === 'Sale' ? ' sale' : ''}">${p.badge}</span>` : ''}
@@ -421,26 +475,14 @@ function renderProducts(filter) {
                 </button>
                 <div class="p-img">
                   <img src="${clOpt(p.img, 400)}" alt="${p.name}" loading="lazy">
-                  ${p.priceOnRequest ? `
-                    <div class="p-quick inquire-btn" style="background:#25D366;color:#fff;">Request Price</div>
-                  ` : `
-                    <div class="p-quick" data-add="${p.id}">Add to Cart</div>
-                  `}
+                  ${quickActionHtml}
                 </div>
                 <div class="p-info">
                   <div class="p-meta">${p.meta}</div>
                   <div class="p-name">${p.name}</div>
                   <div class="p-rating"><span class="stars">${stars(p.rating)}</span><span class="count">(${p.reviews})</span></div>
                   <div class="p-prices">
-                    ${p.priceOnRequest ? `
-                      <span class="price-now" style="font-size: 1.25rem; font-weight:700; color:var(--color-secondary);">Price on Request</span>
-                    ` : `
-                      <span class="price-now">${fmt(p.price)}</span>
-                      ${isDiscounted ? `
-                        <span class="price-was">${fmt(p.mrp)}</span>
-                        <span class="price-off">${off}% OFF</span>
-                      ` : ''}
-                    `}
+                    ${priceHtml}
                   </div>
                 </div>
               </div>`;
@@ -499,6 +541,15 @@ function renderProducts(filter) {
     });
   });
 
+  container.querySelectorAll('.unlock-prices-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (window.VFS_OPEN_UNLOCK_MODAL) {
+        window.VFS_OPEN_UNLOCK_MODAL();
+      }
+    });
+  });
+
   container.querySelectorAll('.p-card').forEach(card => {
     card.addEventListener('click', () => {
       const id = +card.dataset.id;
@@ -520,8 +571,43 @@ function loadNextBatch(cat, list, scrollRow) {
 
   newItems.forEach(p => {
     const isWL = wishlist.includes(p.id);
-    const isDiscounted = p.mrp && p.mrp > p.price;
-    const off = isDiscounted ? pct(p.price, p.mrp) : 0;
+    
+    let priceHtml = '';
+    let quickActionHtml = '';
+    
+    if (shoppingMode === 'retail') {
+      const retailPrice = p.price || 499;
+      const retailMrp = p.mrp || Math.round(retailPrice * 1.5);
+      const isDiscounted = retailMrp > retailPrice;
+      const off = isDiscounted ? pct(retailPrice, retailMrp) : 0;
+      
+      priceHtml = `
+        <span class="price-now">${fmt(retailPrice)}</span>
+        ${isDiscounted ? `
+          <span class="price-was">${fmt(retailMrp)}</span>
+          <span class="price-off">${off}% OFF</span>
+        ` : ''}
+      `;
+      
+      quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
+    } else {
+      // Wholesale mode
+      if (!wholesaleUnlocked) {
+        priceHtml = `<span class="price-now" style="font-size:1.15rem; color:#ff3b30; font-weight:700;">🔒 Locked (Pay Advance)</span>`;
+        quickActionHtml = `<div class="p-quick unlock-prices-btn" style="background:#D4AF37; color:#121212; font-weight:700;">Unlock Prices</div>`;
+      } else {
+        const wsPrice = p.wholesalePrice || Math.round((p.price || 499) * 0.6);
+        const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
+        const off = pct(wsPrice, retailMrp);
+        
+        priceHtml = `
+          <span class="price-now" style="color:var(--color-primary);">${fmt(wsPrice)}</span>
+          <span class="price-was">${fmt(retailMrp)}</span>
+          <span class="price-off">${off}% OFF</span>
+        `;
+        quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
+      }
+    }
     
     const cardHtml = `
       <div class="p-card" data-id="${p.id}">
@@ -531,26 +617,14 @@ function loadNextBatch(cat, list, scrollRow) {
         </button>
         <div class="p-img">
           <img src="${clOpt(p.img, 400)}" alt="${p.name}" loading="lazy">
-          ${p.priceOnRequest ? `
-            <div class="p-quick inquire-btn" style="background:#25D366;color:#fff;">Request Price</div>
-          ` : `
-            <div class="p-quick" data-add="${p.id}">Add to Cart</div>
-          `}
+          ${quickActionHtml}
         </div>
         <div class="p-info">
           <div class="p-meta">${p.meta}</div>
           <div class="p-name">${p.name}</div>
           <div class="p-rating"><span class="stars">${stars(p.rating)}</span><span class="count">(${p.reviews})</span></div>
           <div class="p-prices">
-            ${p.priceOnRequest ? `
-              <span class="price-now" style="font-size: 1.25rem; font-weight:700; color:var(--color-secondary);">Price on Request</span>
-            ` : `
-              <span class="price-now">${fmt(p.price)}</span>
-              ${isDiscounted ? `
-                <span class="price-was">${fmt(p.mrp)}</span>
-                <span class="price-off">${off}% OFF</span>
-              ` : ''}
-            `}
+            ${priceHtml}
           </div>
         </div>
       </div>
@@ -602,6 +676,17 @@ function loadNextBatch(cat, list, scrollRow) {
       addBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         addToCart(+addBtn.dataset.add);
+      });
+    }
+
+    // 3b. Unlock prices button
+    const unlockBtn = card.querySelector('.unlock-prices-btn');
+    if (unlockBtn) {
+      unlockBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (window.VFS_OPEN_UNLOCK_MODAL) {
+          window.VFS_OPEN_UNLOCK_MODAL();
+        }
       });
     }
 
@@ -1276,39 +1361,63 @@ function openPDP(id) {
 
   // 2. Details Info
   const isWL = wishlist.includes(p.id);
-  const isDiscounted = p.mrp && p.mrp > p.price;
-  const off = isDiscounted ? pct(p.price, p.mrp) : 0;
   const infoContainer = $('#pdpInfo');
   
   const catLabel = p.cat ? p.cat.charAt(0).toUpperCase() + p.cat.slice(1) : 'Jewellery';
   const sku = `ZU1-${p.id}`;
   
-  infoContainer.innerHTML = `
-    <h1 class="pdp-title">${p.name} ( ${sku} )</h1>
+  let priceHtml = '';
+  let qtyCartHtml = '';
+  
+  if (shoppingMode === 'retail') {
+    const retailPrice = p.price || 499;
+    const retailMrp = p.mrp || Math.round(retailPrice * 1.5);
+    const isDisc = retailMrp > retailPrice;
+    const offPct = isDisc ? pct(retailPrice, retailMrp) : 0;
     
-    <div class="pdp-price-box">
-      ${p.priceOnRequest ? `
-        <span class="pdp-price-now" style="font-size: 1.8rem; font-weight:700; color:var(--color-secondary);">Price on Request</span>
-      ` : `
-        <span class="pdp-price-now">${fmt(p.price)}</span>
-        ${isDiscounted ? `
-          <span class="pdp-price-was">${fmt(p.mrp)}</span>
-          <span class="pdp-price-off">${off}% OFF</span>
-        ` : ''}
-      `}
-    </div>
+    priceHtml = `
+      <span class="pdp-price-now">${fmt(retailPrice)}</span>
+      ${isDisc ? `
+        <span class="pdp-price-was">${fmt(retailMrp)}</span>
+        <span class="pdp-price-off">${offPct}% OFF</span>
+      ` : ''}
+    `;
     
-    <div class="pdp-swipe-helper">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m17 7 5 5-5 5M7 7l-5 5 5 5M2 12h20"/></svg>
-      <span>Swipe to see more products</span>
-    </div>
-    
-    <div class="pdp-qty-cart-row">
-      ${p.priceOnRequest ? `
-        <button class="pdp-btn-add-new" id="pdpBtnAdd" data-id="${p.id}" style="width: 100%; background: #25D366; border-color: #25D366; color: #fff;">
-          REQUEST PRICE ON WHATSAPP
+    qtyCartHtml = `
+      <div class="pdp-qty-selector">
+        <button id="pdpQtyDec" class="pdp-qty-btn">−</button>
+        <input type="number" id="pdpQtyInput" class="pdp-qty-input" value="1" min="1" readonly>
+        <button id="pdpQtyInc" class="pdp-qty-btn">+</button>
+      </div>
+      <button class="pdp-btn-add-new" id="pdpBtnAdd" data-id="${p.id}">
+        ADD TO CART
+      </button>
+    `;
+  } else {
+    // Wholesale Mode
+    if (!wholesaleUnlocked) {
+      priceHtml = `
+        <span class="pdp-price-now" style="font-size: 1.8rem; font-weight:700; color:#ff3b30; display:flex; align-items:center; gap:6px;">
+          🔒 Locked (Pay Advance to View)
+        </span>
+      `;
+      qtyCartHtml = `
+        <button class="pdp-btn-add-new" id="pdpUnlockTrigger" style="width: 100%; background: #D4AF37; border-color: #D4AF37; color: #121212; font-weight:700;">
+          PAY ADVANCE TO UNLOCK WHOLESALE PRICES
         </button>
-      ` : `
+      `;
+    } else {
+      const wsPrice = p.wholesalePrice || Math.round((p.price || 499) * 0.6);
+      const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
+      const offPct = pct(wsPrice, retailMrp);
+      
+      priceHtml = `
+        <span class="pdp-price-now" style="color:var(--color-primary);">${fmt(wsPrice)} <span style="font-size:1.1rem;font-weight:400;color:#888;">(Wholesale Price)</span></span>
+        <span class="pdp-price-was">${fmt(retailMrp)}</span>
+        <span class="pdp-price-off">${offPct}% OFF</span>
+      `;
+      
+      qtyCartHtml = `
         <div class="pdp-qty-selector">
           <button id="pdpQtyDec" class="pdp-qty-btn">−</button>
           <input type="number" id="pdpQtyInput" class="pdp-qty-input" value="1" min="1" readonly>
@@ -1317,7 +1426,24 @@ function openPDP(id) {
         <button class="pdp-btn-add-new" id="pdpBtnAdd" data-id="${p.id}">
           ADD TO CART
         </button>
-      `}
+      `;
+    }
+  }
+
+  infoContainer.innerHTML = `
+    <h1 class="pdp-title">${p.name} ( ${sku} )</h1>
+    
+    <div class="pdp-price-box">
+      ${priceHtml}
+    </div>
+    
+    <div class="pdp-swipe-helper">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m17 7 5 5-5 5M7 7l-5 5 5 5M2 12h20"/></svg>
+      <span>Swipe to see more products</span>
+    </div>
+    
+    <div class="pdp-qty-cart-row">
+      ${qtyCartHtml}
     </div>
     
     <div class="pdp-wishlist-row">
@@ -1379,19 +1505,29 @@ function openPDP(id) {
     });
   }
 
-  $('#pdpBtnAdd').addEventListener('click', () => {
-    if (p.priceOnRequest) {
-      const text = `Hi VFS Jewels, I would like to inquire about the price of Kada: ${p.name} (SKU: ZU1-${p.id}).`;
-      window.open(`https://api.whatsapp.com/send?phone=919840757363&text=${encodeURIComponent(text)}`, '_blank');
-      return;
-    }
-    const isGiftChecked = $('#pdpGiftWrap').checked;
-    const qty = parseInt(qtyInput.value) || 1;
-    addToCart(p.id, qty);
-    if (isGiftChecked) {
-      addGiftWrapToCart();
-    }
-  });
+  const btnAdd = $('#pdpBtnAdd');
+  if (btnAdd) {
+    btnAdd.addEventListener('click', () => {
+      const isGiftChecked = $('#pdpGiftWrap').checked;
+      const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
+      addToCart(p.id, qty);
+      if (isGiftChecked) {
+        addGiftWrapToCart();
+      }
+    });
+  }
+
+  const pdpUnlockTrigger = $('#pdpUnlockTrigger');
+  if (pdpUnlockTrigger) {
+    pdpUnlockTrigger.addEventListener('click', () => {
+      // Close overlay
+      $('#pdpOverlay').classList.remove('active');
+      document.body.style.overflow = '';
+      if (window.VFS_OPEN_UNLOCK_MODAL) {
+        window.VFS_OPEN_UNLOCK_MODAL();
+      }
+    });
+  }
 
   const btnWish = $('#pdpBtnWish');
   const wishTextSpan = $('#pdpWishText');
@@ -2660,6 +2796,7 @@ async function initApp() {
   renderProducts(null);
   renderTestimonials();
   updateCounts();
+  setupShoppingMode();
 }
 
 window.addEventListener('load', initApp);
@@ -3151,3 +3288,247 @@ window.autofillReturnProofs = function(e) {
   // Expose function globally
   window.VFS_OPEN_IMAGE_ZOOM = openZoom;
 })();
+
+function setupShoppingMode() {
+  const statusbar = $('#modeStatusBar');
+  const label = $('#activeModeLabel');
+  const switchBtn = $('#switchModeBtn');
+  
+  const modeSelectorModal = $('#modeSelectorModal');
+  const wholesaleTermsModal = $('#wholesaleTermsModal');
+  const wholesaleLoginModal = $('#wholesaleLoginModal');
+  const wholesaleUnlockModal = $('#wholesaleUnlockModal');
+  
+  if (!statusbar || !label || !switchBtn) return;
+
+  // Update status bar UI
+  function updateModeUI() {
+    if (shoppingMode === 'retail') {
+      label.innerHTML = 'Retail (Personal Use)';
+      statusbar.querySelector('.mode-dot').classList.remove('wholesale-locked');
+      switchBtn.innerHTML = 'Switch to Wholesale';
+    } else {
+      statusbar.querySelector('.mode-dot').classList.add('wholesale-locked');
+      if (wholesaleUnlocked) {
+        statusbar.querySelector('.mode-dot').classList.remove('wholesale-locked');
+        label.innerHTML = `Wholesale (${wholesaleUser ? wholesaleUser.name : 'Business'}) — Unlocked ✅`;
+        switchBtn.innerHTML = 'Switch to Retail';
+      } else {
+        label.innerHTML = `Wholesale (${wholesaleUser ? wholesaleUser.name : 'Business'}) — Locked 🔒`;
+        switchBtn.innerHTML = 'Unlock / Switch';
+      }
+    }
+  }
+
+  updateModeUI();
+
+  // Bind Start Shopping button
+  const startBtn = $('#btnStartShopping');
+  if (startBtn) {
+    startBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      modeSelectorModal.style.display = 'flex';
+    });
+  }
+
+  // Bind switch button in header status bar
+  if (switchBtn) {
+    switchBtn.addEventListener('click', () => {
+      if (shoppingMode === 'retail') {
+        modeSelectorModal.style.display = 'flex';
+      } else {
+        if (!wholesaleUnlocked) {
+          modeSelectorModal.style.display = 'flex';
+        } else {
+          shoppingMode = 'retail';
+          saveState();
+          updateModeUI();
+          renderProducts(null);
+          toast('Switched to Retail Mode');
+        }
+      }
+    });
+  }
+
+  // Selector Modal actions
+  $('#selectRetailCard').addEventListener('click', () => {
+    shoppingMode = 'retail';
+    saveState();
+    modeSelectorModal.style.display = 'none';
+    updateModeUI();
+    renderProducts(null);
+    toast('Switched to Retail Mode successfully!');
+  });
+
+  $('#selectWholesaleCard').addEventListener('click', () => {
+    modeSelectorModal.style.display = 'none';
+    if (!wholesaleUser) {
+      wholesaleTermsModal.style.display = 'flex';
+    } else {
+      shoppingMode = 'wholesale';
+      saveState();
+      updateModeUI();
+      renderProducts(null);
+      if (!wholesaleUnlocked) {
+        openWholesaleUnlockModal();
+      } else {
+        toast(`Welcome back, ${wholesaleUser.name}!`);
+      }
+    }
+  });
+
+  // Wholesale T&C checkbox check
+  const termsCheckbox = $('#agreeWholesaleTerms');
+  const acceptTermsBtn = $('#btnAcceptTerms');
+  
+  if (termsCheckbox && acceptTermsBtn) {
+    termsCheckbox.addEventListener('change', () => {
+      if (termsCheckbox.checked) {
+        acceptTermsBtn.removeAttribute('disabled');
+        acceptTermsBtn.style.opacity = '1';
+        acceptTermsBtn.style.cursor = 'pointer';
+      } else {
+        acceptTermsBtn.setAttribute('disabled', 'true');
+        acceptTermsBtn.style.opacity = '0.6';
+        acceptTermsBtn.style.cursor = 'not-allowed';
+      }
+    });
+  }
+
+  $('#btnCancelTerms').addEventListener('click', () => {
+    wholesaleTermsModal.style.display = 'none';
+    modeSelectorModal.style.display = 'flex';
+  });
+
+  acceptTermsBtn.addEventListener('click', () => {
+    if (!termsCheckbox.checked) return;
+    wholesaleTermsModal.style.display = 'none';
+    $('#loginStepPhone').style.display = 'block';
+    $('#loginStepOTP').style.display = 'none';
+    $('#loginStepRegister').style.display = 'none';
+    $('#wholesalePhoneInput').value = '';
+    $('#wholesaleOtpInput').value = '';
+    wholesaleLoginModal.style.display = 'flex';
+  });
+
+  $('#btnCancelLogin').addEventListener('click', () => {
+    wholesaleLoginModal.style.display = 'none';
+    modeSelectorModal.style.display = 'flex';
+  });
+
+  // Send OTP
+  let tempPhone = '';
+  $('#btnSendOTP').addEventListener('click', () => {
+    const phone = $('#wholesalePhoneInput').value.trim();
+    if (phone.length !== 10 || isNaN(phone)) {
+      toast('Enter a valid 10-digit number');
+      return;
+    }
+    tempPhone = phone;
+    toast(`OTP sent to +91 ${phone}!`);
+    $('#loginStepPhone').style.display = 'none';
+    $('#loginStepOTP').style.display = 'block';
+  });
+
+  // Verify OTP
+  $('#btnVerifyOTP').addEventListener('click', () => {
+    const otp = $('#wholesaleOtpInput').value.trim();
+    if (otp !== '1234' && otp.length !== 4) {
+      toast('Invalid OTP. Use 1234.');
+      return;
+    }
+    
+    const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
+    if (mockUsers[tempPhone]) {
+      wholesaleUser = mockUsers[tempPhone];
+      shoppingMode = 'wholesale';
+      saveState();
+      wholesaleLoginModal.style.display = 'none';
+      updateModeUI();
+      renderProducts(null);
+      if (!wholesaleUnlocked) {
+        openWholesaleUnlockModal();
+      } else {
+        toast(`Welcome back, ${wholesaleUser.name}!`);
+      }
+    } else {
+      $('#loginStepOTP').style.display = 'none';
+      $('#loginStepRegister').style.display = 'block';
+    }
+  });
+
+  // Complete Registration
+  $('#btnRegisterUser').addEventListener('click', () => {
+    const name = $('#regNameInput').value.trim();
+    const business = $('#regBusinessInput').value.trim();
+    const address = $('#regAddressInput').value.trim();
+    
+    if (!name || !business || !address) {
+      toast('Please fill all fields');
+      return;
+    }
+    
+    wholesaleUser = {
+      phone: tempPhone,
+      name: name,
+      businessName: business,
+      address: address,
+      ordersCount: 0
+    };
+    
+    const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
+    mockUsers[tempPhone] = wholesaleUser;
+    localStorage.setItem('vfs_wholesale_users', JSON.stringify(mockUsers));
+    
+    shoppingMode = 'wholesale';
+    saveState();
+    wholesaleLoginModal.style.display = 'none';
+    updateModeUI();
+    renderProducts(null);
+    
+    openWholesaleUnlockModal();
+    toast('Registration completed!');
+  });
+
+  // Unlock Modal helper
+  function openWholesaleUnlockModal() {
+    const unlockAmountLabel = $('#unlockAmountLabel');
+    const unlockPriceText = $('#unlockPriceText');
+    
+    const isFirstOrder = !wholesaleUser || wholesaleUser.ordersCount === 0;
+    const amount = isFirstOrder ? 1000 : 500;
+    
+    unlockAmountLabel.innerHTML = `₹${amount.toLocaleString('en-IN')}`;
+    unlockPriceText.innerHTML = isFirstOrder
+      ? 'Pay ₹1,000 first order advance to unlock wholesale prices.'
+      : 'Pay ₹500 advance to unlock wholesale prices for your next order.';
+      
+    wholesaleUnlockModal.style.display = 'flex';
+  }
+
+  $('#btnCancelUnlock').addEventListener('click', () => {
+    wholesaleUnlockModal.style.display = 'none';
+  });
+
+  function processUnlockSuccess() {
+    wholesaleUnlocked = true;
+    saveState();
+    wholesaleUnlockModal.style.display = 'none';
+    updateModeUI();
+    renderProducts(null);
+    toast('Wholesale prices unlocked! 🎉');
+  }
+
+  $('#btnSimulateSuccess').addEventListener('click', processUnlockSuccess);
+  
+  document.querySelectorAll('.upi-pay-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      toast(`Connecting to ${btn.dataset.method.toUpperCase()}...`);
+      setTimeout(() => {
+        processUnlockSuccess();
+      }, 1200);
+    });
+  });
+
+  window.VFS_OPEN_UNLOCK_MODAL = openWholesaleUnlockModal;
+}
