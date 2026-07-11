@@ -2537,14 +2537,38 @@ async function loadCustomers() {
     }
  
     custBody.innerHTML = filtered.map((c, i) => {
-      const phoneDisplay = c.phone || '-';
+      let phoneDisplay = c.phone || '-';
       const custOrders = orders.filter(o => {
         if (o.uid && c.uid && o.uid === c.uid) return true;
         if (o.phone && c.phone) {
           return o.phone.replace(/\D/g,'').slice(-10) === c.phone.replace(/\D/g,'').slice(-10);
         }
+        if (!c.phone && o.name && c.name) {
+          return o.name.toLowerCase().trim() === c.name.toLowerCase().trim();
+        }
         return false;
       });
+      
+      // Auto-heal missing phone numbers from orders
+      if (phoneDisplay === '-' && custOrders.length > 0) {
+        const orderWithPhone = custOrders.find(o => o.phone);
+        if (orderWithPhone) {
+          phoneDisplay = orderWithPhone.phone;
+          const uid = c.uid || c.id;
+          if (uid) {
+            if (window.db && window.VFS_CLOUD_ACTIVE) {
+              window.db.collection('wholesale_users').doc(uid).update({ phone: orderWithPhone.phone })
+                .catch(err => console.warn("Auto-healing phone failed:", err));
+            }
+            const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
+            if (mockUsers[uid]) {
+              mockUsers[uid].phone = orderWithPhone.phone;
+              localStorage.setItem('vfs_wholesale_users', JSON.stringify(mockUsers));
+            }
+          }
+        }
+      }
+      
       const completedOrders = custOrders.filter(o => ['paid','dispatched','delivered','completed'].includes(o.status));
       const totalSpend = completedOrders.reduce((s, o) => s + (o.total || 0), 0);
       const orderCount = custOrders.length;
