@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Critical preconnects: only 2 most important -->
   <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
-  <link rel="preload" href="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1783183758/pz9zdgce4wgovh7czmzb.webp" as="image">
-  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+
+  <!-- Preload LCP hero image -->
+  <link rel="preload" href="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_800/v1783183758/pz9zdgce4wgovh7czmzb.webp" as="image" fetchpriority="high">
+
   <title>VFS Jewels &amp; Jewellery | Sowcarpet Imitation Jewellery</title>
   <meta name="description" content="Premium anti-tarnish imitation jewellery at VFS Jewels Sowcarpet. Shop kadas and gold chains with fast pan-India delivery.">
   <link rel="canonical" href="https://vfsjewels.store/">
@@ -69,18 +72,23 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="style.css?v=17">
-  <!-- html2pdf for PDF Invoice -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- Google Fonts — async load to avoid render-blocking -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap"></noscript>
+
+  <link rel="stylesheet" href="style.css?v=18">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.gstatic.com https://*.firebaseio.com https://*.googleapis.com https://api.cloudinary.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://res.cloudinary.com https://api.cloudinary.com; media-src 'self' blob: https://res.cloudinary.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com https://apis.google.com; connect-src 'self' https://*.gstatic.com https://*.firebaseio.com https://*.googleapis.com https://api.cloudinary.com https://*.firebaseapp.com https://cdnjs.cloudflare.com https://unpkg.com; base-uri 'self'; object-src 'none';">
-  <!-- Firebase Compatibility SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <!-- Firebase Compatibility SDKs — deferred so they don't block render -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js" defer></script>
 </head>
 <body>
 
@@ -1262,5 +1270,9 @@
       });
     }
   </script>
+  <!-- html2pdf loaded last — only needed when user downloads invoice -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+    integrity="sha384-Yv5O+t3uE3hunW8uyrbpPW3iw6/5/Y7HitWJBLgqfMoA36NogMmy+8wWZMpn3HWc"
+    crossorigin="anonymous" defer></script>
 </body>
 </html>
