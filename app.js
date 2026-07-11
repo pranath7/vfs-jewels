@@ -1585,7 +1585,7 @@ $('#coForm').addEventListener('submit', async (e) => {
     const p = fullCatalog.find(x => x.id === ci.id);
     const unitPrice = getCurrentProductPrice(p);
     subtotal += unitPrice * ci.qty;
-    return { id: p.id, sku: p.sku || `SN-${String(p.id).padStart(4, '0')}`, name: p.name, price: unitPrice, qty: ci.qty };
+    return { id: p.id, sku: p.sku || `SN-${String(p.id).padStart(4, '0')}`, name: p.name, price: unitPrice, qty: ci.qty, img: p.img || '', cat: p.cat || '' };
   });
   
   const gstAmount = Math.round(subtotal * 0.03);
@@ -1630,6 +1630,7 @@ $('#coForm').addEventListener('submit', async (e) => {
   const newOrder = {
     id: '#VF-' + Math.floor(1000 + Math.random() * 9000),
     date: new Date().toLocaleDateString('en-IN'),
+    createdAt: Date.now(),
     name: $('#coName').value.trim(),
     phone: cleanPhone,
     uid: wholesaleUser ? wholesaleUser.uid : null,

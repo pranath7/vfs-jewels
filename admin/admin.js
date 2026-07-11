@@ -930,23 +930,23 @@ async function loadDashboard() {
       unpaidCount++;
       if (unpaidContainer) renderOrderCard(order, unpaidContainer);
     } else if (order.status === 'paid') {
-      totalSales += order.total || 0;
+      totalSales += (order.total || 0) + (order.advanceAdjusted || 0);
       paidCount++;
       if (paidContainer) renderOrderCard(order, paidContainer);
     } else if (order.status === 'preparing') {
-      totalSales += order.total || 0;
+      totalSales += (order.total || 0) + (order.advanceAdjusted || 0);
       preparingCount++;
       if (preparingContainer) renderOrderCard(order, preparingContainer);
     } else if (order.status === 'ready') {
-      totalSales += order.total || 0;
+      totalSales += (order.total || 0) + (order.advanceAdjusted || 0);
       readyCount++;
       if (readyContainer) renderOrderCard(order, readyContainer);
     } else if (order.status === 'dispatched' || order.status === 'delivered') {
-      totalSales += order.total || 0;
+      totalSales += (order.total || 0) + (order.advanceAdjusted || 0);
       shippedCount++;
       if (shippedContainer) renderOrderCard(order, shippedContainer);
     } else if (order.status === 'completed') {
-      totalSales += order.total || 0;
+      totalSales += (order.total || 0) + (order.advanceAdjusted || 0);
       completedCount++;
       if (completedContainer) renderOrderCard(order, completedContainer);
     } else if (order.status === 'cancelled') {
@@ -2570,7 +2570,7 @@ async function loadCustomers() {
       }
       
       const completedOrders = custOrders.filter(o => ['paid','dispatched','delivered','completed'].includes(o.status));
-      const totalSpend = completedOrders.reduce((s, o) => s + (o.total || 0), 0);
+      const totalSpend = completedOrders.reduce((s, o) => s + (o.total || 0) + (o.advanceAdjusted || 0), 0);
       const orderCount = custOrders.length;
  
       // Tier logic
@@ -2670,14 +2670,33 @@ async function loadReports() {
       (!o.createdAt || o.createdAt >= cutoffMs)
     );
 
-    const getOrderRevenue = (o) => {
-      const calculated = (o.subtotal || 0) + (o.shipping || 0) + (o.gstAmount || 0) - (o.couponDiscount || 0) - (o.walletDiscount || 0);
-      return Math.max(o.total || 0, calculated);
+    const getOrderTime = (o) => {
+      if (o.createdAt) return o.createdAt;
+      if (o.date) {
+        const parts = o.date.split('/');
+        if (parts.length === 3) {
+          const day = parseInt(parts[0]);
+          const month = parseInt(parts[1]) - 1;
+          const year = parseInt(parts[2]);
+          return new Date(year, month, day).getTime();
+        }
+      }
+      return 0;
     };
 
-    const totalRevenue = paidOrders.reduce((sum, o) => sum + getOrderRevenue(o), 0);
-    const avgOrder = paidOrders.length ? Math.round(totalRevenue / paidOrders.length) : 0;
-    const ordersCount = paidOrders.length;
+    const getOrderRevenue = (o) => {
+      return (o.total || 0) + (o.advanceAdjusted || 0);
+    };
+
+    // Re-filter paid orders using parsed timestamp
+    const activePaidOrders = orders.filter(o => 
+      ['paid','dispatched','delivered','completed','preparing','ready'].includes(o.status) &&
+      (getOrderTime(o) >= cutoffMs)
+    );
+
+    const totalRevenue = activePaidOrders.reduce((sum, o) => sum + getOrderRevenue(o), 0);
+    const avgOrder = activePaidOrders.length ? Math.round(totalRevenue / activePaidOrders.length) : 0;
+    const ordersCount = activePaidOrders.length;
 
     // Dynamic mock conversion rate based on orders count
     const convRate = ordersCount ? Math.min(4.8, (2.1 + (ordersCount % 20) * 0.15)).toFixed(1) + '%' : '0.0%';
@@ -2707,16 +2726,14 @@ async function loadReports() {
       const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       segmentLabels.push(months[dateLabelObj.getMonth()] + ' ' + dateLabelObj.getDate());
 
-      const segmentOrders = paidOrders.filter(o => {
-        const t = o.createdAt || 0;
+      const segmentOrders = activePaidOrders.filter(o => {
+        const t = getOrderTime(o);
         return t >= startMs && t <= endMs;
       });
       finalSegments[i] = segmentOrders.reduce((sum, o) => sum + getOrderRevenue(o), 0);
     }
 
-    // Baseline fallbacks for premium client presentation if there are no real sales
-    const baseValues = [12500, 24000, 18500, 35000, 48000];
-    const chartValues = finalSegments.map((val, idx) => val > 0 ? val : baseValues[idx] * (daysNum / 30));
+    const chartValues = finalSegments;
 
     const xs = [60, 180, 300, 420, 540];
     const maxVal = Math.max(...chartValues, 1000);
@@ -2772,14 +2789,19 @@ async function loadReports() {
 
     // ── Top Selling Pieces List ──
     const saleCounts = {};
-    paidOrders.forEach(o => {
+    const productsCache = window.VFS_PRODUCTS_CACHE || [];
+    const activePaidOrdersForTop = orders.filter(o => 
+      ['paid','dispatched','delivered','completed','preparing','ready'].includes(o.status)
+    );
+    activePaidOrdersForTop.forEach(o => {
       (o.items || []).forEach(item => {
         if (!saleCounts[item.id]) {
+          const cachedProduct = productsCache.find(x => x.id === item.id);
           saleCounts[item.id] = { 
             id: item.id, 
             name: item.name, 
-            img: item.img || '', 
-            cat: item.cat || '', 
+            img: (cachedProduct && cachedProduct.img) || item.img || '', 
+            cat: (cachedProduct && cachedProduct.cat) || item.cat || '', 
             price: item.price || 499, 
             count: 0 
           };
