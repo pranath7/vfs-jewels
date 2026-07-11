@@ -4447,11 +4447,10 @@ async function renderProductShelves() {
   const now = Date.now();
   const mode = shoppingMode;
 
-  // Helper: make a mini card HTML for shelf
   function shelfCard(p, badge) {
     const priceInfo = getRetailPriceInfo(p);
     const displayPrice = mode === 'wholesale'
-      ? (wholesaleUnlocked ? fmt(p.wsPrice || Math.round(p.price * 0.7)) : '🔒 Login to view')
+      ? (wholesaleUnlocked ? fmt(p.wholesalePrice || Math.round((p.price || 499) * 0.6)) : '🔒 Login to view')
       : fmt(priceInfo.price);
     const oldPrice = mode === 'retail' && priceInfo.mrp && priceInfo.mrp !== priceInfo.price
       ? `<span style="text-decoration:line-through;color:#aaa;font-size:1.1rem;margin-left:4px;">${fmt(priceInfo.mrp)}</span>` : '';
