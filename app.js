@@ -4120,11 +4120,11 @@ function setupShoppingMode() {
   acceptTermsBtn.addEventListener('click', () => {
     if (!termsCheckbox.checked) return;
     wholesaleTermsModal.classList.remove('active');
-    $('#loginStepPhone').style.display = 'block';
-    $('#loginStepOTP').style.display = 'none';
-    $('#loginStepRegister').style.display = 'none';
-    $('#wholesalePhoneInput').value = '';
-    $('#wholesaleOtpInput').value = '';
+    if ($('#loginStepPhone')) $('#loginStepPhone').style.display = 'block';
+    if ($('#loginStepOTP')) $('#loginStepOTP').style.display = 'none';
+    if ($('#loginStepRegister')) $('#loginStepRegister').style.display = 'none';
+    if ($('#wholesalePhoneInput')) $('#wholesalePhoneInput').value = '';
+    if ($('#wholesaleOtpInput')) $('#wholesaleOtpInput').value = '';
     wholesaleLoginModal.classList.add('active');
   });
 
@@ -4212,47 +4212,51 @@ function setupShoppingMode() {
   });
 
   // Send OTP
-  $('#btnSendOTP').addEventListener('click', () => {
-    const phone = $('#wholesalePhoneInput').value.trim();
-    if (phone.length !== 10 || isNaN(phone)) {
-      toast('Enter a valid 10-digit number');
-      return;
-    }
-    tempPhone = phone;
-    toast(`OTP sent to +91 ${phone}!`);
-    $('#loginStepPhone').style.display = 'none';
-    $('#loginStepOTP').style.display = 'block';
-  });
+  if ($('#btnSendOTP')) {
+    $('#btnSendOTP').addEventListener('click', () => {
+      const phone = $('#wholesalePhoneInput').value.trim();
+      if (phone.length !== 10 || isNaN(phone)) {
+        toast('Enter a valid 10-digit number');
+        return;
+      }
+      tempPhone = phone;
+      toast(`OTP sent to +91 ${phone}!`);
+      $('#loginStepPhone').style.display = 'none';
+      $('#loginStepOTP').style.display = 'block';
+    });
+  }
 
   // Verify OTP
-  $('#btnVerifyOTP').addEventListener('click', () => {
-    const otp = $('#wholesaleOtpInput').value.trim();
-    if (otp !== '1234' && otp.length !== 4) {
-      toast('Invalid OTP. Use 1234.');
-      return;
-    }
-    
-    const uid = 'phone-' + tempPhone;
-    const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
-    if (mockUsers[uid]) {
-      wholesaleUser = mockUsers[uid];
-      shoppingMode = 'wholesale';
-      wholesaleUnlocked = wholesaleUser.unlocked === true;
-      saveState();
-      wholesaleLoginModal.classList.remove('active');
-      updateModeUI();
-      renderProducts(null);
-      if (!wholesaleUnlocked) {
-        openWholesaleUnlockModal();
-      } else {
-        toast(`Welcome back, ${wholesaleUser.name}!`);
+  if ($('#btnVerifyOTP')) {
+    $('#btnVerifyOTP').addEventListener('click', () => {
+      const otp = $('#wholesaleOtpInput').value.trim();
+      if (otp !== '1234' && otp.length !== 4) {
+        toast('Invalid OTP. Use 1234.');
+        return;
       }
-    } else {
-      $('#loginStepOTP').style.display = 'none';
-      $('#regPhoneInput').value = tempPhone;
-      $('#loginStepRegister').style.display = 'block';
-    }
-  });
+      
+      const uid = 'phone-' + tempPhone;
+      const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
+      if (mockUsers[uid]) {
+        wholesaleUser = mockUsers[uid];
+        shoppingMode = 'wholesale';
+        wholesaleUnlocked = wholesaleUser.unlocked === true;
+        saveState();
+        wholesaleLoginModal.classList.remove('active');
+        updateModeUI();
+        renderProducts(null);
+        if (!wholesaleUnlocked) {
+          openWholesaleUnlockModal();
+        } else {
+          toast(`Welcome back, ${wholesaleUser.name}!`);
+        }
+      } else {
+        $('#loginStepOTP').style.display = 'none';
+        $('#regPhoneInput').value = tempPhone;
+        $('#loginStepRegister').style.display = 'block';
+      }
+    });
+  }
 
   // Complete Registration
   $('#btnRegisterUser').addEventListener('click', async () => {
