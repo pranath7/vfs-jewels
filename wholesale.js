@@ -676,12 +676,6 @@ const LOADED_COUNTS = {};
 const BATCH_SIZE = 12;
 
 function isProductVisible(p) {
-  const now = Date.now();
-  const stock = window.VFS_STOCK_CACHE[p.id];
-  // If product is older than 7 days (1 week) and has stock > 0 (remains unsold), hide it
-  if (p.createdAt && (now - p.createdAt > 7 * 24 * 60 * 60 * 1000) && (stock > 0)) {
-    return false;
-  }
   return true;
 }
 
