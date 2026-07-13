@@ -2170,11 +2170,15 @@ function openPDP(id) {
   }
 
   const stock = window.VFS_STOCK_CACHE[p.id];
-  const isOutOfStock = (stock !== undefined && stock <= 0);
+  const isOutOfStock = (stock !== undefined && (stock <= 0 || (shoppingMode === 'wholesale' && stock < minQty)));
   if (isOutOfStock) {
+    const btnText = (stock !== undefined && stock > 0 && stock < minQty)
+      ? `INSUFFICIENT STOCK (Only ${stock} left, MOQ is ${minQty})`
+      : `SOLD OUT / OUT OF STOCK`;
+
     qtyCartHtml = `
       <button class="pdp-btn-add-new" disabled style="width: 100%; background: #ccc; border-color: #ccc; color: #666; cursor: not-allowed; font-weight: 700;">
-        SOLD OUT / OUT OF STOCK
+        ${btnText}
       </button>
     `;
   }
@@ -2251,6 +2255,10 @@ function openPDP(id) {
     
     btnInc.addEventListener('click', () => {
       let currentVal = parseInt(qtyInput.value) || minQty;
+      if (stock !== undefined && currentVal >= stock) {
+        toast(`Only ${stock} pcs available in stock.`);
+        return;
+      }
       qtyInput.value = currentVal + 1;
     });
   }
