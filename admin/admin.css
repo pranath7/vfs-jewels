@@ -1498,19 +1498,19 @@ body { display: block; }
 
 .customer-table td {
   padding: 12px 14px;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
   font-size: 1.25rem;
-  color: #111 !important;
-  background: #ffffff;
+  color: #ffffff !important;
+  background: transparent;
 }
 
 .customer-table tr:nth-child(even) td {
-  background: #f7f7f7;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .customer-table tr:hover td {
-  background: #fff9e6 !important;
+  background: rgba(212, 175, 55, 0.08) !important;
 }
 
 .cust-tier-badge {
