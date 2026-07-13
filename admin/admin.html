@@ -16,7 +16,7 @@
   <link rel="apple-touch-icon" href="../assets/icon-192.png">
   <link rel="icon" type="image/png" href="../assets/icon-192.png">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.gstatic.com https://*.firebaseio.com https://*.googleapis.com https://api.cloudinary.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://res.cloudinary.com https://api.cloudinary.com; media-src 'self' blob: https://res.cloudinary.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com; base-uri 'self'; object-src 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.gstatic.com https://*.firebaseio.com https://*.googleapis.com https://api.cloudinary.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://res.cloudinary.com https://api.cloudinary.com; media-src 'self' blob: https://res.cloudinary.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com; frame-src 'self' https://*.instagram.com https://www.instagram.com; base-uri 'self'; object-src 'none';">
   <!-- Firebase Compatibility SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -329,14 +329,17 @@
       <section class="tab-panel" id="panelReports">
         <div class="sales-dashboard-container">
           <!-- Header -->
-          <div class="dashboard-header">
+          <div class="dashboard-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
             <h2>Sales Performance</h2>
-            <div class="dropdown-wrap">
-              <select id="reportTimeframe" class="dashboard-dropdown">
+            <div style="display:flex; gap:10px; align-items:center;">
+              <select id="reportTimeframe" class="dashboard-dropdown" style="padding:10px; border-radius:var(--rounded-md); background:var(--color-surface); color:#fff; border:1px solid var(--color-border); font-size:1.25rem; outline:none;">
                 <option value="30">Last 30 Days</option>
+                <option value="60">Last 60 Days</option>
                 <option value="90">Last 90 Days</option>
+                <option value="365">Last 1 Year</option>
                 <option value="all">Lifetime</option>
               </select>
+              <button class="btn-primary" id="btnExportInvoicesZip" style="padding:10px 18px; font-size:1.25rem; cursor:pointer;">📦 Export Invoices ZIP</button>
             </div>
           </div>
           
@@ -424,6 +427,16 @@
           </label>
           <div class="banner-manager-grid" id="bannerManagerGrid">
             <!-- Banner cards load dynamically -->
+          </div>
+
+          <!-- Instagram Reel Link Settings -->
+          <div class="form-group-full" style="background:var(--color-surface-dark); border:1px solid var(--color-border); padding:20px; border-radius:var(--rounded-md); margin-top:30px;">
+            <h3 style="color:var(--color-secondary);margin-bottom:12px;">🎥 Homepage Instagram Reel Embed</h3>
+            <p style="font-size:1.15rem;color:#888;margin-bottom:16px;">Enter the URL of the Instagram Reel you want to showcase on the storefront homepage.</p>
+            <div style="display:flex; flex-direction:column; gap:12px; max-width:600px;">
+              <textarea id="adminReelUrlInput" placeholder="Paste Instagram Reel links here (one per line)..." rows="3" style="width:100%; padding:10px 14px; font-size:1.25rem; border:1px solid var(--color-border); border-radius:var(--rounded-md); background:var(--color-surface); color:#fff; outline:none; font-family:var(--font-body); resize:vertical;"></textarea>
+              <button class="btn-primary" id="btnSaveReelUrl" style="padding:10px 20px; font-size:1.25rem; cursor:pointer; align-self:flex-start;">Save Link</button>
+            </div>
           </div>
         </div>
       </section>
@@ -613,6 +626,7 @@
 
   <!-- CDN libraries loaded last so they don't block page render -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
   <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js" defer></script>
   <script src="admin.js?v=22" defer></script>
   <script>

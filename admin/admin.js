@@ -59,6 +59,7 @@ window.VFS_CONFIG = {
   cloudinary: null
 };
 window.VFS_PRODUCTS_CACHE = [];
+window.VFS_STOCK_CACHE = {};
 
 async function initCloudConfig() {
   try {
@@ -523,6 +524,81 @@ window.VFS_DB = {
     const list = local ? JSON.parse(local) : [];
     const filtered = list.filter(b => b.id !== bannerId);
     localStorage.setItem('vfs_banners', JSON.stringify(filtered));
+  },
+
+  // ── Product Stock ──
+  getProductStock: async function(productId) {
+    const idStr = String(productId);
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        const doc = await window.db.collection('product_stock').doc(idStr).get();
+        if (doc.exists) {
+          const val = doc.data().stock;
+          return val !== undefined ? val : 5;
+        }
+      } catch(e) {
+        console.error("Firestore read stock error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_product_stock');
+    const stockMap = local ? JSON.parse(local) : {};
+    if (stockMap[idStr] !== undefined) {
+      return stockMap[idStr];
+    }
+    const initial = (productId === 401) ? 1 : 5;
+    stockMap[idStr] = initial;
+    localStorage.setItem('vfs_product_stock', JSON.stringify(stockMap));
+    return initial;
+  },
+
+  saveProductStock: async function(productId, stock) {
+    const idStr = String(productId);
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        await window.db.collection('product_stock').doc(idStr).set({ stock: parseInt(stock) });
+        return;
+      } catch(e) {
+        console.error("Firestore write stock error:", e);
+      }
+    }
+    const local = localStorage.getItem('vfs_product_stock');
+    const stockMap = local ? JSON.parse(local) : {};
+    stockMap[idStr] = parseInt(stock);
+    localStorage.setItem('vfs_product_stock', JSON.stringify(stockMap));
+  },
+
+  // ── Instagram Reels / Settings ──
+  getSettings: async function(key) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        const doc = await window.db.collection('settings').doc(key).get();
+        if (doc.exists) {
+          return doc.data();
+        }
+      } catch(e) {
+        console.error("Firestore read settings error:", e);
+      }
+    }
+    const local = localStorage.getItem(`vfs_settings_${key}`);
+    if (local) return JSON.parse(local);
+    if (key === 'instagram_reels') {
+      return {
+        url: "https://www.instagram.com/reel/Daknu-qjf7H/\nhttps://www.instagram.com/reel/DaiC9WnmIro/\nhttps://www.instagram.com/reel/DafeIfeldGR/"
+      };
+    }
+    return null;
+  },
+
+  saveSettings: async function(key, data) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        await window.db.collection('settings').doc(key).set(data);
+        return;
+      } catch(e) {
+        console.error("Firestore write settings error:", e);
+      }
+    }
+    localStorage.setItem(`vfs_settings_${key}`, JSON.stringify(data));
   }
 };
 
@@ -572,7 +648,7 @@ window.searchProduct = function() {
   renderSearchCatalog();
 };
 
-window.renderSearchCatalog = function() {
+window.renderSearchCatalog = async function() {
   const query = ($('#productSearchInput').value || '').trim().toLowerCase();
   const resultBox = $('#productSearchResult');
   if (!resultBox) return;
@@ -593,6 +669,14 @@ window.renderSearchCatalog = function() {
     return;
   }
   
+  // Parallel load stock levels for all matched products
+  const stockPromises = matches.map(async (p) => {
+    if (window.VFS_STOCK_CACHE[p.id] === undefined) {
+      window.VFS_STOCK_CACHE[p.id] = await window.VFS_DB.getProductStock(p.id);
+    }
+  });
+  await Promise.all(stockPromises);
+  
   // Group by category
   const categories = {};
   matches.forEach(p => {
@@ -607,47 +691,71 @@ window.renderSearchCatalog = function() {
       <div class="category-group-section" style="margin-bottom: 24px;">
         <h3 style="color: var(--color-secondary); font-size: 1.45rem; text-transform: uppercase; margin-bottom: 12px; border-bottom: 1px solid var(--color-border); padding-bottom: 6px; font-family: var(--font-heading);">${catName} (${list.length})</h3>
         <div class="category-products-list">
-          ${list.map(p => `
-            <div class="product-manager-card" id="prodCard_${p.id}">
-              <!-- View Mode -->
-              <div class="prod-view-mode" id="viewMode_${p.id}">
-                <img src="${getImgSrc(p.img)}" alt="${p.name}" class="prod-img" onerror="this.style.display='none'">
-                <div class="prod-details">
-                  <span class="prod-sku">${p.sku || 'No SKU'}</span>
-                  <h4 class="prod-title">${p.name}</h4>
-                  <p class="prod-meta">${p.cat.toUpperCase()} &bull; ${fmt(p.price)}</p>
+          ${list.map(p => {
+            const stockVal = window.VFS_STOCK_CACHE[p.id] !== undefined ? window.VFS_STOCK_CACHE[p.id] : 5;
+            const wsPriceVal = p.wholesalePrice || Math.round(p.price * 0.6);
+            const moqVal = p.moq || 1;
+            
+            return `
+              <div class="product-manager-card" id="prodCard_${p.id}">
+                <!-- View Mode -->
+                <div class="prod-view-mode" id="viewMode_${p.id}">
+                  <img src="${getImgSrc(p.img)}" alt="${p.name}" class="prod-img" onerror="this.style.display='none'">
+                  <div class="prod-details">
+                    <span class="prod-sku">${p.sku || 'No SKU'}</span>
+                    <h4 class="prod-title">${p.name}</h4>
+                    <p class="prod-meta" style="line-height:1.4; font-size:1.15rem;">
+                      ${p.cat.toUpperCase()}<br>
+                      Retail: <strong>${fmt(p.price)}</strong> &bull; 
+                      Wholesale: <strong>${fmt(wsPriceVal)}</strong><br>
+                      MOQ: <strong>${moqVal} pcs</strong> &bull; 
+                      Stock: <strong style="color:${stockVal > 0 ? '#27ae60' : '#e74c3c'};">${stockVal} left</strong>
+                    </p>
+                  </div>
+                  <div class="prod-actions">
+                    <button class="btn-card-secondary" onclick="editProductInline('${p.id}')">Edit</button>
+                    <button class="btn-card-danger" onclick="deleteProductFromCatalog('${p.id}')">Delete</button>
+                  </div>
                 </div>
-                <div class="prod-actions">
-                  <button class="btn-card-secondary" onclick="editProductInline('${p.id}')">Edit</button>
-                  <button class="btn-card-danger" onclick="deleteProductFromCatalog('${p.id}')">Delete</button>
+                <!-- Edit Mode -->
+                <div class="prod-edit-mode" id="editMode_${p.id}" style="display:none;">
+                  <div class="edit-fields">
+                    <div class="edit-group">
+                      <label>Product Title</label>
+                      <input type="text" id="editTitle_${p.id}" value="${p.name.replace(/"/g, '&quot;')}">
+                    </div>
+                    <div class="edit-group">
+                      <label>Retail Price (₹)</label>
+                      <input type="number" id="editPrice_${p.id}" value="${p.price}">
+                    </div>
+                    <div class="edit-group">
+                      <label>Wholesale Price (₹)</label>
+                      <input type="number" id="editWsPrice_${p.id}" value="${wsPriceVal}">
+                    </div>
+                    <div class="edit-group">
+                      <label>MOQ</label>
+                      <input type="number" id="editMoq_${p.id}" value="${moqVal}">
+                    </div>
+                    <div class="edit-group">
+                      <label>Stock</label>
+                      <input type="number" id="editStock_${p.id}" value="${stockVal}">
+                    </div>
+                    <div class="edit-group">
+                      <label>Category</label>
+                      <select id="editCat_${p.id}">
+                        <option value="kadas" ${p.cat === 'kadas' ? 'selected' : ''}>Kadas</option>
+                        <option value="chains" ${p.cat === 'chains' ? 'selected' : ''}>Chains</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="edit-actions" style="margin-top: 12px;">
+                    <button class="btn-card-primary" onclick="saveProductInline('${p.id}')">Save</button>
+                    <button class="btn-card-secondary" onclick="cancelEditInline('${p.id}')">Cancel</button>
+                  </div>
                 </div>
               </div>
-              <!-- Edit Mode -->
-              <div class="prod-edit-mode" id="editMode_${p.id}" style="display:none;">
-                <div class="edit-fields">
-                  <div class="edit-group">
-                    <label>Product Title</label>
-                    <input type="text" id="editTitle_${p.id}" value="${p.name.replace(/"/g, '&quot;')}">
-                  </div>
-                  <div class="edit-group">
-                    <label>Price (₹)</label>
-                    <input type="number" id="editPrice_${p.id}" value="${p.price}">
-                  </div>
-                  <div class="edit-group">
-                    <label>Category</label>
-                    <select id="editCat_${p.id}">
-                      <option value="kadas" ${p.cat === 'kadas' ? 'selected' : ''}>Kadas</option>
-                      <option value="chains" ${p.cat === 'chains' ? 'selected' : ''}>Chains</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="edit-actions" style="margin-top: 12px;">
-                  <button class="btn-card-primary" onclick="saveProductInline('${p.id}')">Save</button>
-                  <button class="btn-card-secondary" onclick="cancelEditInline('${p.id}')">Cancel</button>
-                </div>
-              </div>
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       </div>
     `;
@@ -677,9 +785,12 @@ window.cancelEditInline = function(id) {
 window.saveProductInline = async function(id) {
   const newName = document.getElementById(`editTitle_${id}`).value.trim();
   const newPrice = parseFloat(document.getElementById(`editPrice_${id}`).value);
+  const newWsPrice = parseFloat(document.getElementById(`editWsPrice_${id}`).value);
+  const newMoq = parseInt(document.getElementById(`editMoq_${id}`).value) || 1;
+  const newStock = parseInt(document.getElementById(`editStock_${id}`).value) || 0;
   const newCat = document.getElementById(`editCat_${id}`).value;
   
-  if (!newName || isNaN(newPrice)) {
+  if (!newName || isNaN(newPrice) || isNaN(newWsPrice)) {
     adminToast('Please fill out all fields correctly!', 'error');
     return;
   }
@@ -690,12 +801,20 @@ window.saveProductInline = async function(id) {
     products[index].name = newName;
     products[index].price = newPrice;
     products[index].mrp = newPrice;
+    products[index].wholesalePrice = newWsPrice;
+    products[index].moq = newMoq;
     products[index].cat = newCat;
     
+    // Save Product Details
     await window.VFS_DB.saveProductsList(products);
     window.VFS_PRODUCTS_CACHE = products;
+
+    // Save Stock details directly to Firestore
+    await window.VFS_DB.saveProductStock(id, newStock);
+    window.VFS_STOCK_CACHE[id] = newStock;
+    
     adminToast('Product updated successfully! 🌸');
-    renderSearchCatalog();
+    await renderSearchCatalog();
   }
 };
 
@@ -1006,17 +1125,11 @@ function renderOrderCard(order, container) {
       <span class="cust-details">📍 ${escapeHtml(order.address)}, ${escapeHtml(order.city)} - ${escapeHtml(order.pincode)}</span>
     </div>
     <span class="card-carrier-badge">Carrier: ${escapeHtml(order.carrier)}</span>
-    <div class="card-items">
-      ${itemsText}
-    </div>
-    <div class="card-prices">
-      <span>Grand Total</span>
-      <span class="total-amt">${fmt(order.total)}</span>
-    </div>
     ${order.status === 'unpaid' ? `
       <div class="card-actions">
         <button class="btn-card-primary" onclick="markOrderPaid('${order.id}')">Confirm Payment</button>
         <button class="btn-card-secondary" onclick="printInvoice('${order.id}')">Print Invoice</button>
+        <button class="btn-card-secondary" onclick="printPhotoSlip('${order.id}')" style="background:#e8f8f5; border-color:#a3e4d7; color:#16a085;">Photo Slip</button>
         <button class="btn-card-whatsapp" onclick="shareOnWhatsApp('${order.id}')" style="grid-column: 1 / -1">
           <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.46h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           Send Receipt
@@ -1027,6 +1140,7 @@ function renderOrderCard(order, container) {
       <div class="card-actions">
         <button class="btn-card-primary" onclick="advanceOrderStage('${order.id}','preparing')" style="background:#e67e22;border-color:#e67e22;">Start Preparing</button>
         <button class="btn-card-secondary" onclick="printInvoice('${order.id}')">Print Invoice</button>
+        <button class="btn-card-secondary" onclick="printPhotoSlip('${order.id}')" style="background:#e8f8f5; border-color:#a3e4d7; color:#16a085;">Photo Slip</button>
         <button class="btn-card-whatsapp" onclick="shareOnWhatsApp('${order.id}')" style="grid-column: 1 / -1">
           <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.46h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           Send Receipt
@@ -1037,11 +1151,13 @@ function renderOrderCard(order, container) {
       <div class="card-actions">
         <button class="btn-card-primary" onclick="advanceOrderStage('${order.id}','ready')" style="background:#8e44ad;border-color:#8e44ad;">Mark Ready to Dispatch</button>
         <button class="btn-card-secondary" onclick="printInvoice('${order.id}')">Print Invoice</button>
+        <button class="btn-card-secondary" onclick="printPhotoSlip('${order.id}')" style="background:#e8f8f5; border-color:#a3e4d7; color:#16a085;">Photo Slip</button>
       </div>
     ` : order.status === 'ready' ? `
       <div class="card-actions">
         <button class="btn-card-primary" onclick="openScanner('${order.id}')">Scan Barcode & Dispatch</button>
         <button class="btn-card-secondary" onclick="printInvoice('${order.id}')">Print Invoice</button>
+        <button class="btn-card-secondary" onclick="printPhotoSlip('${order.id}')" style="background:#e8f8f5; border-color:#a3e4d7; color:#16a085;">Photo Slip</button>
       </div>
     ` : order.status === 'dispatched' ? `
       <div class="card-actions">
@@ -1051,6 +1167,7 @@ function renderOrderCard(order, container) {
         </div>
         <button class="btn-card-primary" onclick="markOrderDelivered('${order.id}')" style="background:#27ae60; border-color:#27ae60;">Mark Delivered</button>
         <button class="btn-card-secondary" onclick="printInvoice('${order.id}')">Print Invoice</button>
+        <button class="btn-card-secondary" onclick="printPhotoSlip('${order.id}')" style="background:#e8f8f5; border-color:#a3e4d7; color:#16a085;">Photo Slip</button>
         <button class="btn-card-whatsapp" onclick="shareOnWhatsApp('${order.id}')" style="grid-column: 1 / -1">
           <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.46h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           Send WhatsApp
@@ -1063,6 +1180,7 @@ function renderOrderCard(order, container) {
         </div>
         <button class="btn-card-primary" onclick="advanceOrderStage('${order.id}','completed')" style="background:#1565c0;border-color:#1565c0;">Mark Completed</button>
         <button class="btn-card-secondary" onclick="printInvoice('${order.id}')">Print Invoice</button>
+        <button class="btn-card-secondary" onclick="printPhotoSlip('${order.id}')" style="background:#e8f8f5; border-color:#a3e4d7; color:#16a085;">Photo Slip</button>
       </div>
     ` : order.status === 'completed' ? `
       <div class="card-actions">
@@ -1070,6 +1188,7 @@ function renderOrderCard(order, container) {
           ✓ Order Completed
         </div>
         <button class="btn-card-secondary" onclick="printInvoice('${order.id}')">Print Invoice</button>
+        <button class="btn-card-secondary" onclick="printPhotoSlip('${order.id}')" style="background:#e8f8f5; border-color:#a3e4d7; color:#16a085;">Photo Slip</button>
       </div>
     ` : order.status === 'cancelled' ? `
       <div class="card-actions">
@@ -1083,6 +1202,7 @@ function renderOrderCard(order, container) {
           ✓ Delivered / Returned
         </div>
         <button class="btn-card-primary" onclick="printInvoice('${order.id}')">Print Invoice</button>
+        <button class="btn-card-secondary" onclick="printPhotoSlip('${order.id}')" style="background:#e8f8f5; border-color:#a3e4d7; color:#16a085;">Photo Slip</button>
       </div>
     `}
   `;
@@ -1125,6 +1245,73 @@ window.downloadInvoicePDF = async function(orderId) {
     </tr>
   `).join('');
 
+  // Calculate totals
+  const subtotal = order.subtotal || (order.items || []).reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+  const shipping = order.shipping || 90;
+  const gstAmt = order.gstAmount || 0;
+  const advanceAmt = order.advanceAdjusted || order.advanceDeducted || 0;
+  const couponAmt = order.couponDiscount || 0;
+  const waReferralAmt = order.waReferralDiscount || 0;
+  const walletAmt = order.walletDiscount || 0;
+  const total = order.total || subtotal;
+
+  let totalsHtml = `
+    <tr>
+      <td style="padding: 4px 0; color: #000000;">Subtotal:</td>
+      <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(subtotal)}</td>
+    </tr>
+    <tr>
+      <td style="padding: 4px 0; color: #000000;">Shipping Fee:</td>
+      <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(shipping)}</td>
+    </tr>
+  `;
+  if (gstAmt) {
+    totalsHtml += `
+      <tr>
+        <td style="padding: 4px 0; color: #000000;">GST (3%):</td>
+        <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(gstAmt)}</td>
+      </tr>
+    `;
+  }
+  if (couponAmt) {
+    totalsHtml += `
+      <tr>
+        <td style="padding: 4px 0; color: green;">Coupon Discount (${order.couponCode || ''}):</td>
+        <td style="text-align: right; font-weight: 700; padding: 4px 0; color: green;">-${fmt(couponAmt)}</td>
+      </tr>
+    `;
+  }
+  if (waReferralAmt) {
+    totalsHtml += `
+      <tr>
+        <td style="padding: 4px 0; color: green;">WhatsApp Referral (1%):</td>
+        <td style="text-align: right; font-weight: 700; padding: 4px 0; color: green;">-${fmt(waReferralAmt)}</td>
+      </tr>
+    `;
+  }
+  if (advanceAmt) {
+    totalsHtml += `
+      <tr>
+        <td style="padding: 4px 0; color: green;">Advance Deducted:</td>
+        <td style="text-align: right; font-weight: 700; padding: 4px 0; color: green;">-${fmt(advanceAmt)}</td>
+      </tr>
+    `;
+  }
+  if (walletAmt) {
+    totalsHtml += `
+      <tr>
+        <td style="padding: 4px 0; color: green;">Wallet Discount:</td>
+        <td style="text-align: right; font-weight: 700; padding: 4px 0; color: green;">-${fmt(walletAmt)}</td>
+      </tr>
+    `;
+  }
+  totalsHtml += `
+    <tr style="font-size: 11pt; font-weight: 900; border-top: 1px solid #dddddd; color: #000000;">
+      <td style="padding: 8px 0 0 0; color: #000000;">Grand Total:</td>
+      <td style="text-align: right; padding: 8px 0 0 0; color: #000000;">${fmt(total)}</td>
+    </tr>
+  `;
+
   tempDiv.innerHTML = `
     <div style="border: 1px solid #dddddd; padding: 30px; background: #ffffff; color: #000000;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #D4AF37; padding-bottom: 20px; margin-bottom: 20px;">
@@ -1136,7 +1323,7 @@ window.downloadInvoicePDF = async function(orderId) {
           <h2 style="color: #D4AF37; text-transform: uppercase; font-size: 16px; margin: 0 0 6px 0;">Retail Tax Invoice</h2>
           <p style="margin: 2px 0;"><strong>Invoice ID:</strong> INV-${order.id.replace('#', '')}</p>
           <p style="margin: 2px 0;"><strong>Order ID:</strong> ${order.id}</p>
-          <p style="margin: 2px 0;"><strong>Date:</strong> ${order.date}</p>
+          <p style="margin: 2px 0;"><strong>Date:</strong> ${order.date || new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
           <p style="margin: 2px 0;"><strong>Status:</strong> <span style="color:#27AE60;font-weight:700;text-transform:uppercase;">${order.status}</span></p>
         </div>
       </div>
@@ -1156,6 +1343,7 @@ window.downloadInvoicePDF = async function(orderId) {
           Address: ${order.address}<br>
           City: ${order.city} - ${order.pincode}<br>
           Phone: +91 ${order.phone}
+          ${order.gstNumber ? `<br>GSTIN: ${order.gstNumber}` : ''}
         </div>
       </div>
       
@@ -1176,18 +1364,7 @@ window.downloadInvoicePDF = async function(orderId) {
       
       <div style="display: flex; justify-content: flex-end; color: #000000; margin-bottom: 20px;">
         <table style="width: 250px; font-size: 9.5pt; line-height: 1.6; border-collapse: collapse;">
-          <tr>
-            <td style="padding: 4px 0; color: #000000;">Subtotal:</td>
-            <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(order.subtotal)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 4px 0; color: #000000;">Shipping Fee:</td>
-            <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(order.shipping)}</td>
-          </tr>
-          <tr style="font-size: 11pt; font-weight: 900; border-top: 1px solid #dddddd; color: #000000;">
-            <td style="padding: 8px 0 0 0; color: #000000;">Grand Total:</td>
-            <td style="text-align: right; padding: 8px 0 0 0; color: #000000;">${fmt(order.total)}</td>
-          </tr>
+          ${totalsHtml}
         </table>
       </div>
       
@@ -1639,6 +1816,60 @@ window.printInvoice = async function(orderId) {
   window.print();
 };
 
+// ── Print Photo Dispatch Slip Builder ──
+window.printPhotoSlip = async function(orderId) {
+  const ordersList = await window.VFS_DB.getOrders();
+  const order = ordersList.find(o => o.id === orderId);
+  if (!order) return;
+
+  const pagesHtml = order.items.map((item, idx) => {
+    const stockBefore = item.stockBefore !== undefined ? item.stockBefore : 'N/A';
+    const stockAfter = item.stockAfter !== undefined ? item.stockAfter : 'N/A';
+    const skuStr = item.sku || 'N/A';
+
+    return `
+      <div class="dispatch-slip-page" style="page-break-after: always; box-sizing: border-box; padding: 40px; background: #ffffff; color: #000000; font-family: 'Lato', sans-serif; min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="border-bottom: 2px solid #D4AF37; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 24px; font-weight: 900; color: #000000; letter-spacing: 1px;">VFS<span style="color:#D4AF37;">.</span> Dispatch Slip</div>
+            <p style="font-size: 9px; color: #666; margin: 4px 0 0 0;">Imitation Fashion Jewellery</p>
+          </div>
+          <div style="text-align: right; font-size: 10px; color: #000000;">
+            <p style="margin: 2px 0;"><strong>Order ID:</strong> ${order.id}</p>
+            <p style="margin: 2px 0;"><strong>Recipient:</strong> ${order.name}</p>
+          </div>
+        </div>
+
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 40px;">
+          <img src="${item.img || 'assets/placeholder.png'}" style="max-width: 450px; max-height: 450px; object-fit: contain; border: 1px solid #eee; padding: 10px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" alt="Product Image">
+        </div>
+
+        <div style="background: #fdfefe; border: 1px solid #ebf5fb; border-left: 5px solid #2980b9; padding: 25px; border-radius: 6px;">
+          <h2 style="font-size: 22px; color: #2c3e50; margin: 0 0 12px 0; font-weight: 700;">${item.name}</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 13px; line-height: 1.6; color: #34495e;">
+            <div>
+              <p style="margin: 4px 0;"><strong>Product Code/SKU:</strong> <span style="font-family: monospace; font-size: 14px;">${skuStr}</span></p>
+              <p style="margin: 4px 0;"><strong>Quantity Ordered:</strong> <span style="font-size: 16px; font-weight: 700; color: #e74c3c;">${item.qty} pcs</span></p>
+            </div>
+            <div style="border-left: 1px dashed #d5dbdb; padding-left: 20px;">
+              <p style="margin: 4px 0;"><strong>Stock Before Purchase:</strong> <span style="font-size: 15px; font-weight: 700; color: #7f8c8d;">${stockBefore}</span></p>
+              <p style="margin: 4px 0;"><strong>Stock After Purchase:</strong> <span style="font-size: 15px; font-weight: 700; color: #27ae60;">${stockAfter}</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 30px; border-top: 1px solid #eeeeee; padding-top: 15px; text-align: center; font-size: 10px; color: #95a5a6;">
+          <p>Please cross-check stock count before packaging. Handcrafted in India &bull; vfsjewels.store</p>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const printContainer = $('#invoicePrintContainer');
+  printContainer.innerHTML = pagesHtml;
+  window.print();
+};
+
 // ── Reload Action ──
 $('#btnReload').addEventListener('click', () => {
   loadDashboard();
@@ -1799,8 +2030,20 @@ function renderSingleProductForm() {
           <input type="text" id="singCustomCategory" placeholder="Enter Category Name" style="display:none; margin-top:8px;">
         </div>
         <div class="form-group">
-          <label>Offer Price (₹)</label>
+          <label>Retail Price (₹)</label>
           <input type="number" id="singPrice" placeholder="e.g. 799" required>
+        </div>
+        <div class="form-group">
+          <label>Wholesale Price (₹)</label>
+          <input type="number" id="singWsPrice" placeholder="e.g. 479 (Defaults to 60%)">
+        </div>
+        <div class="form-group">
+          <label>MOQ</label>
+          <input type="number" id="singMoq" placeholder="e.g. 1" min="1" value="1" required>
+        </div>
+        <div class="form-group">
+          <label>Stock</label>
+          <input type="number" id="singStock" placeholder="e.g. 5" min="0" value="5" required>
         </div>
         <div class="form-group form-group-full">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -1842,8 +2085,20 @@ function renderBulkProductsForm() {
           <input type="text" class="bulk-custom-category" id="bulkCustomCategory_${idx}" placeholder="Enter Category Name" style="display:none; margin-top:8px;">
         </div>
         <div class="form-group">
-          <label>Offer Price (₹)</label>
-          <input type="number" class="bulk-price" data-idx="${idx}" placeholder="₹" required>
+          <label>Retail Price (₹)</label>
+          <input type="number" class="bulk-price" data-idx="${idx}" placeholder="Retail ₹" required>
+        </div>
+        <div class="form-group">
+          <label>Wholesale Price (₹)</label>
+          <input type="number" class="bulk-ws-price" data-idx="${idx}" placeholder="Wholesale ₹">
+        </div>
+        <div class="form-group">
+          <label>MOQ</label>
+          <input type="number" class="bulk-moq" data-idx="${idx}" placeholder="MOQ" min="1" value="1" required>
+        </div>
+        <div class="form-group">
+          <label>Stock</label>
+          <input type="number" class="bulk-stock" data-idx="${idx}" placeholder="Stock" min="0" value="5" required>
         </div>
         <div class="form-group form-group-full">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -1900,6 +2155,11 @@ $('#productForm').addEventListener('submit', async (e) => {
       category = $('#singCustomCategory').value.trim().toLowerCase();
     }
     
+    const retailPrice = +$('#singPrice').value;
+    const wsPrice = +$('#singWsPrice').value || Math.round(retailPrice * 0.6);
+    const moqVal = parseInt($('#singMoq').value) || 1;
+    const stockVal = parseInt($('#singStock').value) || 5;
+
     const productSku = generateSKU();
     const productId = parseInt(productSku.replace('SN-', ''));
     const singProd = {
@@ -1908,8 +2168,10 @@ $('#productForm').addEventListener('submit', async (e) => {
       name: $('#singTitle').value.trim(),
       cat: category,
       meta: 'Imitation Jewellery',
-      price: +$('#singPrice').value,
-      mrp: +$('#singPrice').value,
+      price: retailPrice,
+      mrp: retailPrice,
+      wholesalePrice: wsPrice,
+      moq: moqVal,
       desc: $('#singDesc').value.trim(),
       img: mainImg,
       imgs: imagesList,
@@ -1918,15 +2180,22 @@ $('#productForm').addEventListener('submit', async (e) => {
       badge: 'New'
     };
     newProducts.push(singProd);
+
+    // Save stock directly
+    await window.VFS_DB.saveProductStock(productId, stockVal);
+    window.VFS_STOCK_CACHE[productId] = stockVal;
     
   } else if (currentWizardMode === 'split') {
     // Split mode: Save each photo as a separate product
     const titles = $$('.bulk-title');
     const categories = $$('.bulk-category');
     const prices = $$('.bulk-price');
+    const wsPrices = $$('.bulk-ws-price');
+    const moqs = $$('.bulk-moq');
+    const stocks = $$('.bulk-stock');
     const descs = $$('.bulk-desc');
     
-    uploadedFilesData.forEach((fileObj, idx) => {
+    const stockSaves = uploadedFilesData.map(async (fileObj, idx) => {
       // Resolve Category for this row
       const catSelect = categories[idx];
       let category = catSelect.value;
@@ -1934,6 +2203,11 @@ $('#productForm').addEventListener('submit', async (e) => {
         category = document.getElementById(`bulkCustomCategory_${idx}`).value.trim().toLowerCase();
       }
       
+      const retailPrice = +prices[idx].value;
+      const wsPrice = +wsPrices[idx].value || Math.round(retailPrice * 0.6);
+      const moqVal = parseInt(moqs[idx].value) || 1;
+      const stockVal = parseInt(stocks[idx].value) || 5;
+
       const productSku = generateSKU(idx);
       const productId = parseInt(productSku.replace('SN-', ''));
       const mainImg = fileObj.cloudinaryUrl || fileObj.base64;
@@ -1943,8 +2217,10 @@ $('#productForm').addEventListener('submit', async (e) => {
         name: titles[idx].value.trim(),
         cat: category,
         meta: 'Imitation Jewellery',
-        price: +prices[idx].value,
-        mrp: +prices[idx].value,
+        price: retailPrice,
+        mrp: retailPrice,
+        wholesalePrice: wsPrice,
+        moq: moqVal,
         desc: descs[idx].value.trim(),
         img: mainImg,
         imgs: [mainImg],
@@ -1953,7 +2229,12 @@ $('#productForm').addEventListener('submit', async (e) => {
         badge: ''
       };
       newProducts.push(prod);
+
+      // Save stock directly
+      await window.VFS_DB.saveProductStock(productId, stockVal);
+      window.VFS_STOCK_CACHE[productId] = stockVal;
     });
+    await Promise.all(stockSaves);
   }
   
   // Merge and save via DB wrapper
@@ -2584,7 +2865,12 @@ async function loadCustomers() {
       // Wholesale Portal Status & Approval Action
       let statusHtml = '';
       if (c.unlocked) {
-        statusHtml = `<span style="color:#27AE60; font-weight:700;">Approved / Unlocked</span>`;
+        statusHtml = `
+          <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
+            <span style="color:#27AE60; font-weight:700; font-size:1.15rem;">Approved / Unlocked</span>
+            <button class="btn-card-secondary" onclick="sendWelcomeWhatsApp('${escapeHtml(c.name || 'Reseller')}', '${escapeHtml(phoneDisplay)}')" style="font-size:1.05rem; padding:4px 8px; border-radius:4px; font-weight:700; cursor:pointer; background:#25d366; color:#fff; border-color:#25d366;">💬 Welcome</button>
+          </div>
+        `;
       } else {
         if (c.paymentStatus === 'pending') {
           statusHtml = `<button class="btn-card-primary" onclick="approveWholesaleUser('${c.uid || c.phone || c.id}')" style="font-size:1.15rem; padding:6px 12px; border-radius:4px; font-weight:700; cursor:pointer;">Accept Payment & Unlock</button>`;
@@ -2650,18 +2936,33 @@ window.approveWholesaleUser = async function(uid) {
   }
 };
 
+window.sendWelcomeWhatsApp = function(name, phone) {
+  if (!phone || phone === '-') {
+    adminToast('No phone number registered for this customer!', 'error');
+    return;
+  }
+  const cleanPhone = phone.replace(/\D/g, '');
+  const prefix = cleanPhone.length === 10 ? '91' : '';
+  const finalPhone = prefix + cleanPhone;
+  
+  const msg = `Hello ${name}, welcome to the VFS Jewels Business Club! 👑 Your wholesale portal has been successfully unlocked. You can now access exclusive wholesale prices, view our premium collections, and place orders. Let us know if you have any questions!`;
+  const waLink = `https://wa.me/${finalPhone}?text=${encodeURIComponent(msg)}`;
+  window.open(waLink, '_blank');
+};
+
 // ── Reports & Analytics ──
 async function loadReports() {
   try {
     const orders = await window.VFS_DB.getOrders();
     const timeframeDropdown = $('#reportTimeframe');
     const daysVal = timeframeDropdown ? timeframeDropdown.value : '30';
-    
     // Filter orders by status and date timeframe
     const nowMs = Date.now();
     let daysNum = 30;
-    if (daysVal === '90') daysNum = 90;
-    else if (daysVal === 'all') daysNum = 180; // default for lifetime window
+    if (daysVal === '60') daysNum = 60;
+    else if (daysVal === '90') daysNum = 90;
+    else if (daysVal === '365') daysNum = 365;
+    else if (daysVal === 'all') daysNum = 1825; // 5 years lifetime
 
     const cutoffMs = nowMs - daysNum * 24 * 60 * 60 * 1000;
 
@@ -2711,6 +3012,15 @@ async function loadReports() {
     if (timeframeDropdown && !timeframeDropdown._vfsListener) {
       timeframeDropdown._vfsListener = true;
       timeframeDropdown.addEventListener('change', loadReports);
+    }
+
+    // Attach Export Invoices ZIP listener if not already bound
+    const exportZipBtn = $('#btnExportInvoicesZip');
+    if (exportZipBtn && !exportZipBtn._vfsListener) {
+      exportZipBtn._vfsListener = true;
+      exportZipBtn.addEventListener('click', async () => {
+        await window.exportInvoicesZip(daysVal);
+      });
     }
 
     // ── SVG spline curve chart calculation ──
@@ -2844,6 +3154,192 @@ async function loadReports() {
 }
 window.loadReports = loadReports;
 
+// ── Export Period Invoices as ZIP ──
+window.exportInvoicesZip = async function(daysVal) {
+  adminToast("Compiling ZIP invoices archive... 📦");
+  try {
+    const orders = await window.VFS_DB.getOrders();
+    const nowMs = Date.now();
+    let daysNum = 30;
+    if (daysVal === '60') daysNum = 60;
+    else if (daysVal === '90') daysNum = 90;
+    else if (daysVal === '365') daysNum = 365;
+    else if (daysVal === 'all') daysNum = 1825; // 5 years lifetime
+
+    const cutoffMs = nowMs - daysNum * 24 * 60 * 60 * 1000;
+    
+    const getOrderTime = (o) => {
+      if (o.createdAt) return o.createdAt;
+      if (o.date) {
+        const parts = o.date.split('/');
+        if (parts.length === 3) {
+          const day = parseInt(parts[0]);
+          const month = parseInt(parts[1]) - 1;
+          const year = parseInt(parts[2]);
+          return new Date(year, month, day).getTime();
+        }
+      }
+      return 0;
+    };
+
+    const periodOrders = orders.filter(o => {
+      const t = getOrderTime(o);
+      return t >= cutoffMs;
+    });
+
+    if (periodOrders.length === 0) {
+      adminToast("No orders found in the selected period to export!", "error");
+      return;
+    }
+
+    adminToast(`Generating ${periodOrders.length} invoice PDFs...`);
+    const zip = new JSZip();
+
+    // Generate PDF for each order sequentially
+    for (const order of periodOrders) {
+      const tempDiv = document.createElement('div');
+      tempDiv.style.width = '750px';
+      tempDiv.style.background = '#ffffff';
+      tempDiv.style.color = '#000000';
+      tempDiv.style.padding = '30px';
+      tempDiv.style.fontFamily = "'Lato', sans-serif";
+
+      const tableRows = order.items.map((item, idx) => `
+        <tr style="border-bottom: 1px solid #eeeeee;">
+          <td style="padding: 12px 10px; font-size: 10pt; color: #000000;">${idx + 1}</td>
+          <td style="padding: 12px 10px; font-size: 10pt; color: #000000;"><strong>${item.name}</strong><br><span style="font-size:8pt;color:#666">Imitation Fashion Jewellery</span></td>
+          <td style="padding: 12px 10px; font-size: 10pt; color: #000000;">${fmt(item.price)}</td>
+          <td style="padding: 12px 10px; font-size: 10pt; color: #000000;">${item.qty}</td>
+          <td style="padding: 12px 10px; font-size: 10pt; text-align: right; color: #000000;">${fmt(item.price * item.qty)}</td>
+        </tr>
+      `).join('');
+
+      const subtotal = order.subtotal || (order.items || []).reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+      const shipping = order.shipping || 90;
+      const gstAmt = order.gstAmount || 0;
+      const advanceAmt = order.advanceAdjusted || order.advanceDeducted || 0;
+      const couponAmt = order.couponDiscount || 0;
+      const waReferralAmt = order.waReferralDiscount || 0;
+      const walletAmt = order.walletDiscount || 0;
+      const total = order.total || subtotal;
+
+      let totalsHtml = `
+        <tr>
+          <td style="padding: 4px 0; color: #000000;">Subtotal:</td>
+          <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(subtotal)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; color: #000000;">Shipping Fee:</td>
+          <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(shipping)}</td>
+        </tr>
+      `;
+      if (gstAmt) {
+        totalsHtml += `<tr><td style="padding: 4px 0; color: #000000;">GST (3%):</td><td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(gstAmt)}</td></tr>`;
+      }
+      if (couponAmt) {
+        totalsHtml += `<tr><td style="padding: 4px 0; color: green;">Coupon Discount (${order.couponCode || ''}):</td><td style="text-align: right; font-weight: 700; padding: 4px 0; color: green;">-${fmt(couponAmt)}</td></tr>`;
+      }
+      if (waReferralAmt) {
+        totalsHtml += `<tr><td style="padding: 4px 0; color: green;">WhatsApp Referral (1%):</td><td style="text-align: right; font-weight: 700; padding: 4px 0; color: green;">-${fmt(waReferralAmt)}</td></tr>`;
+      }
+      if (advanceAmt) {
+        totalsHtml += `<tr><td style="padding: 4px 0; color: green;">Advance Deducted:</td><td style="text-align: right; font-weight: 700; padding: 4px 0; color: green;">-${fmt(advanceAmt)}</td></tr>`;
+      }
+      if (walletAmt) {
+        totalsHtml += `<tr><td style="padding: 4px 0; color: green;">Wallet Discount:</td><td style="text-align: right; font-weight: 700; padding: 4px 0; color: green;">-${fmt(walletAmt)}</td></tr>`;
+      }
+      totalsHtml += `
+        <tr style="font-size: 11pt; font-weight: 900; border-top: 1px solid #dddddd; color: #000000;">
+          <td style="padding: 8px 0 0 0; color: #000000;">Grand Total:</td>
+          <td style="text-align: right; padding: 8px 0 0 0; color: #000000;">${fmt(total)}</td>
+        </tr>
+      `;
+
+      tempDiv.innerHTML = `
+        <div style="border: 1px solid #dddddd; padding: 30px; background: #ffffff; color: #000000;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #D4AF37; padding-bottom: 20px; margin-bottom: 20px;">
+            <div>
+              <div style="font-size: 26px; font-weight: 900; letter-spacing: 2px; color: #000000;">VFS<span style="color:#D4AF37;">.</span></div>
+              <p style="font-size: 8.5pt; color: #666666; margin: 4px 0 0 0;">Handcrafted Premium Imitation Jewellery</p>
+            </div>
+            <div style="text-align: right; font-size: 9.5pt; line-height: 1.4; color: #000000;">
+              <h2 style="color: #D4AF37; text-transform: uppercase; font-size: 16px; margin: 0 0 6px 0;">Retail Tax Invoice</h2>
+              <p style="margin: 2px 0;"><strong>Invoice ID:</strong> INV-${order.id.replace('#', '')}</p>
+              <p style="margin: 2px 0;"><strong>Order ID:</strong> ${order.id}</p>
+              <p style="margin: 2px 0;"><strong>Date:</strong> ${order.date || new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
+              <p style="margin: 2px 0;"><strong>Status:</strong> <span style="color:#27AE60;font-weight:700;text-transform:uppercase;">${order.status}</span></p>
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 35px; font-size: 9.5pt; line-height: 1.5; color: #000000;">
+            <div>
+              <h4 style="margin: 0 0 6px 0; font-weight: 700; text-transform: uppercase; color: #555555;">Sold By:</h4>
+              <strong>VFS Jewels Main Store</strong><br>
+              42, 2nd Floor, Natwar Kurpa Complex,<br>
+              Narayana Mudali Street, Sowcarpet, George Town,<br>
+              Chennai, Tamil Nadu - 600001<br>
+              Email: accounts@vfsjewels.in | GSTIN: 33AAFVC8491A1ZX
+            </div>
+            <div>
+              <h4 style="margin: 0 0 6px 0; font-weight: 700; text-transform: uppercase; color: #555555;">Ship To:</h4>
+              <strong>${order.name}</strong><br>
+              Address: ${order.address}<br>
+              City: ${order.city} - ${order.pincode}<br>
+              Phone: +91 ${order.phone}
+              ${order.gstNumber ? `<br>GSTIN: ${order.gstNumber}` : ''}
+            </div>
+          </div>
+          
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; color: #000000;">
+            <thead>
+              <tr style="background: #fcfcfc; border-bottom: 2px solid #dddddd;">
+                <th style="width: 8%; text-align: left; padding: 10px; font-size: 9pt; text-transform: uppercase; color: #000000;">S.No</th>
+                <th style="text-align: left; padding: 10px; font-size: 9pt; text-transform: uppercase; color: #000000;">Description of Goods</th>
+                <th style="width: 15%; text-align: left; padding: 10px; font-size: 9pt; text-transform: uppercase; color: #000000;">Rate</th>
+                <th style="width: 10%; text-align: left; padding: 10px; font-size: 9pt; text-transform: uppercase; color: #000000;">Qty</th>
+                <th style="width: 18%; text-align: right; padding: 10px; font-size: 9pt; text-transform: uppercase; color: #000000;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+          
+          <div style="display: flex; justify-content: flex-end; color: #000000; margin-bottom: 20px;">
+            <table style="width: 250px; font-size: 9.5pt; line-height: 1.6; border-collapse: collapse;">
+              ${totalsHtml}
+            </table>
+          </div>
+        </div>
+      `;
+
+      const opt = {
+        margin: 0,
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: 1.5, useCORS: true },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      const pdfBlob = await html2pdf().from(tempDiv).set(opt).output('blob');
+      const filename = `Invoice_${order.id.replace('#', '')}.pdf`;
+      zip.file(filename, pdfBlob);
+    }
+
+    const content = await zip.generateAsync({ type: "blob" });
+    const zipFilename = `VFS_Invoices_Last_${daysVal}_Days.zip`;
+    
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(content);
+    link.download = zipFilename;
+    link.click();
+    
+    adminToast("Invoices ZIP exported successfully! 📦", "success");
+  } catch(err) {
+    console.error("ZIP export failed:", err);
+    adminToast("ZIP export failed: " + err.message, "error");
+  }
+};
+
 // ── Banner Manager ──
 async function loadBanners() {
   const grid = $('#bannerManagerGrid');
@@ -2890,6 +3386,33 @@ document.addEventListener('DOMContentLoaded', () => {
         adminToast('Upload failed: ' + err.message, 'error');
       }
       bannerInput.value = '';
+    });
+  }
+
+  // Setup Instagram Reel link loader & saver
+  const reelInput = $('#adminReelUrlInput');
+  const saveReelBtn = $('#btnSaveReelUrl');
+  if (reelInput) {
+    window.VFS_DB.getSettings('instagram_reels').then(data => {
+      if (data && data.url) {
+        reelInput.value = data.url;
+      }
+    });
+  }
+  if (saveReelBtn && reelInput) {
+    saveReelBtn.addEventListener('click', async () => {
+      const url = reelInput.value.trim();
+      saveReelBtn.disabled = true;
+      saveReelBtn.textContent = 'Saving...';
+      try {
+        await window.VFS_DB.saveSettings('instagram_reels', { url, updatedAt: Date.now() });
+        adminToast('Instagram Reel link updated successfully! 🎥');
+      } catch (err) {
+        adminToast('Failed to save settings: ' + err.message, 'error');
+      } finally {
+        saveReelBtn.disabled = false;
+        saveReelBtn.textContent = 'Save Link';
+      }
     });
   }
 });

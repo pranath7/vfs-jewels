@@ -3841,3 +3841,70 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .banner-upload-area:hover { background: #fff8e0; }
 .banner-upload-area p { font-size: 1.4rem; color: #888; margin-top: 10px; }
 
+/* 👑 VFS Business Club Premium Styles */
+.mode-status-bar.premium-business-club {
+  background: linear-gradient(135deg, #121212 0%, #1e1e1e 100%) !important;
+  border: 1.5px solid #D4AF37 !important;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2) !important;
+  color: #D4AF37 !important;
+}
+.mode-status-bar.premium-business-club #activeModeLabel {
+  color: #D4AF37 !important;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.mode-status-bar.premium-business-club #switchModeBtn {
+  background: #D4AF37 !important;
+  color: #121212 !important;
+  border-color: #D4AF37 !important;
+  font-weight: 700;
+}
+
+/* 🎥 Instagram Reels Showcase Styling */
+.reels-showcase-section {
+  padding: 80px 0;
+  background-color: #0b0b0b;
+  text-align: center;
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+.reels-title {
+  font-family: var(--font-heading);
+  font-size: 2.8rem;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+.reels-sub {
+  font-size: 1.4rem;
+  color: #888888;
+  margin-bottom: 40px;
+}
+.reels-grid {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.reel-embed-card {
+  width: 320px;
+  height: 480px;
+  background: #121212;
+  border: 1px solid #222222;
+  border-radius: var(--rounded-md);
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s;
+}
+.reel-embed-card:hover {
+  transform: translateY(-8px);
+}
+.reel-embed-card iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+

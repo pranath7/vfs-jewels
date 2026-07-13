@@ -405,6 +405,40 @@ window.VFS_DB = {
     }
     const local = localStorage.getItem('vfs_wholesale_customers');
     return local ? JSON.parse(local) : [];
+  },
+
+  // ── Instagram Reels / Settings ──
+  getSettings: async function(key) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        const doc = await window.db.collection('settings').doc(key).get();
+        if (doc.exists) {
+          return doc.data();
+        }
+      } catch(e) {
+        console.error("Firestore read settings error:", e);
+      }
+    }
+    const local = localStorage.getItem(`vfs_settings_${key}`);
+    if (local) return JSON.parse(local);
+    if (key === 'instagram_reels') {
+      return {
+        url: "https://www.instagram.com/reel/Daknu-qjf7H/\nhttps://www.instagram.com/reel/DaiC9WnmIro/\nhttps://www.instagram.com/reel/DafeIfeldGR/"
+      };
+    }
+    return null;
+  },
+
+  saveSettings: async function(key, data) {
+    if (window.VFS_CLOUD_ACTIVE) {
+      try {
+        await window.db.collection('settings').doc(key).set(data);
+        return;
+      } catch(e) {
+        console.error("Firestore write settings error:", e);
+      }
+    }
+    localStorage.setItem(`vfs_settings_${key}`, JSON.stringify(data));
   }
 };
 
@@ -1079,12 +1113,16 @@ window.filterCat = function(cat) {
 
 // ── Cart Logic ──
 function addToCart(id, qty = 1) {
+  const p = getFullCatalog().find(x => x.id === id);
+  const minQty = (p && p.moq) ? parseInt(p.moq) : 1;
   const existing = cart.find(c => c.id === id);
   if (existing) {
     existing.qty += qty;
     existing.addedAt = Date.now();
   } else {
-    cart.push({ id, qty, addedAt: Date.now() });
+    // Ensure first addition matches at least the custom MOQ value
+    const finalQty = Math.max(qty, minQty);
+    cart.push({ id, qty: finalQty, addedAt: Date.now() });
   }
   saveState();
   updateCounts();
@@ -1161,6 +1199,12 @@ function renderCart() {
       const d = +btn.dataset.d;
       const ci = cart.find(c => c.id === id);
       if (ci) {
+        const p = getFullCatalog().find(x => x.id === id);
+        const minQty = (p && p.moq) ? parseInt(p.moq) : 1;
+        if (d === -1 && ci.qty + d < minQty) {
+          toast(`Minimum quantity for this item is ${minQty} pcs`);
+          return;
+        }
         ci.qty += d;
         ci.addedAt = Date.now();
         if (ci.qty < 1) cart = cart.filter(c => c.id !== id);
@@ -1577,14 +1621,39 @@ $('#coForm').addEventListener('submit', async (e) => {
   }
 
   const fullCatalog = getFullCatalog();
+
+  // Verify MOQ per product
+  for (const ci of cart) {
+    const p = fullCatalog.find(x => x.id === ci.id);
+    const minQty = (p && p.moq) ? parseInt(p.moq) : 1;
+    if (ci.qty < minQty) {
+      toast(`Checkout blocked: Minimum quantity for "${p.name}" is ${minQty} pcs.`);
+      return;
+    }
+  }
+
   let subtotal = 0;
   
-  const itemsList = cart.map(ci => {
+  // Resolve itemsList with stock before/after snapshots
+  const stockPromises = cart.map(async (ci) => {
     const p = fullCatalog.find(x => x.id === ci.id);
     const unitPrice = getCurrentProductPrice(p);
+    const sBefore = window.VFS_STOCK_CACHE[p.id] !== undefined ? window.VFS_STOCK_CACHE[p.id] : 5;
+    const sAfter = Math.max(0, sBefore - ci.qty);
     subtotal += unitPrice * ci.qty;
-    return { id: p.id, sku: p.sku || `SN-${String(p.id).padStart(4, '0')}`, name: p.name, price: unitPrice, qty: ci.qty, img: p.img || '', cat: p.cat || '' };
+    return { 
+      id: p.id, 
+      sku: p.sku || `SN-${String(p.id).padStart(4, '0')}`, 
+      name: p.name, 
+      price: unitPrice, 
+      qty: ci.qty, 
+      img: p.img || '', 
+      cat: p.cat || '',
+      stockBefore: sBefore,
+      stockAfter: sAfter
+    };
   });
+  const itemsList = await Promise.all(stockPromises);
   
   const gstAmount = Math.round(subtotal * 0.03);
   const shippingCost = 90;
@@ -1604,7 +1673,13 @@ $('#coForm').addEventListener('submit', async (e) => {
     couponDiscount = Math.round(subtotal * 0.03);
   }
 
-  let grandTotal = subtotal + gstAmount + shippingCost - advanceDeduction - couponDiscount;
+  // Calculate WhatsApp Referral Discount (1% of subtotal)
+  let waReferralDiscount = 0;
+  if (localStorage.getItem('vfs_wa_referral') === 'true') {
+    waReferralDiscount = Math.round(subtotal * 0.01);
+  }
+
+  let grandTotal = subtotal + gstAmount + shippingCost - advanceDeduction - couponDiscount - waReferralDiscount;
   
   // Calculate Wallet Discount
   let walletDiscount = 0;
@@ -1624,9 +1699,26 @@ $('#coForm').addEventListener('submit', async (e) => {
   
   grandTotal = Math.max(0, grandTotal);
 
+  // Generate Custom Monthly Sequential Order ID (e.g. #J7001)
+  let customOrderId = '';
+  try {
+    const allOrders = await window.VFS_DB.getOrders();
+    const orderSeq = allOrders.length + 1;
+    const now = new Date();
+    const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const monthName = months[now.getMonth()];
+    const monthFirstLetter = monthName.charAt(0).toUpperCase();
+    const monthNum = now.getMonth() + 1;
+    const seqStr = String(orderSeq).padStart(3, '0');
+    customOrderId = `#${monthFirstLetter}${monthNum}${seqStr}`;
+  } catch (err) {
+    console.error("Generating custom Order ID failed, falling back to random:", err);
+    customOrderId = '#VF-' + Math.floor(1000 + Math.random() * 9000);
+  }
+  
   // Create Order Structure
   const newOrder = {
-    id: '#VF-' + Math.floor(1000 + Math.random() * 9000),
+    id: customOrderId,
     date: new Date().toLocaleDateString('en-IN'),
     createdAt: Date.now(),
     name: $('#coName').value.trim(),
@@ -1644,6 +1736,7 @@ $('#coForm').addEventListener('submit', async (e) => {
     advanceAdjusted: advanceDeduction,
     couponCode: couponCode,
     couponDiscount: couponDiscount,
+    waReferralDiscount: waReferralDiscount,
     walletDiscount: walletDiscount,
     total: grandTotal,
     status: 'unpaid', // unpaid/paid
@@ -1677,6 +1770,14 @@ $('#coForm').addEventListener('submit', async (e) => {
     $('#coSumAdvance').textContent = `-${fmt(advanceDeduction)}`;
   } else {
     $('#coSumAdvanceRow').style.display = 'none';
+  }
+  
+  const waReferralAmt = newOrder.waReferralDiscount || 0;
+  if (waReferralAmt > 0) {
+    if ($('#coSumWaReferralRow')) $('#coSumWaReferralRow').style.display = 'flex';
+    if ($('#coSumWaReferral')) $('#coSumWaReferral').textContent = `-${fmt(waReferralAmt)}`;
+  } else {
+    if ($('#coSumWaReferralRow')) $('#coSumWaReferralRow').style.display = 'none';
   }
   
   $('#coSumTotal').textContent = fmt(grandTotal);
@@ -1797,6 +1898,10 @@ ${itemsSummaryText}
   
   if (activeCheckoutOrder.advanceAdjusted && activeCheckoutOrder.advanceAdjusted > 0) {
     waMessage += `*Wholesale Advance Adjusted:* -₹${activeCheckoutOrder.advanceAdjusted}\n`;
+  }
+
+  if (activeCheckoutOrder.waReferralDiscount && activeCheckoutOrder.waReferralDiscount > 0) {
+    waMessage += `*WhatsApp Referral Discount (1%):* -₹${activeCheckoutOrder.waReferralDiscount}\n`;
   }
   
   waMessage += `*Grand Total:* *₹${activeCheckoutOrder.total}*
@@ -1975,10 +2080,11 @@ function openPDP(id) {
       ` : ''}
     `;
     
+    const minQty = p.moq ? parseInt(p.moq) : 1;
     qtyCartHtml = `
       <div class="pdp-qty-selector">
         <button id="pdpQtyDec" class="pdp-qty-btn">−</button>
-        <input type="number" id="pdpQtyInput" class="pdp-qty-input" value="1" min="1" readonly>
+        <input type="number" id="pdpQtyInput" class="pdp-qty-input" value="${minQty}" min="${minQty}" readonly>
         <button id="pdpQtyInc" class="pdp-qty-btn">+</button>
       </div>
       <button class="pdp-btn-add-new" id="pdpBtnAdd" data-id="${p.id}">
@@ -2009,10 +2115,11 @@ function openPDP(id) {
         <span class="pdp-price-off">${offPct}% OFF</span>
       `;
       
+      const minQty = p.moq ? parseInt(p.moq) : 1;
       qtyCartHtml = `
         <div class="pdp-qty-selector">
           <button id="pdpQtyDec" class="pdp-qty-btn">−</button>
-          <input type="number" id="pdpQtyInput" class="pdp-qty-input" value="1" min="1" readonly>
+          <input type="number" id="pdpQtyInput" class="pdp-qty-input" value="${minQty}" min="${minQty}" readonly>
           <button id="pdpQtyInc" class="pdp-qty-btn">+</button>
         </div>
         <button class="pdp-btn-add-new" id="pdpBtnAdd" data-id="${p.id}">
@@ -2092,17 +2199,18 @@ function openPDP(id) {
   const qtyInput = $('#pdpQtyInput');
   const btnDec = $('#pdpQtyDec');
   const btnInc = $('#pdpQtyInc');
+  const minQty = p.moq ? parseInt(p.moq) : 1;
   
   if (qtyInput && btnDec && btnInc) {
     btnDec.addEventListener('click', () => {
-      let currentVal = parseInt(qtyInput.value) || 1;
-      if (currentVal > 1) {
+      let currentVal = parseInt(qtyInput.value) || minQty;
+      if (currentVal > minQty) {
         qtyInput.value = currentVal - 1;
       }
     });
     
     btnInc.addEventListener('click', () => {
-      let currentVal = parseInt(qtyInput.value) || 1;
+      let currentVal = parseInt(qtyInput.value) || minQty;
       qtyInput.value = currentVal + 1;
     });
   }
@@ -3429,6 +3537,13 @@ async function initApp() {
   if (initAppCalled) return;
   initAppCalled = true;
 
+  // Detect WhatsApp Referral (1% discount activation)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('ref') === 'wa' || urlParams.get('whatsapp') === 'true') {
+    localStorage.setItem('vfs_wa_referral', 'true');
+    toast('🎉 Special 1% WhatsApp Discount Activated!');
+  }
+
   // Ensure Cloud configuration (Firebase Firestore connection) resolves before loading storefront data
   await initCloudConfig();
 
@@ -3476,10 +3591,45 @@ async function initApp() {
   checkHashRoute();
   renderProducts(null);
   renderTestimonials();
+  renderInstaReels();
   renderProductShelves();
   updateCounts();
   setupShoppingMode();
   setupBirthdayCircle();
+}
+
+async function renderInstaReels() {
+  const section = $('#instaReelsSection');
+  const grid = $('#instaReelsGrid');
+  if (!section || !grid) return;
+
+  try {
+    const data = await window.VFS_DB.getSettings('instagram_reels');
+    if (data && data.url) {
+      const urls = data.url.split(/[\s,\n\r]+/).filter(u => u.trim().length > 0);
+      const shortcodes = [];
+      
+      urls.forEach(url => {
+        const match = url.trim().match(/(?:\/reel\/|\/p\/|\/reels\/)([A-Za-z0-9_-]+)/);
+        if (match && match[1]) {
+          shortcodes.push(match[1]);
+        }
+      });
+      
+      if (shortcodes.length > 0) {
+        grid.innerHTML = shortcodes.map(shortcode => `
+          <div class="reel-embed-card">
+            <iframe src="https://www.instagram.com/reel/${shortcode}/embed" frameborder="0" scrolling="no" allowtransparency="true"></iframe>
+          </div>
+        `).join('');
+        section.style.display = 'block';
+        return;
+      }
+    }
+  } catch (err) {
+    console.error("Failed to load Instagram reels:", err);
+  }
+  section.style.display = 'none';
 }
 
 function pruneCart() {
@@ -4027,17 +4177,20 @@ function setupShoppingMode() {
   // Update status bar UI
   function updateModeUI() {
     if (shoppingMode === 'retail') {
+      statusbar.classList.remove('premium-business-club');
       label.innerHTML = 'Retail (Personal Use)';
       statusbar.querySelector('.mode-dot').classList.remove('wholesale-locked');
       switchBtn.innerHTML = 'Switch to Wholesale';
     } else {
       statusbar.querySelector('.mode-dot').classList.add('wholesale-locked');
       if (wholesaleUnlocked) {
+        statusbar.classList.add('premium-business-club');
         statusbar.querySelector('.mode-dot').classList.remove('wholesale-locked');
-        label.innerHTML = `Wholesale (${wholesaleUser ? wholesaleUser.name : 'Business'}) — Unlocked ✅`;
+        label.innerHTML = `👑 Business Club Member (${wholesaleUser ? wholesaleUser.name : 'Reseller'}) 👑`;
         switchBtn.innerHTML = 'Switch to Retail';
       } else {
-        label.innerHTML = `Wholesale (${wholesaleUser ? wholesaleUser.name : 'Business'}) — Locked 🔒`;
+        statusbar.classList.remove('premium-business-club');
+        label.innerHTML = `Wholesale (${wholesaleUser ? wholesaleUser.name : 'Reseller'}) — Locked 🔒`;
         switchBtn.innerHTML = 'Unlock / Switch';
       }
     }
@@ -4580,8 +4733,10 @@ window.downloadInvoicePDF = async function(order) {
   const subtotal = order.subtotal || (order.items || []).reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
   const shipping = order.shipping || 90;
   const gstAmt = order.gstAmount || 0;
-  const advanceAmt = order.advanceDeducted || 0;
+  const advanceAmt = order.advanceAdjusted || order.advanceDeducted || 0;
   const couponAmt = order.couponDiscount || 0;
+  const waReferralAmt = order.waReferralDiscount || 0;
+  const walletAmt = order.walletDiscount || 0;
   const total = order.total || subtotal;
 
   let totalsHtml = `
@@ -4610,11 +4765,27 @@ window.downloadInvoicePDF = async function(order) {
       </tr>
     `;
   }
+  if (waReferralAmt) {
+    totalsHtml += `
+      <tr>
+        <td style="padding: 4px 0; color: green;">WhatsApp Referral (1%):</td>
+        <td style="text-align: right; font-weight: 700; padding: 4px 0; color: green;">-${fmt(waReferralAmt)}</td>
+      </tr>
+    `;
+  }
   if (advanceAmt) {
     totalsHtml += `
       <tr>
         <td style="padding: 4px 0; color: green;">Advance Deducted:</td>
         <td style="text-align: right; font-weight: 700; padding: 4px 0; color: green;">-${fmt(advanceAmt)}</td>
+      </tr>
+    `;
+  }
+  if (walletAmt) {
+    totalsHtml += `
+      <tr>
+        <td style="padding: 4px 0; color: green;">Wallet Discount:</td>
+        <td style="text-align: right; font-weight: 700; padding: 4px 0; color: green;">-${fmt(walletAmt)}</td>
       </tr>
     `;
   }
