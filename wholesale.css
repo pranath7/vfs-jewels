@@ -1,170 +1,13 @@
 @import url('style.css');
 
-/* Royal Dark Gold Theme Overrides */
-body {
-  background: radial-gradient(circle at top, #14120e 0%, #070707 100%) !important;
-  color: #f5f5f5 !important;
-  font-family: 'Outfit', sans-serif !important;
-}
-
-/* Site Header */
-header.site-header {
-  background: rgba(14, 13, 11, 0.95) !important;
-  border-bottom: 1.5px solid #D4AF37 !important;
-  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.15) !important;
-}
-
-.logo-txt {
-  color: #D4AF37 !important;
-  font-family: 'Outfit', sans-serif !important;
-  font-weight: 900 !important;
-  letter-spacing: 2px;
-}
-
-/* Sub-headers and elements */
-h1, h2, h3, h4, h5, h6 {
-  color: #ffffff;
-  font-family: 'Outfit', sans-serif;
-}
-
-/* Mode Status Bar in Wholesale Portal */
-.mode-status-bar {
-  background: linear-gradient(135deg, #161410 0%, #25211a 100%) !important;
-  border-bottom: 1.5px solid #D4AF37 !important;
-  color: #D4AF37 !important;
-  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25) !important;
-}
-
-.mode-dot {
-  background-color: #27ae60 !important;
-  box-shadow: 0 0 10px #27ae60 !important;
-}
-
-.switch-mode-btn {
-  background: #ffffff !important;
-  color: #121212 !important;
-  border: 1px solid #D4AF37 !important;
-}
-
-/* Navigation Links */
-.header-nav-list a, .header-nav-list button {
-  color: #e5e5e5 !important;
-}
-.header-nav-list a:hover, .header-nav-list button:hover {
-  color: #D4AF37 !important;
-}
-
-/* Announcement Bar */
-.announcement-bar {
-  background: #0c0b09 !important;
-  border-bottom: 1px solid rgba(212, 175, 55, 0.15) !important;
-}
-.announcement-slide a {
-  color: #D4AF37 !important;
-}
-
-/* Category Slider Button styling */
-.cat-btn {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid rgba(212, 175, 55, 0.2) !important;
-  color: #ffffff !important;
-}
-.cat-btn.active {
-  background: #D4AF37 !important;
-  color: #0c0b09 !important;
-  border-color: #D4AF37 !important;
-  box-shadow: 0 0 15px rgba(212, 175, 55, 0.4) !important;
-}
-
-/* Product Cards in Royal Theme */
-.prod-card {
-  background: rgba(22, 20, 17, 0.6) !important;
-  border: 1px solid rgba(212, 175, 55, 0.15) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
-  border-radius: 12px !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.prod-card:hover {
-  border-color: #D4AF37 !important;
-  box-shadow: 0 15px 35px rgba(212, 175, 55, 0.18) !important;
-}
-
-.prod-card-info {
-  background: transparent !important;
-}
-
-.prod-title {
-  color: #ffffff !important;
-}
-
-.prod-price {
-  color: #D4AF37 !important;
-}
-
-.prod-badge {
-  background: linear-gradient(135deg, #7c1a1a 0%, #b22222 100%) !important;
-  border: 1px solid #D4AF37 !important;
-}
-
-/* Primary Button Styling (Golden Accent) */
-.btn-primary, .btn-pdp-add, .add-to-cart-btn {
-  background: linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%) !important;
-  color: #0c0b09 !important;
-  font-weight: 700 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 1px !important;
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25) !important;
-  border: none !important;
-}
-
-.btn-primary:hover, .btn-pdp-add:hover {
-  background: linear-gradient(135deg, #f2cf58 0%, #D4AF37 100%) !important;
-  box-shadow: 0 6px 18px rgba(212, 175, 55, 0.4) !important;
-  transform: translateY(-1px);
-}
-
-/* Drawers (Cart, Wishlist, Search) */
-.drawer {
-  background: radial-gradient(circle at top, #14120e 0%, #070707 100%) !important;
-  color: #ffffff !important;
-  border-left: 1.5px solid #D4AF37 !important;
-}
-
-.drawer-header {
-  border-bottom: 1.5px solid #D4AF37 !important;
-}
-
-.dw-item {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-}
-
-.dw-foot {
-  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
-  background: rgba(14, 13, 11, 0.9) !important;
-}
-
-/* Checkout Page Structure */
-.co-section {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border: 1px solid rgba(212, 175, 55, 0.15) !important;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
-}
-
-.co-section h3 {
-  border-bottom: 1.5px solid #D4AF37 !important;
-  color: #D4AF37 !important;
-}
-
-/* Fullscreen Royal Lock Overlay */
+/* Light-themed Lock Overlay matching Retail Modals */
 .royal-lock-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: radial-gradient(circle at center, #1b1712 0%, #060606 100%) !important;
+  background: rgba(0, 0, 0, 0.4) !important; /* Semi-transparent backdrop */
   z-index: 999999;
   display: flex;
   justify-content: center;
@@ -172,83 +15,83 @@ h1, h2, h3, h4, h5, h6 {
   overflow-y: auto;
   box-sizing: border-box;
   padding: 20px;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 .royal-lock-card {
-  background: rgba(22, 20, 17, 0.95);
-  border: 2px solid #D4AF37;
-  border-radius: 16px;
-  max-width: 600px;
+  background: #ffffff !important;
+  border: 1px solid #ddd !important;
+  border-radius: 12px !important;
+  max-width: 550px;
   width: 100%;
-  padding: 40px;
-  box-shadow: 0 25px 60px rgba(212, 175, 55, 0.25);
+  padding: 35px;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.15) !important;
   text-align: center;
   box-sizing: border-box;
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
+  color: #121212 !important;
 }
 
 .royal-lock-logo {
   font-size: 2.8rem;
   font-weight: 900;
-  letter-spacing: 3px;
-  color: #ffffff;
-  margin-bottom: 10px;
+  letter-spacing: 2px;
+  color: #121212 !important;
+  margin-bottom: 8px;
 }
 
 .royal-lock-logo span {
-  color: #D4AF37;
+  color: #D4AF37 !important;
 }
 
 .royal-lock-badge {
   display: inline-block;
-  background: rgba(212, 175, 55, 0.1);
-  border: 1px solid #D4AF37;
+  background: #121212;
   color: #D4AF37;
-  padding: 4px 14px;
-  font-size: 1.1rem;
+  padding: 3px 12px;
+  font-size: 1.05rem;
   font-weight: 700;
   border-radius: 20px;
   letter-spacing: 1px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   text-transform: uppercase;
 }
 
 .royal-lock-card h3 {
-  font-size: 2.2rem;
-  color: #ffffff;
-  margin-bottom: 12px;
+  font-size: 2rem;
+  color: #121212 !important;
+  margin-bottom: 10px;
   font-weight: 700;
 }
 
 .royal-lock-card p {
-  font-size: 1.3rem;
-  color: #cccccc;
+  font-size: 1.25rem;
+  color: #555 !important;
   line-height: 1.5;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
-/* Custom styled forms inside lock card */
+/* Forms */
 .royal-form-group {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   text-align: left;
 }
 
 .royal-form-group label {
   display: block;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: #D4AF37;
-  margin-bottom: 6px;
+  color: #121212;
+  margin-bottom: 5px;
 }
 
 .royal-input {
   width: 100%;
-  padding: 12px 14px;
-  font-size: 1.25rem;
-  background: rgba(0, 0, 0, 0.5) !important;
-  color: #ffffff !important;
-  border: 1.5px solid rgba(212, 175, 55, 0.3) !important;
+  padding: 10px 12px;
+  font-size: 1.2rem;
+  background: #ffffff !important;
+  color: #121212 !important;
+  border: 1px solid #ccc !important;
   border-radius: 6px !important;
   outline: none !important;
   box-sizing: border-box;
@@ -256,16 +99,16 @@ h1, h2, h3, h4, h5, h6 {
 
 .royal-input:focus {
   border-color: #D4AF37 !important;
-  box-shadow: 0 0 10px rgba(212, 175, 55, 0.3) !important;
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.2) !important;
 }
 
 .royal-textarea {
   width: 100%;
-  padding: 12px 14px;
-  font-size: 1.25rem;
-  background: rgba(0, 0, 0, 0.5) !important;
-  color: #ffffff !important;
-  border: 1.5px solid rgba(212, 175, 55, 0.3) !important;
+  padding: 10px 12px;
+  font-size: 1.2rem;
+  background: #ffffff !important;
+  color: #121212 !important;
+  border: 1px solid #ccc !important;
   border-radius: 6px !important;
   outline: none !important;
   resize: none;
@@ -274,53 +117,54 @@ h1, h2, h3, h4, h5, h6 {
 
 .royal-textarea:focus {
   border-color: #D4AF37 !important;
-  box-shadow: 0 0 10px rgba(212, 175, 55, 0.3) !important;
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.2) !important;
 }
 
-/* Royal Terms scrolling box */
+/* Terms box */
 .royal-terms-box {
-  max-height: 200px;
+  max-height: 180px;
   overflow-y: auto;
-  border: 1.5px solid rgba(212, 175, 55, 0.3);
-  background: rgba(0, 0, 0, 0.4);
-  padding: 16px;
-  border-radius: 8px;
-  font-size: 1.2rem;
+  border: 1px solid #ddd;
+  background: #fafafa;
+  padding: 14px;
+  border-radius: 6px;
+  font-size: 1.15rem;
   line-height: 1.5;
-  color: #dddddd;
+  color: #444;
   text-align: left;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .royal-checkbox-wrap {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  justify-content: center;
 }
 
 .royal-checkbox-wrap input {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   accent-color: #D4AF37;
   cursor: pointer;
 }
 
 .royal-checkbox-wrap span {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  color: #ffffff;
+  color: #121212;
 }
 
 .royal-alert-box {
-  background: rgba(212, 175, 55, 0.08);
-  border: 1.5px dashed #D4AF37;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 20px;
-  font-size: 1.2rem;
-  line-height: 1.5;
-  color: #eae1c3;
+  background: #fffdf0;
+  border: 1px dashed #D4AF37;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+  font-size: 1.15rem;
+  line-height: 1.4;
+  color: #6d5a15;
   text-align: left;
 }

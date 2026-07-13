@@ -4237,7 +4237,27 @@ function setupShoppingMode() {
     if (wholesaleUnlocked) {
       overlay.style.display = 'none';
       document.body.style.overflow = '';
+
+      // Trigger Welcome Popup after payment unlock
+      if (!localStorage.getItem('vfs_shown_wholesale_welcome') && wholesaleUser) {
+        const welcomeModal = $('#royalWelcomeModal');
+        if (welcomeModal) {
+          welcomeModal.style.display = 'flex';
+
+          const closeBtn = $('#closeRoyalWelcome');
+          const claimBtn = $('#btnClaimRoyalWelcome');
+
+          const hideWelcome = () => {
+            welcomeModal.style.display = 'none';
+            localStorage.setItem('vfs_shown_wholesale_welcome', 'true');
+          };
+
+          if (closeBtn) closeBtn.addEventListener('click', hideWelcome);
+          if (claimBtn) claimBtn.addEventListener('click', hideWelcome);
+        }
+      }
     } else {
+      localStorage.removeItem('vfs_shown_wholesale_welcome');
       overlay.style.display = 'flex';
       document.body.style.overflow = 'hidden';
 
