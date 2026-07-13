@@ -297,10 +297,12 @@
             <h2>Customer Database</h2>
             <span class="col-count" id="countCustomers" style="background:#2980b9;">0</span>
           </div>
-          <div style="margin-bottom:16px;display:flex;gap:12px;">
-            <input type="text" id="custSearchInput" placeholder="Search by name or phone..." style="flex:1;padding:10px;font-size:1.3rem;border:1px solid #ddd;border-radius:6px;outline:none;">
-            <button onclick="loadCustomers()" class="btn-card-primary">Refresh</button>
+          
+          <div style="margin-bottom:20px; display:flex; gap:12px; align-items:center;">
+            <input type="text" id="custSearchInput" placeholder="Search by name or phone..." style="flex:1; padding:10px 14px; font-size:1.25rem; border:1px solid var(--color-border); border-radius:var(--rounded-md); background:var(--color-surface); color:#fff; outline:none; font-family:var(--font-body);">
+            <button onclick="loadCustomers()" class="btn-primary" style="padding:10px 20px; font-size:1.25rem; font-weight:700;">🔄 Refresh</button>
           </div>
+
           <div class="customer-table-wrap">
             <table class="customer-table" id="customerTableEl">
               <thead>
@@ -332,7 +334,7 @@
           <div class="dashboard-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
             <h2>Sales Performance</h2>
             <div style="display:flex; gap:10px; align-items:center;">
-              <select id="reportTimeframe" class="dashboard-dropdown" style="padding:10px; border-radius:var(--rounded-md); background:var(--color-surface); color:#fff; border:1px solid var(--color-border); font-size:1.25rem; outline:none;">
+              <select id="reportTimeframe" class="dashboard-dropdown">
                 <option value="30">Last 30 Days</option>
                 <option value="60">Last 60 Days</option>
                 <option value="90">Last 90 Days</option>
