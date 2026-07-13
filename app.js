@@ -1114,15 +1114,40 @@ window.filterCat = function(cat) {
 // ── Cart Logic ──
 function addToCart(id, qty = 1) {
   const p = getFullCatalog().find(x => x.id === id);
-  const minQty = (p && p.moq) ? parseInt(p.moq) : 1;
+  if (!p) return;
+
+  const stock = window.VFS_STOCK_CACHE[id];
   const existing = cart.find(c => c.id === id);
+  const currentQty = existing ? existing.qty : 0;
+  const newQty = currentQty + qty;
+
+  if (stock !== undefined) {
+    if (stock <= 0) {
+      toast('Sorry, this item is sold out!');
+      return;
+    }
+    if (newQty > stock) {
+      toast(`Only ${stock} pcs available in stock.`);
+      return;
+    }
+  }
+
+  const minQty = (p && p.moq) ? parseInt(p.moq) : 1;
   if (existing) {
-    existing.qty += qty;
+    existing.qty = newQty;
     existing.addedAt = Date.now();
   } else {
     // Ensure first addition matches at least the custom MOQ value
-    const finalQty = Math.max(qty, minQty);
-    cart.push({ id, qty: finalQty, addedAt: Date.now() });
+    const finalQty = Math.max(newQty, minQty);
+    if (stock !== undefined && finalQty > stock) {
+      if (stock < minQty) {
+        toast(`Cannot add: Stock is ${stock} pcs, but Minimum Order Quantity (MOQ) is ${minQty} pcs.`);
+        return;
+      }
+      cart.push({ id, qty: stock, addedAt: Date.now() });
+    } else {
+      cart.push({ id, qty: finalQty, addedAt: Date.now() });
+    }
   }
   saveState();
   updateCounts();
@@ -1204,6 +1229,13 @@ function renderCart() {
         if (d === -1 && ci.qty + d < minQty) {
           toast(`Minimum quantity for this item is ${minQty} pcs`);
           return;
+        }
+        if (d === 1) {
+          const stock = window.VFS_STOCK_CACHE[id];
+          if (stock !== undefined && ci.qty + d > stock) {
+            toast(`Only ${stock} pcs available in stock.`);
+            return;
+          }
         }
         ci.qty += d;
         ci.addedAt = Date.now();
@@ -1622,12 +1654,20 @@ $('#coForm').addEventListener('submit', async (e) => {
 
   const fullCatalog = getFullCatalog();
 
-  // Verify MOQ per product
+  // Verify MOQ & Stock per product
   for (const ci of cart) {
     const p = fullCatalog.find(x => x.id === ci.id);
+    if (!p) continue;
+
     const minQty = (p && p.moq) ? parseInt(p.moq) : 1;
     if (ci.qty < minQty) {
       toast(`Checkout blocked: Minimum quantity for "${p.name}" is ${minQty} pcs.`);
+      return;
+    }
+
+    const stock = window.VFS_STOCK_CACHE[ci.id];
+    if (stock !== undefined && ci.qty > stock) {
+      toast(`Checkout blocked: Only ${stock} pcs of "${p.name}" are available in stock.`);
       return;
     }
   }
