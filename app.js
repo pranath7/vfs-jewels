@@ -2029,6 +2029,7 @@ function openPDP(id) {
   const p = getFullCatalog().find(x => x.id === id);
   if (!p) return;
 
+  const minQty = p.moq ? parseInt(p.moq) : 1;
   const overlay = $('#pdpOverlay');
   if (currentPdpScrollListener) {
     overlay.removeEventListener('scroll', currentPdpScrollListener);
@@ -2123,7 +2124,6 @@ function openPDP(id) {
       ` : ''}
     `;
     
-    const minQty = p.moq ? parseInt(p.moq) : 1;
     qtyCartHtml = `
       <div class="pdp-qty-selector">
         <button id="pdpQtyDec" class="pdp-qty-btn">−</button>
@@ -2158,7 +2158,6 @@ function openPDP(id) {
         <span class="pdp-price-off">${offPct}% OFF</span>
       `;
       
-      const minQty = p.moq ? parseInt(p.moq) : 1;
       qtyCartHtml = `
         <div class="pdp-qty-selector">
           <button id="pdpQtyDec" class="pdp-qty-btn">−</button>
