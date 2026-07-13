@@ -1867,6 +1867,18 @@ window.printPhotoSlip = async function(orderId) {
 
   const printContainer = $('#invoicePrintContainer');
   printContainer.innerHTML = pagesHtml;
+
+  // Wait for all images inside printContainer to load before triggering window.print()
+  const images = printContainer.querySelectorAll('img');
+  const loadPromises = Array.from(images).map(img => {
+    if (img.complete) return Promise.resolve();
+    return new Promise(resolve => {
+      img.addEventListener('load', resolve);
+      img.addEventListener('error', resolve);
+    });
+  });
+
+  await Promise.all(loadPromises);
   window.print();
 };
 
