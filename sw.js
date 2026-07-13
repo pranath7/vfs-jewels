@@ -1,9 +1,12 @@
-const CACHE_NAME = 'vfs-storefront-v34';
+const CACHE_NAME = 'vfs-storefront-v35';
 const ASSETS = [
   '/',
   '/index.html',
   '/style.css',
   '/app.js',
+  '/wholesale.html',
+  '/wholesale.css',
+  '/wholesale.js',
   '/vfs-config.json',
   '/assets/icon-192.png',
   '/assets/icon-512.png'
