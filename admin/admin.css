@@ -763,9 +763,36 @@ body { display: flex; font-size: 1.4rem; }
 .print-only { display: none; }
 
 @media print {
-  .main-content, .main-header, .bottom-nav, .toast-box, .modal-backdrop, .kpi-grid, .tab-panel, .sms-log-panel { display: none !important; }
-  .print-only { display: block !important; }
-  body { background: #fff !important; margin: 0; padding: 0; }
+  html, body, #adminLayout, #invoicePrintContainer {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    position: static !important;
+  }
+  .sidebar, .main-content, .main-header, .bottom-nav, .toast-box, .modal-backdrop, .kpi-grid, .tab-panel, .sms-log-panel {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  body {
+    background: #fff !important;
+    margin: 0;
+    padding: 0;
+  }
+  .invoice-box {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    max-width: 100% !important;
+  }
+  .dispatch-slip-page {
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+  }
 }
 
 /* RESPONSIVE */
