@@ -1557,6 +1557,33 @@ function openCheckout() {
 function closeCheckout() {
   $('#checkoutModal').classList.remove('active');
   document.body.style.overflow = '';
+
+  // If they were on the success step, log them out of wholesale
+  const coStep3 = $('#coStep3');
+  if (coStep3 && coStep3.style.display === 'block' && shoppingMode === 'wholesale') {
+    setTimeout(async () => {
+      $('#coStep1').style.display = 'block';
+      $('#coStep2').style.display = 'none';
+      coStep3.style.display = 'none';
+      
+      wholesaleUnlocked = false;
+      wholesaleUser = null;
+      localStorage.removeItem('vfs_wholesale_user');
+      localStorage.setItem('vfs_wholesale_unlocked', 'false');
+      
+      if (window.firebase) {
+        try {
+          await firebase.auth().signOut();
+        } catch (e) {
+          console.warn("Firebase signOut failed:", e);
+        }
+      }
+      
+      saveState();
+      if (window.VFS_UPDATE_LOCK_UI) window.VFS_UPDATE_LOCK_UI();
+      renderProducts(null);
+    }, 400);
+  }
 }
 
 $('#checkoutBtn').addEventListener('click', openCheckout);
@@ -1874,16 +1901,31 @@ $('#coConfirmBtn').addEventListener('click', async () => {
     });
     await Promise.all(stockPromises);
 
-    // If wholesale mode, increment ordersCount and relock prices (for next order)
+    // If wholesale mode, increment ordersCount and natively lock user account for next order
     if (shoppingMode === 'wholesale' && wholesaleUser) {
-      wholesaleUser.ordersCount = (wholesaleUser.ordersCount || 0) + 1;
-      localStorage.setItem('vfs_wholesale_user', JSON.stringify(wholesaleUser));
+      const updatedUser = {
+        ...wholesaleUser,
+        ordersCount: (wholesaleUser.ordersCount || 0) + 1,
+        unlocked: false,
+        paymentStatus: 'none'
+      };
+      
+      if (window.VFS_CLOUD_ACTIVE && window.db) {
+        try {
+          const uid = updatedUser.uid || ('phone-' + updatedUser.phone);
+          await window.db.collection('wholesale_users').doc(uid).set(updatedUser);
+        } catch (e) {
+          console.error("Firestore lock update on order placement failed:", e);
+        }
+      }
       
       const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
-      mockUsers[wholesaleUser.phone] = wholesaleUser;
+      if (updatedUser.uid) mockUsers[updatedUser.uid] = updatedUser;
+      if (updatedUser.phone) mockUsers[updatedUser.phone] = updatedUser;
       localStorage.setItem('vfs_wholesale_users', JSON.stringify(mockUsers));
       
-      // Auto lock pricing for next order
+      localStorage.setItem('vfs_wholesale_user', JSON.stringify(updatedUser));
+      wholesaleUser = updatedUser;
       wholesaleUnlocked = false;
       saveState();
     }
