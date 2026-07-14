@@ -2239,7 +2239,6 @@ function openPDP(id) {
   const qtyInput = $('#pdpQtyInput');
   const btnDec = $('#pdpQtyDec');
   const btnInc = $('#pdpQtyInc');
-  const minQty = p.moq ? parseInt(p.moq) : 1;
   
   if (qtyInput && btnDec && btnInc) {
     btnDec.addEventListener('click', () => {
@@ -3610,22 +3609,11 @@ async function initApp() {
     console.error("Failed to load products from live catalog:", e);
   }
 
-  // Load stock cache and assign creation dates for unsold hiding simulation
+  // Load stock levels into cache
   const catalog = getFullCatalog();
-  const now = Date.now();
   const loadPromises = catalog.map(async (p) => {
     const stockVal = await window.VFS_DB.getProductStock(p.id);
     window.VFS_STOCK_CACHE[p.id] = stockVal;
-
-    if (!p.createdAt) {
-      if (p.id % 5 === 0) {
-        // Created 10 days ago (older than 1 week)
-        p.createdAt = now - 10 * 24 * 60 * 60 * 1000;
-      } else {
-        // Created 1 day ago (visible)
-        p.createdAt = now - 1 * 24 * 60 * 60 * 1000;
-      }
-    }
   });
   await Promise.all(loadPromises);
 

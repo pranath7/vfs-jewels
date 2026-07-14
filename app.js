@@ -2239,7 +2239,6 @@ function openPDP(id) {
   const qtyInput = $('#pdpQtyInput');
   const btnDec = $('#pdpQtyDec');
   const btnInc = $('#pdpQtyInc');
-  const minQty = p.moq ? parseInt(p.moq) : 1;
   
   if (qtyInput && btnDec && btnInc) {
     btnDec.addEventListener('click', () => {
@@ -3610,22 +3609,11 @@ async function initApp() {
     console.error("Failed to load products from live catalog:", e);
   }
 
-  // Load stock cache and assign creation dates for unsold hiding simulation
+  // Load stock levels into cache
   const catalog = getFullCatalog();
-  const now = Date.now();
   const loadPromises = catalog.map(async (p) => {
     const stockVal = await window.VFS_DB.getProductStock(p.id);
     window.VFS_STOCK_CACHE[p.id] = stockVal;
-
-    if (!p.createdAt) {
-      if (p.id % 5 === 0) {
-        // Created 10 days ago (older than 1 week)
-        p.createdAt = now - 10 * 24 * 60 * 60 * 1000;
-      } else {
-        // Created 1 day ago (visible)
-        p.createdAt = now - 1 * 24 * 60 * 60 * 1000;
-      }
-    }
   });
   await Promise.all(loadPromises);
 
@@ -4292,32 +4280,41 @@ function setupShoppingMode() {
     });
   }
 
-  $('#btnCancelTerms').addEventListener('click', () => {
-    wholesaleTermsModal.classList.remove('active');
-    modeSelectorModal.classList.add('active');
-  });
+  const btnCancelTerms = $('#btnCancelTerms');
+  if (btnCancelTerms && wholesaleTermsModal && modeSelectorModal) {
+    btnCancelTerms.addEventListener('click', () => {
+      wholesaleTermsModal.classList.remove('active');
+      modeSelectorModal.classList.add('active');
+    });
+  }
 
-  acceptTermsBtn.addEventListener('click', () => {
-    if (!termsCheckbox.checked) return;
-    wholesaleTermsModal.classList.remove('active');
-    if ($('#loginStepPhone')) $('#loginStepPhone').style.display = 'block';
-    if ($('#loginStepOTP')) $('#loginStepOTP').style.display = 'none';
-    if ($('#loginStepRegister')) $('#loginStepRegister').style.display = 'none';
-    if ($('#wholesalePhoneInput')) $('#wholesalePhoneInput').value = '';
-    if ($('#wholesaleOtpInput')) $('#wholesaleOtpInput').value = '';
-    wholesaleLoginModal.classList.add('active');
-  });
+  if (acceptTermsBtn && termsCheckbox && wholesaleTermsModal && wholesaleLoginModal) {
+    acceptTermsBtn.addEventListener('click', () => {
+      if (!termsCheckbox.checked) return;
+      wholesaleTermsModal.classList.remove('active');
+      if ($('#loginStepPhone')) $('#loginStepPhone').style.display = 'block';
+      if ($('#loginStepOTP')) $('#loginStepOTP').style.display = 'none';
+      if ($('#loginStepRegister')) $('#loginStepRegister').style.display = 'none';
+      if ($('#wholesalePhoneInput')) $('#wholesalePhoneInput').value = '';
+      if ($('#wholesaleOtpInput')) $('#wholesaleOtpInput').value = '';
+      wholesaleLoginModal.classList.add('active');
+    });
+  }
 
-  $('#btnCancelLogin').addEventListener('click', () => {
-    wholesaleLoginModal.classList.remove('active');
-    modeSelectorModal.classList.add('active');
-  });
+  const btnCancelLogin = $('#btnCancelLogin');
+  if (btnCancelLogin && wholesaleLoginModal && modeSelectorModal) {
+    btnCancelLogin.addEventListener('click', () => {
+      wholesaleLoginModal.classList.remove('active');
+      modeSelectorModal.classList.add('active');
+    });
+  }
 
   // Send OTP
   // Google Sign-In Listener
-  $('#btnGoogleSignIn').addEventListener('click', async () => {
+  const btnGoogleSignIn = $('#btnGoogleSignIn');
+  if (btnGoogleSignIn) btnGoogleSignIn.addEventListener('click', async () => {
     const btn = $('#btnGoogleSignIn');
-    if (btn.disabled) return;
+    if (!btn || btn.disabled) return;
     btn.disabled = true;
     btn.style.opacity = '0.6';
     btn.style.cursor = 'not-allowed';
@@ -4439,7 +4436,8 @@ function setupShoppingMode() {
   }
 
   // Complete Registration
-  $('#btnRegisterUser').addEventListener('click', async () => {
+  const btnRegisterUser = $('#btnRegisterUser');
+  if (btnRegisterUser) btnRegisterUser.addEventListener('click', async () => {
     const name = $('#regNameInput').value.trim();
     const business = $('#regBusinessInput').value.trim();
     const address = $('#regAddressInput').value.trim();
@@ -4510,9 +4508,12 @@ function setupShoppingMode() {
     wholesaleUnlockModal.classList.add('active');
   }
 
-  $('#btnCancelUnlock').addEventListener('click', () => {
-    wholesaleUnlockModal.classList.remove('active');
-  });
+  const btnCancelUnlock = $('#btnCancelUnlock');
+  if (btnCancelUnlock && wholesaleUnlockModal) {
+    btnCancelUnlock.addEventListener('click', () => {
+      wholesaleUnlockModal.classList.remove('active');
+    });
+  }
 
   async function requestWholesaleUnlock() {
     if (!wholesaleUser) {
@@ -4543,7 +4544,8 @@ function setupShoppingMode() {
     wholesaleUnlockModal.classList.remove('active');
   }
 
-  $('#btnSimulateSuccess').addEventListener('click', requestWholesaleUnlock);
+  const btnSimulateSuccess = $('#btnSimulateSuccess');
+  if (btnSimulateSuccess) btnSimulateSuccess.addEventListener('click', requestWholesaleUnlock);
   
   document.querySelectorAll('.upi-pay-btn').forEach(btn => {
     btn.addEventListener('click', () => {
