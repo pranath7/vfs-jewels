@@ -3429,3 +3429,53 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+window.triggerResetDatabase = async function() {
+  const c = confirm("⚠️ WARNING: Are you sure you want to reset ALL transactional database records? This will delete all orders, returns, reviews, customer wallets, birthdays, wholesale user database, and reset stock values to default. This action CANNOT be undone.");
+  if (!c) return;
+
+  adminToast("Starting database reset... 🔄");
+
+  try {
+    // 1. Clear Firestore collections if connected
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
+      const collections = ['orders', 'returns', 'reviews', 'wallet_credits', 'wholesale_users', 'customer_birthdays', 'product_stock', 'banners'];
+      for (const colName of collections) {
+        const snap = await window.db.collection(colName).get();
+        const batch = window.db.batch();
+        snap.forEach(doc => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+      }
+      adminToast("Cloud database collections cleared successfully.");
+    }
+  } catch (err) {
+    console.error("Error clearing cloud database:", err);
+    adminToast("Cloud database reset failed: " + err.message);
+  }
+
+  // 2. Clear Local Storage keys
+  const localKeys = [
+    'vfs_orders',
+    'vfs_wholesale_users',
+    'vfs_wholesale_user',
+    'vfs_wholesale_unlocked',
+    'vfs_returns',
+    'vfs_reviews',
+    'vfs_customer_credits',
+    'vfs_product_stock',
+    'vfs_birthdays',
+    'vfs_custom_products',
+    'vfs_banners',
+    'vfs_cart',
+    'vfs_wl'
+  ];
+  localKeys.forEach(k => localStorage.removeItem(k));
+
+  adminToast("Local cache reset complete! Reloading dashboard... 🌸");
+  
+  setTimeout(() => {
+    window.location.reload();
+  }, 1000);
+};
+
