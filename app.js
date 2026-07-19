@@ -2027,13 +2027,7 @@ $('#coRazorpayBtn').addEventListener('click', async () => {
   payBtn.innerHTML = '<span style="font-size:1.1rem;">Initializing Secure Payment...</span>';
 
   try {
-    const keyId = window.VFS_CONFIG?.razorpay?.keyId;
-    if (!keyId || keyId.startsWith("YOUR_")) {
-      alert("Razorpay is not fully configured yet. Please configure the Key ID in vfs-config.json.");
-      payBtn.disabled = false;
-      payBtn.innerHTML = originalText;
-      return;
-    }
+    const configKeyId = window.VFS_CONFIG?.razorpay?.keyId;
 
     // 1. Fetch Razorpay Order ID from Vercel Serverless backend
     const createRes = await fetch('/api/create-razorpay-order', {
@@ -2053,10 +2047,18 @@ $('#coRazorpayBtn').addEventListener('click', async () => {
     }
 
     const rzpOrder = await createRes.json();
+    const finalKeyId = rzpOrder.keyId || configKeyId;
+
+    if (!finalKeyId || finalKeyId.startsWith("YOUR_")) {
+      alert("Razorpay is not fully configured yet. Please configure the Key ID in vfs-config.json or as RAZORPAY_KEY_ID in Vercel environment variables.");
+      payBtn.disabled = false;
+      payBtn.innerHTML = originalText;
+      return;
+    }
 
     // 2. Configure checkout overlay options
     const options = {
-      key: keyId,
+      key: finalKeyId,
       amount: rzpOrder.amount,
       currency: rzpOrder.currency,
       name: "VFS Jewels",

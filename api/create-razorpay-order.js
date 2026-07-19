@@ -65,6 +65,9 @@ module.exports = async (req, res) => {
       return res.status(response.status).json({ error: data.error || 'Failed to create Razorpay order' });
     }
 
+    // Return keyId dynamically to the client so that no keys need to be hardcoded in public repository files
+    data.keyId = keyId;
+
     return res.status(200).json(data);
   } catch (err) {
     console.error('❌ Error creating Razorpay order:', err);
