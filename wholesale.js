@@ -1867,13 +1867,15 @@ $('#coForm').addEventListener('submit', async (e) => {
   $('#coStep2').style.display = 'block';
 });
 
-// Confirm and Order via WhatsApp
-$('#coConfirmBtn').addEventListener('click', async () => {
+// Reusable function to finalize order, record payment, deduct stock, and show success screen
+async function finalizeOrderAndProceed(paymentMethod, transactionId = '') {
   if (!activeCheckoutOrder) return;
   
-  const submitBtn = $('#coConfirmBtn');
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Placing Order...';
+  // Set payment details on order
+  activeCheckoutOrder.status = paymentMethod === 'Online' ? 'paid' : 'unpaid';
+  if (transactionId) {
+    activeCheckoutOrder.razorpayPaymentId = transactionId;
+  }
   
   try {
     // Save order via VFS_DB wrapper
@@ -1935,9 +1937,6 @@ $('#coConfirmBtn').addEventListener('click', async () => {
 
   } catch (err) {
     console.error("Order submission, wallet debit, or stock deduction failed:", err);
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Confirm & Place Order on WhatsApp';
   }
   
   // Create Formatted WhatsApp Message
@@ -1983,11 +1982,15 @@ ${itemsSummaryText}
     waMessage += `*WhatsApp Referral Discount (1%):* -₹${activeCheckoutOrder.waReferralDiscount}\n`;
   }
   
-  waMessage += `*Grand Total:* *₹${activeCheckoutOrder.total}*
-
-*Payment Method:* UPI Transfer
-----------------------------------
-_I have attached my UPI Transaction Screenshot below to verify payment._`;
+  waMessage += `*Grand Total:* *₹${activeCheckoutOrder.total}*\n`;
+  
+  if (paymentMethod === 'Online') {
+    waMessage += `*Payment Method:* Razorpay Online (Paid ✅)\n*Payment ID:* ${transactionId}\n`;
+    waMessage += `----------------------------------\n_Verify my payment in your dashboard._`;
+  } else {
+    waMessage += `*Payment Method:* UPI Transfer (Manual)\n`;
+    waMessage += `----------------------------------\n_I have attached my UPI Transaction Screenshot below to verify payment._`;
+  }
 
   const waLink = `https://wa.me/919840757363?text=${encodeURIComponent(waMessage)}`;
   window.open(waLink, '_blank');
@@ -2035,7 +2038,132 @@ _I have attached my UPI Transaction Screenshot below to verify payment._`;
   cart = [];
   saveState();
   updateCounts();
-  toast('Order placed! Opening WhatsApp to send payment screenshot 🌸');
+  toast(paymentMethod === 'Online' ? 'Payment successful! Redirecting to WhatsApp 🌸' : 'Order placed! Opening WhatsApp to send payment screenshot 🌸');
+}
+
+// Confirm and Order via manual UPI
+$('#coConfirmBtn').addEventListener('click', async () => {
+  if (!activeCheckoutOrder) return;
+  
+  const submitBtn = $('#coConfirmBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Placing Order...';
+  
+  try {
+    await finalizeOrderAndProceed('Manual');
+  } catch (err) {
+    console.error("Order submission failed:", err);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Confirm & Place Order on WhatsApp';
+  }
+});
+
+// Secure Razorpay Online Payment Flow
+$('#coRazorpayBtn').addEventListener('click', async () => {
+  if (!activeCheckoutOrder) return;
+  
+  const payBtn = $('#coRazorpayBtn');
+  payBtn.disabled = true;
+  const originalText = payBtn.innerHTML;
+  payBtn.innerHTML = '<span style="font-size:1.1rem;">Initializing Secure Payment...</span>';
+
+  try {
+    const keyId = window.VFS_CONFIG?.razorpay?.keyId;
+    if (!keyId || keyId.startsWith("YOUR_")) {
+      alert("Razorpay is not fully configured yet. Please configure the Key ID in vfs-config.json.");
+      payBtn.disabled = false;
+      payBtn.innerHTML = originalText;
+      return;
+    }
+
+    // 1. Fetch Razorpay Order ID from Vercel Serverless backend
+    const createRes = await fetch('/api/create-razorpay-order', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        amount: activeCheckoutOrder.total,
+        receipt: `order_${activeCheckoutOrder.id}`
+      })
+    });
+
+    if (!createRes.ok) {
+      const errData = await createRes.json();
+      throw new Error(errData.error || 'Failed to initiate Razorpay transaction');
+    }
+
+    const rzpOrder = await createRes.json();
+
+    // 2. Configure checkout overlay options
+    const options = {
+      key: keyId,
+      amount: rzpOrder.amount,
+      currency: rzpOrder.currency,
+      name: "VFS Jewels",
+      description: `Order ID: ${activeCheckoutOrder.id}`,
+      order_id: rzpOrder.id,
+      handler: async function (response) {
+        payBtn.innerHTML = '<span style="font-size:1.1rem;">Verifying Payment...</span>';
+        try {
+          // 3. Verify Razorpay signature securely via serverless backend
+          const verifyRes = await fetch('/api/verify-razorpay-payment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            })
+          });
+
+          if (!verifyRes.ok) {
+            const verifyErr = await verifyRes.json();
+            throw new Error(verifyErr.error || 'Payment signature verification failed');
+          }
+
+          const verifyData = await verifyRes.json();
+          if (verifyData.verified) {
+            payBtn.innerHTML = '<span style="font-size:1.1rem;">Placing Order...</span>';
+            await finalizeOrderAndProceed('Online', response.razorpay_payment_id);
+          } else {
+            alert("Payment signature mismatch. Please contact support.");
+          }
+        } catch (e) {
+          console.error("Signature verification error:", e);
+          alert("Error verifying payment signature: " + e.message);
+        } finally {
+          payBtn.disabled = false;
+          payBtn.innerHTML = originalText;
+        }
+      },
+      prefill: {
+        name: activeCheckoutOrder.name,
+        contact: activeCheckoutOrder.phone
+      },
+      theme: {
+        color: "#D4AF37" // matches gold styling of VFS Jewels
+      },
+      modal: {
+        ondismiss: function () {
+          payBtn.disabled = false;
+          payBtn.innerHTML = originalText;
+        }
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+
+  } catch (err) {
+    console.error("Razorpay payment initiation failed:", err);
+    alert("Payment setup error: " + err.message);
+    payBtn.disabled = false;
+    payBtn.innerHTML = originalText;
+  }
 });
 
 // ── Newsletter ──
