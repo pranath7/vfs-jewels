@@ -2059,6 +2059,21 @@ $('#coConfirmBtn').addEventListener('click', async () => {
   }
 });
 
+// Helper to dynamically load Razorpay SDK if not already loaded
+function loadRazorpayScript() {
+  return new Promise((resolve) => {
+    if (typeof window.Razorpay !== 'undefined') {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
 // Secure Razorpay Online Payment Flow
 $('#coRazorpayBtn').addEventListener('click', async () => {
   if (!activeCheckoutOrder) return;
@@ -2069,6 +2084,15 @@ $('#coRazorpayBtn').addEventListener('click', async () => {
   payBtn.innerHTML = '<span style="font-size:1.1rem;">Initializing Secure Payment...</span>';
 
   try {
+    // Dynamically load Razorpay SDK if blocked or delayed
+    const scriptLoaded = await loadRazorpayScript();
+    if (!scriptLoaded || typeof window.Razorpay === 'undefined') {
+      alert("Failed to load Razorpay Secure Payment SDK. Please ensure you are not using an ad-blocker or brave shields blocking payment domains.");
+      payBtn.disabled = false;
+      payBtn.innerHTML = originalText;
+      return;
+    }
+
     const configKeyId = window.VFS_CONFIG?.razorpay?.keyId;
 
     // 1. Fetch Razorpay Order ID from Vercel Serverless backend
