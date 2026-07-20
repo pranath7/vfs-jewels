@@ -4155,6 +4155,7 @@ async function initApp() {
   updateCounts();
   setupShoppingMode();
   setupBirthdayCircle();
+  handleRouting();
 }
 
 async function renderInstaReels() {
