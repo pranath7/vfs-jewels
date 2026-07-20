@@ -833,7 +833,7 @@ window.deleteProductFromCatalog = async function(id) {
 
 
 // ── State ──
-let activeTab = 'unpaid';
+let activeTab = 'paid';
 let activeScanOrderId = null;
 let scannerStream = null;
 let uploadedFilesData = []; // holds { name, base64 } objects

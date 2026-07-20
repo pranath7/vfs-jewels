@@ -105,21 +105,23 @@
         </div>
       </div>
       
-      <!-- TAB 1: UNPAID ORDERS -->
-      <section class="tab-panel active" id="panelUnpaid">
+      <!-- TAB 1: UNPAID ORDERS (DISABLED) -->
+      <!--
+      <section class="tab-panel" id="panelUnpaid" style="display:none;">
         <div class="orders-panel-container">
           <div class="panel-header-row">
             <h2>Confirmed (Unpaid)</h2>
             <span class="col-count count-unpaid" id="countUnpaid">0</span>
           </div>
           <div class="orders-grid-flow" id="listUnpaid">
-            <!-- Cards load dynamically -->
+            
           </div>
         </div>
       </section>
+      -->
 
       <!-- TAB 2: PAID (PROCESSING) ORDERS -->
-      <section class="tab-panel" id="panelPaid">
+      <section class="tab-panel active" id="panelPaid">
         <div class="orders-panel-container">
           <div class="panel-header-row">
             <h2>Paid (Processing)</h2>
@@ -452,11 +454,13 @@
 
   <!-- BOTTOM NAVIGATION BAR -->
   <nav class="bottom-nav" id="bottomNav" style="overflow-x:auto;">
-    <button class="bottom-nav-btn active" data-tab="unpaid">
+    <!--
+    <button class="bottom-nav-btn" data-tab="unpaid">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       <span>Unpaid</span>
     </button>
-    <button class="bottom-nav-btn" data-tab="paid">
+    -->
+    <button class="bottom-nav-btn active" data-tab="paid">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
       <span>Paid</span>
     </button>
