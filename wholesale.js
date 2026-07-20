@@ -4972,44 +4972,157 @@ function setupShoppingMode() {
     toast('Registration completed!');
   });
 
-  // UPI Simulation Unlock Request
-  async function performUnlock() {
-    if (!wholesaleUser) {
-      toast("Error: wholesale user not logged in");
-      return;
-    }
-
-    wholesaleUser.paymentStatus = 'pending';
-    wholesaleUser.unlocked = false;
-
-    if (window.VFS_CLOUD_ACTIVE && window.db) {
-      try {
-        await window.db.collection('wholesale_users').doc(wholesaleUser.uid).update({
-          paymentStatus: 'pending',
-          unlocked: false
-        });
-      } catch (err) {
-        console.error("Firestore unlock request failed:", err);
+  // Razorpay Secure Membership Advance Payment Flow
+  const rzpPayBtn = $('#royalBtnRazorpayPay');
+  if (rzpPayBtn) {
+    rzpPayBtn.addEventListener('click', async () => {
+      if (!wholesaleUser) {
+        toast("Error: wholesale user not logged in");
+        return;
       }
-    }
 
-    const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
-    mockUsers[wholesaleUser.uid] = wholesaleUser;
-    localStorage.setItem('vfs_wholesale_users', JSON.stringify(mockUsers));
-    saveState();
+      rzpPayBtn.disabled = true;
+      const originalText = rzpPayBtn.innerHTML;
+      rzpPayBtn.innerHTML = 'Initializing Secure Payment...';
 
-    alert("Payment submitted successfully! Admin will verify your payment and grant access. Once approved, wholesale prices will unlock automatically.");
-    exitToRetail();
-  }
+      try {
+        const scriptLoaded = await loadRazorpayScript();
+        if (!scriptLoaded || typeof window.Razorpay === 'undefined') {
+          alert("Failed to load Razorpay Secure Payment SDK. Please ensure you are not using an ad-blocker or brave shields blocking payment domains.");
+          rzpPayBtn.disabled = false;
+          rzpPayBtn.innerHTML = originalText;
+          return;
+        }
 
-  $('#royalBtnPaySuccess').addEventListener('click', performUnlock);
+        const configKeyId = window.VFS_CONFIG?.razorpay?.keyId;
 
-  document.querySelectorAll('.royal-upi-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      toast(`Connecting to ${btn.dataset.method.toUpperCase()}...`);
-      setTimeout(performUnlock, 1200);
+        // 1. Fetch Razorpay Order ID from backend (Amount: ₹1,000)
+        const createRes = await fetch('/api/create-razorpay-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            amount: 1000,
+            receipt: `membership_${wholesaleUser.uid}`
+          })
+        });
+
+        if (!createRes.ok) {
+          const errData = await createRes.json();
+          throw new Error(errData.error || 'Failed to initiate Razorpay transaction');
+        }
+
+        const rzpOrder = await createRes.json();
+        const finalKeyId = rzpOrder.keyId || configKeyId;
+
+        if (!finalKeyId || finalKeyId.startsWith("YOUR_")) {
+          alert("Razorpay is not fully configured yet. Please configure the Key ID in Vercel environment variables.");
+          rzpPayBtn.disabled = false;
+          rzpPayBtn.innerHTML = originalText;
+          return;
+        }
+
+        // 2. Configure Razorpay options
+        const options = {
+          key: finalKeyId,
+          amount: rzpOrder.amount,
+          currency: rzpOrder.currency,
+          name: "VFS Jewels",
+          description: "Membership Security Advance (Refundable)",
+          order_id: rzpOrder.id,
+          handler: async function (response) {
+            rzpPayBtn.innerHTML = 'Verifying Payment...';
+            try {
+              // 3. Verify Payment Signature
+              const verifyRes = await fetch('/api/verify-razorpay-payment', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature
+                })
+              });
+
+              if (!verifyRes.ok) {
+                const verifyErr = await verifyRes.json();
+                throw new Error(verifyErr.error || 'Payment signature verification failed');
+              }
+
+              const verifyData = await verifyRes.json();
+              if (verifyData.verified) {
+                rzpPayBtn.innerHTML = 'Unlocking Membership...';
+                
+                // Unlock membership immediately on confirmation
+                wholesaleUser.paymentStatus = 'paid';
+                wholesaleUser.unlocked = true;
+                wholesaleUser.razorpayPaymentId = response.razorpay_payment_id;
+
+                if (window.VFS_CLOUD_ACTIVE && window.db) {
+                  await window.db.collection('wholesale_users').doc(wholesaleUser.uid).update({
+                    paymentStatus: 'paid',
+                    unlocked: true,
+                    razorpayPaymentId: response.razorpay_payment_id,
+                    unlockedAt: Date.now()
+                  });
+                }
+
+                const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
+                mockUsers[wholesaleUser.uid] = wholesaleUser;
+                localStorage.setItem('vfs_wholesale_users', JSON.stringify(mockUsers));
+                saveState();
+
+                alert("🎉 Payment successful! Your Business Club membership has been activated and wholesale prices are unlocked!");
+                
+                // Close modal
+                const modal = $('#wholesaleUnlockModal');
+                if (modal) modal.classList.remove('active');
+                document.body.style.overflow = '';
+                
+                // Update views
+                updateModeUI();
+                updateLockUI();
+                renderProducts(null);
+              } else {
+                alert("Payment verification failed. Please contact support.");
+              }
+            } catch (e) {
+              console.error("Signature verification error:", e);
+              alert("Error verifying payment signature: " + e.message);
+            } finally {
+              rzpPayBtn.disabled = false;
+              rzpPayBtn.innerHTML = originalText;
+            }
+          },
+          prefill: {
+            name: wholesaleUser.name,
+            contact: wholesaleUser.phone
+          },
+          theme: {
+            color: "#D4AF37"
+          },
+          modal: {
+            ondismiss: function () {
+              rzpPayBtn.disabled = false;
+              rzpPayBtn.innerHTML = originalText;
+            }
+          }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+
+      } catch (err) {
+        console.error("Razorpay initiation failed:", err);
+        alert("Payment setup error: " + err.message);
+        rzpPayBtn.disabled = false;
+        rzpPayBtn.innerHTML = originalText;
+      }
     });
-  });
+  }
 
   if (switchBtn) {
     switchBtn.addEventListener('click', exitToRetail);

@@ -1405,34 +1405,26 @@
         <button class="btn-primary" id="royalBtnCancelRegister" style="background:#666 !important;color:#fff !important;width:100%;padding:10px;">Back</button>
       </div>
 
-      <!-- Screen 4: Advance Unlock (UPI) -->
+      <!-- Screen 4: Advance Unlock (Razorpay Gateway) -->
       <div id="royalScreenUnlock" style="display: none;">
-        <h3>Activate Membership 👑</h3>
-        <p id="royalUnlockSubtext">Pay your initial ₹1,000 security advance to unlock wholesale prices.</p>
+        <h3 style="color:#121212 !important;">Activate Membership 👑</h3>
+        <p id="royalUnlockSubtext" style="color:#555 !important;">Pay your initial ₹1,000 security advance to unlock wholesale prices.</p>
         
-        <div class="royal-alert-box">
+        <div class="royal-alert-box" style="margin-bottom: 20px;">
           <strong>Advance Security System:</strong> All Business Club pricing is locked until a refundable/adjustable advance is paid. This advance is automatically adjusted and deducted from your invoice.
         </div>
         
-        <div style="margin: 20px 0;">
-          <div style="font-size:1.3rem;color:#D4AF37;font-weight:700;">Payable Advance</div>
-          <div style="font-size:3.5rem;font-weight:900;color:#ffffff;margin-top:5px;" id="royalPayAmountLabel">₹1,000</div>
+        <div style="margin: 24px 0; text-align:center;">
+          <div style="font-size:1.4rem;color:#D4AF37;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Payable Advance</div>
+          <div style="font-size:4rem;font-weight:900;color:#121212 !important;margin-top:5px;" id="royalPayAmountLabel">₹1,000</div>
         </div>
 
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          <button class="btn-primary royal-upi-btn" data-method="gpay" style="background:#4285F4 !important;color:#fff !important;padding:12px;">Pay via Google Pay</button>
-          <button class="btn-primary royal-upi-btn" data-method="phonepe" style="background:#5f259f !important;color:#fff !important;padding:12px;">Pay via PhonePe</button>
-          <button class="btn-primary royal-upi-btn" data-method="paytm" style="background:#00baf2 !important;color:#fff !important;padding:12px;">Pay via Paytm</button>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <button class="btn-primary" id="royalBtnRazorpayPay" style="background:#D4AF37 !important;color:#121212 !important;font-weight:800;font-size:1.3rem;padding:16px;border-radius:8px;border:none;box-shadow: 0 4px 15px rgba(212,175,55,0.2);cursor:pointer;transition:all 0.2s ease;">
+            💳 PAY ₹1,000 SECURELY VIA RAZORPAY
+          </button>
           
-          <div style="font-size:1.1rem;color:#888;margin:8px 0;">— OR SCAN SECURE UPI QR —</div>
-          <div style="display:flex;justify-content:center;margin-bottom:10px;">
-            <div style="width:130px;height:130px;background:#fff;border:1px solid #ddd;padding:6px;border-radius:6px;display:flex;justify-content:center;align-items:center;">
-              <div style="width:100%;height:100%;background-image:linear-gradient(45deg, #121212 25%, transparent 25%), linear-gradient(-45deg, #121212 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #121212 75%), linear-gradient(-45deg, transparent 75%, #121212 75%);background-size:16px 16px;opacity:0.9;"></div>
-            </div>
-          </div>
-          
-          <button class="btn-primary" id="royalBtnPaySuccess" style="background:#25D366 !important;color:#fff !important;font-weight:900;padding:14px;">Simulate Payment Success (UPI)</button>
-          <button class="btn-primary" id="royalBtnCancelUnlock" style="background:#666 !important;color:#fff !important;padding:10px;margin-top:10px;">Exit to Retail</button>
+          <button class="btn-primary" id="royalBtnCancelUnlock" style="background:#f5f5f5 !important;color:#555 !important;border:1px solid #ddd !important;padding:12px;border-radius:8px;margin-top:10px;font-weight:600;cursor:pointer;">Exit to Retail</button>
         </div>
       </div>
     </div>
