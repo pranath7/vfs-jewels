@@ -510,8 +510,18 @@ const pct = (price, mrp) => Math.round(((mrp - price) / mrp) * 100);
 const stars = (r) => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '');
 const clOpt = (url, width) => {
   if (!url || !url.includes('cloudinary.com')) return url;
-  if (url.includes('/f_auto')) return url;
-  return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width}/`);
+  
+  const parts = url.split('/upload/');
+  if (parts.length === 2) {
+    let cleanPath = parts[1];
+    const pathSegments = cleanPath.split('/');
+    if (pathSegments.length > 1 && !/^[vV]\d+$/.test(pathSegments[0]) && (pathSegments[0].includes('_') || pathSegments[0].includes('w_') || pathSegments[0].includes('q_'))) {
+      pathSegments.shift();
+      cleanPath = pathSegments.join('/');
+    }
+    return `${parts[0]}/upload/f_auto,q_95,w_${width}/${cleanPath}`;
+  }
+  return url;
 };
 
 // ── Shopping Mode State (Retail/Wholesale) ──
@@ -2790,6 +2800,7 @@ function openPDP(id) {
     });
   }
 
+  const btnAdd = $('#pdpBtnAdd');
   if (btnAdd) {
     btnAdd.addEventListener('click', () => {
       const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
