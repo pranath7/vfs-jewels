@@ -547,13 +547,18 @@ async function checkWholesaleStatus() {
         wholesaleUser = data;
         wholesaleUnlocked = data.unlocked === true;
         saveState();
-        updateModeUI();
+        // updateModeUI is only available inside setupShoppingMode scope;
+        // use VFS_UPDATE_LOCK_UI which is exposed globally once setup runs
+        if (window.VFS_UPDATE_LOCK_UI) window.VFS_UPDATE_LOCK_UI();
       }
     } catch (e) {
       console.warn("Error syncing wholesale status:", e);
     }
   }
 }
+
+// Expose so initApp can await it after Firestore is ready
+window.VFS_CHECK_WHOLESALE_STATUS = checkWholesaleStatus;
 
 // Google redirect authentication handler on page load
 function handleGoogleRedirectResult() {
@@ -606,14 +611,8 @@ function handleGoogleRedirectResult() {
     toast("Sign in failed: " + err.message);
   });
 }
-
-// Call check status and handle redirect on startup
-setTimeout(() => {
-  checkWholesaleStatus().then(() => {
-    if (window.VFS_UPDATE_LOCK_UI) window.VFS_UPDATE_LOCK_UI();
-  });
-  handleGoogleRedirectResult();
-}, 2000);
+// NOTE: handleGoogleRedirectResult and checkWholesaleStatus are now called
+// from inside initApp() after Firestore is confirmed ready — no setTimeout lag.
 
 function saveState() {
   localStorage.setItem('vfs_cart', JSON.stringify(cart));
@@ -4165,9 +4164,17 @@ async function initApp() {
   renderInstaReels();
   renderProductShelves();
   updateCounts();
-  setupShoppingMode();
+  setupShoppingMode(); // registers VFS_UPDATE_LOCK_UI
   setupBirthdayCircle();
   handleRouting();
+
+  // Now that Firestore is ready and VFS_UPDATE_LOCK_UI is registered,
+  // sync membership status instantly — no 2-second lag.
+  if (window.VFS_CHECK_WHOLESALE_STATUS) {
+    window.VFS_CHECK_WHOLESALE_STATUS();
+  }
+  // Also handle Google redirect auth result immediately
+  handleGoogleRedirectResult();
 }
 
 async function renderInstaReels() {
