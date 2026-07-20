@@ -1999,6 +1999,41 @@ ${itemsSummaryText}
   $('#successOrderId').textContent = activeCheckoutOrder.id;
   $('#successOrderTotal').textContent = fmt(activeCheckoutOrder.total);
 
+  const statusEl = $('#successStatus');
+  const statusLabelEl = $('#successStatusLabel');
+  const instrEl = $('#successInstructions');
+  const successWaBtn = $('#successWaBtn');
+
+  if (paymentMethod === 'Online') {
+    if (statusEl) {
+      statusEl.textContent = 'PAID (Razorpay Online)';
+      statusEl.style.color = '#27ae60'; // Green color for Paid
+    }
+    if (statusLabelEl) {
+      statusLabelEl.textContent = 'Amount Paid:';
+    }
+    if (instrEl) {
+      instrEl.textContent = 'Your payment has been successfully captured. We have opened WhatsApp to share your order details.';
+    }
+    if (successWaBtn) {
+      successWaBtn.textContent = 'Open WhatsApp to Share Order';
+    }
+  } else {
+    if (statusEl) {
+      statusEl.textContent = 'Awaiting Payment Verification';
+      statusEl.style.color = '#f39c12'; // Orange color for Awaiting
+    }
+    if (statusLabelEl) {
+      statusLabelEl.textContent = 'Amount to Verify:';
+    }
+    if (instrEl) {
+      instrEl.textContent = 'We have opened WhatsApp to let you send your payment screenshot. If WhatsApp did not open, tap the button below:';
+    }
+    if (successWaBtn) {
+      successWaBtn.textContent = 'Open WhatsApp to Confirm';
+    }
+  }
+
   // Show Success step
   $('#coStep2').style.display = 'none';
   $('#coStep3').style.display = 'block';

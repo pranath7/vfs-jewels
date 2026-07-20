@@ -82,7 +82,7 @@ module.exports = async (req, res) => {
         console.log(`🎯 Webhook matching order receipt: ${receipt} -> Firestore ID: ${orderId}`);
 
         // Update status in Firestore using REST API to keep Vercel startup instant (cold-start friendly)
-        const firestoreUrl = `https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/orders/${orderId}?updateMask.fieldPaths=status`;
+        const firestoreUrl = `https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/orders/${encodeURIComponent(orderId)}?updateMask.fieldPaths=status`;
 
         const updateRes = await fetch(firestoreUrl, {
           method: 'PATCH',
