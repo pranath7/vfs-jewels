@@ -550,13 +550,17 @@ async function checkWholesaleStatus() {
         wholesaleUser = data;
         wholesaleUnlocked = data.unlocked === true;
         saveState();
-        updateModeUI();
+        // updateModeUI is scoped inside setupShoppingMode; use global reference set after setup
+        if (window.VFS_UPDATE_RETAIL_MODE_UI) window.VFS_UPDATE_RETAIL_MODE_UI();
       }
     } catch (e) {
       console.warn("Error syncing wholesale status:", e);
     }
   }
 }
+
+// Expose for initApp to call after Firestore is confirmed ready
+window.VFS_CHECK_WHOLESALE_STATUS_RETAIL = checkWholesaleStatus;
 
 // Google redirect authentication handler on page load
 function handleGoogleRedirectResult() {
@@ -582,7 +586,7 @@ function handleGoogleRedirectResult() {
         shoppingMode = 'wholesale';
         wholesaleUnlocked = userData.unlocked === true;
         saveState();
-        updateModeUI();
+        if (window.VFS_UPDATE_RETAIL_MODE_UI) window.VFS_UPDATE_RETAIL_MODE_UI();
         renderProducts(null);
         if (!wholesaleUnlocked) {
           if (window.VFS_OPEN_UNLOCK_MODAL) {
@@ -608,12 +612,8 @@ function handleGoogleRedirectResult() {
     toast("Sign in failed: " + err.message);
   });
 }
-
-// Call check status and handle redirect on startup
-setTimeout(() => {
-  checkWholesaleStatus();
-  handleGoogleRedirectResult();
-}, 2000);
+// NOTE: checkWholesaleStatus and handleGoogleRedirectResult are now called
+// from initApp() after Firestore is ready — no 2-second setTimeout lag.
 
 function saveState() {
   localStorage.setItem('vfs_cart', JSON.stringify(cart));
@@ -4123,9 +4123,15 @@ async function initApp() {
   renderInstaReels();
   renderProductShelves();
   updateCounts();
-  setupShoppingMode();
+  setupShoppingMode(); // registers VFS_UPDATE_RETAIL_MODE_UI
   setupBirthdayCircle();
   handleRouting();
+
+  // Sync wholesale status instantly after Firestore ready — no 2-second lag
+  if (window.VFS_CHECK_WHOLESALE_STATUS_RETAIL) {
+    window.VFS_CHECK_WHOLESALE_STATUS_RETAIL();
+  }
+  handleGoogleRedirectResult();
 }
 
 async function renderInstaReels() {
@@ -4727,6 +4733,9 @@ function setupShoppingMode() {
   }
 
   updateModeUI();
+
+  // Expose globally so checkWholesaleStatus (outside this closure) can call it
+  window.VFS_UPDATE_RETAIL_MODE_UI = updateModeUI;
 
   // Bind Start Shopping button
   const startBtn = $('#btnStartShopping');
