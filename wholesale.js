@@ -4794,9 +4794,12 @@ function setupShoppingMode() {
       } else {
         const isFirstOrder = !wholesaleUser.ordersCount || wholesaleUser.ordersCount === 0;
         const amount = isFirstOrder ? 1000 : 500;
+        window._royalAdvanceAmount = amount; // used by Razorpay handler
         const labelEl = $('#royalPayAmountLabel');
         const subtextEl = $('#royalUnlockSubtext');
+        const btnLabelEl = $('#royalBtnPayLabel');
         if (labelEl) labelEl.innerHTML = `₹${amount.toLocaleString('en-IN')}`;
+        if (btnLabelEl) btnLabelEl.innerHTML = `₹${amount.toLocaleString('en-IN')}`;
         if (subtextEl) {
           subtextEl.innerHTML = isFirstOrder
             ? 'Pay your initial ₹1,000 security advance to unlock wholesale prices.'
@@ -5003,14 +5006,16 @@ function setupShoppingMode() {
 
         const configKeyId = window.VFS_CONFIG?.razorpay?.keyId;
 
-        // 1. Fetch Razorpay Order ID from backend (Amount: ₹1,000)
+        // 1. Fetch Razorpay Order ID from backend (dynamic amount: ₹1,000 new / ₹500 renewal)
+        const advanceAmount = window._royalAdvanceAmount ||
+          ((!wholesaleUser.ordersCount || wholesaleUser.ordersCount === 0) ? 1000 : 500);
         const createRes = await fetch('/api/create-razorpay-order', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            amount: 1000,
+            amount: advanceAmount,
             receipt: `membership_${wholesaleUser.uid}`
           })
         });
