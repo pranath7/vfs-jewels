@@ -795,6 +795,7 @@ function renderProducts(filter) {
           <div class="category-banner-overlay">
             <h2>${bannerInfo.title}</h2>
             <p>${bannerInfo.desc}</p>
+            <a href="#category=${cat}" class="cat-view-all-btn">View All</a>
           </div>
         </div>
         <!-- Horizontal Scroll Container -->

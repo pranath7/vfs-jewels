@@ -3907,4 +3907,30 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   border: none;
 }
 
+/* Category Banner View All Button */
+.cat-view-all-btn {
+    margin-top: 15px;
+    align-self: flex-start;
+    padding: 8px 22px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-tertiary, #D4AF37);
+    border: 1.5px solid var(--color-tertiary, #D4AF37);
+    border-radius: var(--rounded-sm, 4px);
+    text-decoration: none;
+    background: transparent;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    display: inline-block;
+    z-index: 10;
+}
+.cat-view-all-btn:hover {
+    background: var(--color-tertiary, #D4AF37);
+    color: #121212 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+}
+
 
