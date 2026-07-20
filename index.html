@@ -180,16 +180,18 @@
       </div>
 
       <!-- Category Hero Banner -->
-      <div id="catHeroBanner" class="category-hero" style="position:relative; border-radius:var(--rounded-lg); overflow:hidden; margin-bottom: 40px; height: 260px; display: flex; align-items: center; padding: 40px; background:#f9f9f9;">
-        <div style="z-index: 2; max-width: 500px;">
-          <span id="catHeroTag" class="tag" style="background:var(--color-secondary); color:#fff; font-size:1.1rem; padding:4px 8px; border-radius:3px; text-transform:uppercase; font-weight:700; display:inline-block; margin-bottom:12px;">Collection</span>
-          <h1 id="catHeroTitle" style="font-size:3.2rem; font-family:var(--font-heading); color:#121212; margin-bottom:10px; text-transform:uppercase;">Category Title</h1>
-          <p id="catHeroDesc" style="font-size:1.4rem; color:#555; line-height:1.6;">Category description text goes here.</p>
+      <div id="catHeroBanner" class="category-hero" style="position:relative; border-radius:var(--rounded-lg); overflow:hidden; margin-bottom: 40px; height: 300px; display: flex; align-items: center; padding: 48px 56px; background: linear-gradient(135deg, #1a1208 0%, #2d1f06 40%, #3d2a08 100%);">
+        <!-- Full-coverage background image at proper opacity -->
+        <div id="catHeroBg" style="position:absolute; top:0; left:0; width:100%; height:100%; background-size:cover; background-position:center right; opacity:0.35; pointer-events:none;"></div>
+        <!-- Left-to-right fade so text is always readable -->
+        <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(90deg, rgba(26,18,8,0.97) 0%, rgba(26,18,8,0.88) 38%, rgba(26,18,8,0.45) 65%, rgba(26,18,8,0) 100%); pointer-events:none; z-index:1;"></div>
+        <!-- Subtle gold shimmer line at bottom -->
+        <div style="position:absolute; bottom:0; left:0; width:100%; height:3px; background: linear-gradient(90deg, var(--color-secondary), transparent); z-index:2;"></div>
+        <div style="z-index: 3; max-width: 560px;">
+          <span id="catHeroTag" class="tag" style="background:var(--color-secondary); color:#121212; font-size:1.1rem; padding:5px 12px; border-radius:4px; text-transform:uppercase; font-weight:800; display:inline-block; margin-bottom:14px; letter-spacing:0.08em;">Collection</span>
+          <h1 id="catHeroTitle" style="font-size:3.4rem; font-family:var(--font-heading); color:#fff; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.04em; text-shadow: 0 2px 12px rgba(0,0,0,0.5);">Category Title</h1>
+          <p id="catHeroDesc" style="font-size:1.4rem; color:rgba(255,255,255,0.78); line-height:1.65; font-weight:400;">Category description text goes here.</p>
         </div>
-        <!-- Shadowy background image overlay -->
-        <div id="catHeroBg" style="position:absolute; top:0; right:0; width:50%; height:100%; background-size:cover; background-position:center; opacity:0.15; pointer-events:none;"></div>
-        <!-- Gold tint gradient background -->
-        <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(90deg, #ffffff 50%, rgba(255,255,255,0) 100%); pointer-events:none; z-index:1;"></div>
       </div>
 
       <!-- Section: Bestsellers -->
