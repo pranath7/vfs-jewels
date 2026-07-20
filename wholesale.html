@@ -167,18 +167,59 @@
   </header>
 
   <!-- HERO -->
+  <!-- CATEGORY PAGE VIEW (HIDDEN BY DEFAULT) -->
+  <div id="categoryPageView" style="display:none; padding-bottom: 50px;">
+    <div class="page-width">
+      <!-- Breadcrumb and Back button -->
+      <div style="padding: 20px 0; font-size: 1.3rem; display: flex; align-items: center; gap: 8px;">
+        <a href="#" style="color:#777; text-decoration:none;">Home</a>
+        <span style="color:#ccc;">/</span>
+        <span id="catBreadcrumb" style="color:var(--color-secondary); font-weight:700;">Collection</span>
+      </div>
+
+      <!-- Category Hero Banner -->
+      <div id="catHeroBanner" class="category-hero" style="position:relative; border-radius:var(--rounded-lg); overflow:hidden; margin-bottom: 40px; height: 260px; display: flex; align-items: center; padding: 40px; background:#f9f9f9;">
+        <div style="z-index: 2; max-width: 500px;">
+          <span id="catHeroTag" class="tag" style="background:var(--color-secondary); color:#fff; font-size:1.1rem; padding:4px 8px; border-radius:3px; text-transform:uppercase; font-weight:700; display:inline-block; margin-bottom:12px;">Collection</span>
+          <h1 id="catHeroTitle" style="font-size:3.2rem; font-family:var(--font-heading); color:#121212; margin-bottom:10px; text-transform:uppercase;">Category Title</h1>
+          <p id="catHeroDesc" style="font-size:1.4rem; color:#555; line-height:1.6;">Category description text goes here.</p>
+        </div>
+        <!-- Shadowy background image overlay -->
+        <div id="catHeroBg" style="position:absolute; top:0; right:0; width:50%; height:100%; background-size:cover; background-position:center; opacity:0.15; pointer-events:none;"></div>
+        <!-- Gold tint gradient background -->
+        <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(90deg, #ffffff 50%, rgba(255,255,255,0) 100%); pointer-events:none; z-index:1;"></div>
+      </div>
+
+      <!-- Section: Bestsellers -->
+      <div id="catBestsellersSection" style="margin-bottom: 50px;">
+        <div class="section-head" style="text-align:left; margin-bottom:30px;">
+          <h2 style="font-size:2.4rem; font-family:var(--font-heading); text-transform:uppercase;">🔥 Bestsellers of the Week</h2>
+          <p style="font-size:1.3rem; color:#666;">Our highest rated and most loved designs</p>
+          <div class="line" style="margin-left:0;"></div>
+        </div>
+        <div class="products-grid" id="catBestsellersGrid">
+          <!-- Bestseller cards loaded dynamically -->
+        </div>
+      </div>
+
+      <!-- Section: All Category Products -->
+      <div>
+        <div class="section-head" style="text-align:left; margin-bottom:30px;">
+          <h2 style="font-size:2.4rem; font-family:var(--font-heading); text-transform:uppercase;">✨ All Collections</h2>
+          <p style="font-size:1.3rem; color:#666;">Explore all designs in this category</p>
+          <div class="line" style="margin-left:0;"></div>
+        </div>
+        <div class="products-grid" id="catAllProductsGrid">
+          <!-- All cards loaded dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
   <section class="hero-section">
     <div class="hero-slider" id="heroSlider">
       <div class="hero-slide active">
-        <img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1783183758/pz9zdgce4wgovh7czmzb.webp" alt="VFS New Collection 2026">
-        <div class="hero-overlay"><div class="hero-text">
-          <span class="tag">New Arrivals 2026</span>
-          <h1>VFS Jewels — Premium Imitation Jewellery</h1>
-          <p>Handcrafted 18K gold-plated jewellery with A++ Austrian crystals &amp; anti-tarnish shield.</p>
-          <a href="#products" class="btn-primary" id="btnStartShopping">Start Shopping →</a>
-        </div></div>
-      </div>
-      <div class="hero-slide">
         <img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1783178917/whbmflasdurxiag7au7t.jpg" alt="VFS Kadas Collection">
         <div class="hero-overlay"><div class="hero-text">
           <span class="tag">Handcrafted Luxury</span>
@@ -390,7 +431,7 @@
         <div class="trust-item"><div class="trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></div><h3>Anti-Tarnish Shield</h3><p>Every piece coated with protective glaze to resist sweat &amp; moisture for long-lasting shine.</p></div>
         <div class="trust-item"><div class="trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg></div><h3>A++ CZ Crystals</h3><p>Hand-cut Austrian cubic zirconia stones that capture light like real diamonds.</p></div>
         <div class="trust-item"><div class="trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"/><path d="m9 12 2 2 4-4"/></svg></div><h3>Skin-Friendly</h3><p>Lead-free, nickel-free brass alloy. Safe for highly sensitive skin.</p></div>
-        <div class="trust-item"><div class="trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2Z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7Z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7Z"/></svg></div><h3>Premium Gifting</h3><p>Every order can be wrapped in a premium VFS drawer-style gift box with ribbon.</p></div>
+        <div class="trust-item"><div class="trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2Z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7Z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7Z"/></svg></div><h3>Premium Packaging</h3><p>Every order is shipped in a signature VFS protective box to ensure safe transit.</p></div>
       </div>
     </div>
   </section>

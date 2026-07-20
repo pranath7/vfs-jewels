@@ -1082,12 +1082,285 @@ function loadNextBatch(cat, list, scrollRow) {
 
 let currentFilter = null;
 
+// Helper to determine if today is within a 21-day window starting on the birthday date (YYYY-MM-DD)
+function isWithinBirthdayWindow(dateString) {
+  if (!dateString) return false;
+  const parts = dateString.split('-');
+  if (parts.length !== 3) return false;
+  
+  const bdayMonth = parseInt(parts[1], 10) - 1; // 0-indexed
+  const bdayDay = parseInt(parts[2], 10);
+  
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  
+  // Construct birthday date for current year
+  let bdayDate = new Date(currentYear, bdayMonth, bdayDay);
+  
+  // If today is before birthday, check if today is within 21 days after last year's birthday
+  let diffTime = today.getTime() - bdayDate.getTime();
+  let diffDays = diffTime / (1000 * 60 * 60 * 24);
+  
+  if (diffDays < 0) {
+    const lastYearBday = new Date(currentYear - 1, bdayMonth, bdayDay);
+    diffTime = today.getTime() - lastYearBday.getTime();
+    diffDays = diffTime / (1000 * 60 * 60 * 24);
+  }
+  
+  return diffDays >= 0 && diffDays <= 21;
+}
+
+function isTodayBirthday(dateString) {
+  if (!dateString) return false;
+  const parts = dateString.split('-');
+  if (parts.length !== 3) return false;
+  const bdayMonth = parseInt(parts[1], 10);
+  const bdayDay = parseInt(parts[2], 10);
+  const today = new Date();
+  return bdayMonth === (today.getMonth() + 1) && bdayDay === today.getDate();
+}
+
+function formatBdayDate(dateString) {
+  const parts = dateString.split('-');
+  if (parts.length !== 3) return dateString;
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const day = parseInt(parts[2], 10);
+  const month = monthNames[parseInt(parts[1], 10) - 1];
+  return `${day} ${month}`;
+}
+
+// ── Category Routing & Page Handling ──
+function getProductCardHtml(p) {
+  const isWL = wishlist.includes(p.id);
+  const stockVal = window.VFS_STOCK_CACHE[p.id];
+  const isOOS = (stockVal !== undefined && stockVal <= 0);
+  
+  let priceHtml = '';
+  let quickActionHtml = '';
+  
+  if (shoppingMode === 'retail') {
+    const priceInfo = getRetailPriceInfo(p);
+    const retailPrice = priceInfo.price;
+    const retailMrp = priceInfo.mrp;
+    const isDiscounted = retailMrp > retailPrice;
+    const off = isDiscounted ? pct(retailPrice, retailMrp) : 0;
+    
+    priceHtml = `
+      <span class="price-now">${fmt(retailPrice)}</span>
+      ${isDiscounted ? `
+        <span class="price-was">${fmt(retailMrp)}</span>
+        <span class="price-off">${off}% OFF</span>
+      ` : ''}
+    `;
+    
+    quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
+  } else {
+    if (!wholesaleUnlocked) {
+      priceHtml = `<span class="price-now" style="font-size:1.15rem; color:#ff3b30; font-weight:700;">🔒 Locked (Pay Advance)</span>`;
+      quickActionHtml = `<div class="p-quick unlock-prices-btn" style="background:#D4AF37; color:#121212; font-weight:700;">Unlock Prices</div>`;
+    } else {
+      const wsPrice = p.wholesalePrice || Math.round((p.price || 499) * 0.6);
+      const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
+      const off = pct(wsPrice, retailMrp);
+      
+      priceHtml = `
+        <span class="price-now" style="color:var(--color-primary);">${fmt(wsPrice)}</span>
+        <span class="price-was">${fmt(retailMrp)}</span>
+        <span class="price-off">${off}% OFF</span>
+      `;
+      quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
+    }
+  }
+  
+  if (isOOS) {
+    quickActionHtml = `<div class="p-quick" style="background:#555;color:#ccc;cursor:not-allowed;font-weight:700;">Sold Out</div>`;
+  }
+  
+  const dynamicBadge = (shoppingMode === 'retail') ? getRetailPriceInfo(p).badge : (p.badge || '');
+  
+  return `
+    <div class="p-card" data-id="${p.id}">
+      ${isOOS ? `<span class="p-badge" style="background:#ff3b30;color:#fff;">Sold Out</span>` : (dynamicBadge ? `<span class="p-badge${dynamicBadge === 'Sale' ? ' sale' : ''}">${dynamicBadge}</span>` : '')}
+      <button class="p-wish${isWL ? ' active' : ''}" data-wl="${p.id}" aria-label="Wishlist">
+        <svg viewBox="0 0 24 24" fill="${isWL ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
+      </button>
+      <div class="p-img">
+        <img src="${clOpt(p.img, 400)}" alt="${p.name}" loading="lazy">
+        ${quickActionHtml}
+      </div>
+      <div class="p-info">
+        <div class="p-meta">${p.meta}</div>
+        <div class="p-name">${p.name}</div>
+        <div class="p-rating"><span class="stars">${stars(p.rating)}</span><span class="count">(${p.reviews})</span></div>
+        <div class="p-prices">
+          ${priceHtml}
+        </div>
+      </div>
+    </div>`;
+}
+
+function attachProductListeners(container) {
+  if (!container) return;
+  
+  container.querySelectorAll('[data-wl]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = +btn.dataset.wl;
+      if (wishlist.includes(id)) {
+        wishlist = wishlist.filter(x => x !== id);
+        toast('Removed from wishlist');
+      } else {
+        wishlist.push(id);
+        toast('Added to wishlist ♡');
+      }
+      saveState();
+      updateCounts();
+      handleRouting();
+    });
+  });
+  
+  container.querySelectorAll('.p-quick[data-add]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = +btn.dataset.add;
+      addToCart(id);
+    });
+  });
+
+  container.querySelectorAll('.unlock-prices-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (window.VFS_OPEN_UNLOCK_MODAL) {
+        window.VFS_OPEN_UNLOCK_MODAL();
+      }
+    });
+  });
+
+  container.querySelectorAll('.p-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = +card.dataset.id;
+      openPDP(id);
+    });
+  });
+}
+
+function showCategoryPage(cat) {
+  const bannersInfo = CATEGORY_BANNERS[cat] || {
+    title: cat.charAt(0).toUpperCase() + cat.slice(1) + " Collection",
+    desc: "Premium handcrafted VFS creations.",
+    img: "assets/hero_banner.webp"
+  };
+
+  const breadcrumb = $('#catBreadcrumb');
+  if (breadcrumb) breadcrumb.textContent = bannersInfo.title;
+  
+  const heroTitle = $('#catHeroTitle');
+  if (heroTitle) heroTitle.textContent = bannersInfo.title;
+  
+  const heroDesc = $('#catHeroDesc');
+  if (heroDesc) heroDesc.textContent = bannersInfo.desc;
+
+  const heroTag = $('#catHeroTag');
+  if (heroTag) heroTag.textContent = cat;
+  
+  const heroBg = $('#catHeroBg');
+  if (heroBg) {
+    heroBg.style.backgroundImage = `url('${clOpt(bannersInfo.img, 1200)}')`;
+  }
+
+  const categoryProducts = getFullCatalog().filter(p => p.cat === cat && isProductVisible(p));
+
+  const bestSellers = [...categoryProducts]
+    .sort((a, b) => (b.reviews || 0) - (a.reviews || 0))
+    .slice(0, 4);
+
+  const bestGrid = $('#catBestsellersGrid');
+  const bestSec = $('#catBestsellersSection');
+  if (bestGrid) {
+    if (bestSellers.length > 0) {
+      bestGrid.innerHTML = bestSellers.map(p => getProductCardHtml(p)).join('');
+      attachProductListeners(bestGrid);
+      if (bestSec) bestSec.style.display = 'block';
+    } else {
+      if (bestSec) bestSec.style.display = 'none';
+    }
+  }
+
+  const allGrid = $('#catAllProductsGrid');
+  if (allGrid) {
+    allGrid.innerHTML = categoryProducts.map(p => getProductCardHtml(p)).join('');
+    attachProductListeners(allGrid);
+  }
+
+  const elsToHide = [
+    '.hero-section', '.delivery-strip', '.categories-section', 
+    '.banners-section', '.brand-story-section', '.products-section', 
+    '.trust-section', '#instaReelsSection', '#shelfNewArrivals', 
+    '#shelfBestSellers', '#shelfSale', '.testimonials-section'
+  ];
+  elsToHide.forEach(sel => {
+    const el = document.querySelector(sel);
+    if (el) el.style.display = 'none';
+  });
+
+  const catView = $('#categoryPageView');
+  if (catView) catView.style.display = 'block';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showHomePage() {
+  const catView = $('#categoryPageView');
+  if (catView) catView.style.display = 'none';
+
+  const elsToShow = [
+    '.hero-section', '.delivery-strip', '.categories-section', 
+    '.banners-section', '.brand-story-section', '.products-section', 
+    '.trust-section', '.testimonials-section'
+  ];
+  elsToShow.forEach(sel => {
+    const el = document.querySelector(sel);
+    if (el) el.style.display = '';
+  });
+
+  const newArrivals = $('#shelfNewArrivals');
+  const bestSellers = $('#shelfBestSellers');
+  const sale = $('#shelfSale');
+  const reels = $('#instaReelsSection');
+  
+  if (newArrivals && newArrivals.querySelector('.shelf-scroll')?.innerHTML) newArrivals.style.display = 'block';
+  if (bestSellers && bestSellers.querySelector('.shelf-scroll')?.innerHTML) bestSellers.style.display = 'block';
+  if (sale && sale.querySelector('.shelf-scroll')?.innerHTML) sale.style.display = 'block';
+  if (reels && reels.querySelector('.reels-grid')?.innerHTML) reels.style.display = 'block';
+
+  renderProducts(currentFilter);
+}
+
+function handleRouting() {
+  const hash = window.location.hash;
+  if (hash.startsWith('#category=')) {
+    const cat = hash.split('=')[1];
+    showCategoryPage(cat);
+  } else {
+    showHomePage();
+  }
+}
+
+window.addEventListener('hashchange', handleRouting);
+window.addEventListener('load', handleRouting);
+
 // ── Category Click ──
 $$('.cat-item').forEach(el => {
   el.addEventListener('click', () => {
-    currentFilter = el.dataset.cat;
-    renderProducts(currentFilter);
-    document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
+    const cat = el.dataset.cat;
+    if (cat === 'all') {
+      window.location.hash = '';
+      setTimeout(() => {
+        document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+      }, 50);
+    } else {
+      window.location.hash = '#category=' + cat;
+    }
   });
 });
 
@@ -1095,17 +1368,27 @@ $$('.cat-item').forEach(el => {
 $$('a[data-filter]').forEach(a => {
   a.addEventListener('click', (e) => {
     e.preventDefault();
-    currentFilter = a.dataset.filter;
-    renderProducts(currentFilter);
-    document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
+    const filter = a.dataset.filter;
+    if (filter === 'all') {
+      window.location.hash = '';
+      setTimeout(() => {
+        document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+      }, 50);
+    } else {
+      window.location.hash = '#category=' + filter;
+    }
   });
 });
 
 window.filterCat = function(cat) {
-  currentFilter = cat;
-  renderProducts(cat);
-  const el = document.getElementById('products');
-  if (el) el.scrollIntoView({ behavior: 'smooth' });
+  if (cat === 'all') {
+    window.location.hash = '';
+    setTimeout(() => {
+      document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
+  } else {
+    window.location.hash = '#category=' + cat;
+  }
 };
 
 // ── Cart Logic ──
@@ -1630,6 +1913,28 @@ async function updateEligibleCoupons() {
   
   if (cleanPhone.length === 10) {
     // 1. Birthday coupon
+    let bdayDateStr = localStorage.getItem(`vfs_birthday_phone_${cleanPhone}`);
+    if (!bdayDateStr) {
+      try {
+        const doc = await window.VFS_DB.getBirthday(cleanPhone);
+        if (doc && doc.birthday) {
+          bdayDateStr = doc.birthday;
+          localStorage.setItem(`vfs_birthday_phone_${cleanPhone}`, bdayDateStr);
+        }
+      } catch (err) {
+        console.warn("Firestore birthday read error:", err);
+      }
+    }
+    
+    if (bdayDateStr) {
+      const withinWindow = isWithinBirthdayWindow(bdayDateStr);
+      if (withinWindow) {
+        localStorage.setItem(`vfs_bday_coupon_unlocked_${cleanPhone}`, 'true');
+      } else {
+        localStorage.removeItem(`vfs_bday_coupon_unlocked_${cleanPhone}`);
+      }
+    }
+
     const bdayCoupon = localStorage.getItem(`vfs_bday_coupon_unlocked_${cleanPhone}`);
     const bdayUsed = localStorage.getItem(`vfs_bday_coupon_used_${cleanPhone}`);
     if (bdayCoupon === 'true' && bdayUsed !== 'true') {
@@ -2451,11 +2756,7 @@ function openPDP(id) {
       Upgrade your styling with this premium handcrafted VFS creation. Featuring a brilliant A++ Austrian CZ crystal centerpiece that captures light like real diamonds. Built with hypoallergenic, nickel-free brass alloy and finished with an anti-tarnish protective shield.
     </p>
     
-    <label class="pdp-gift-wrap" style="margin-top: 16px;">
-      <input type="checkbox" id="pdpGiftWrap">
-      <span>Add Premium VFS Gift Box & Ribbon (+₹49)</span>
-    </label>
-    
+
     <div class="pdp-delivery" style="margin-top: 20px;">
       <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>Delivery Availability Check</h4>
       <div class="pdp-delivery-checker">
@@ -2489,15 +2790,10 @@ function openPDP(id) {
     });
   }
 
-  const btnAdd = $('#pdpBtnAdd');
   if (btnAdd) {
     btnAdd.addEventListener('click', () => {
-      const isGiftChecked = $('#pdpGiftWrap').checked;
       const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
       addToCart(p.id, qty);
-      if (isGiftChecked) {
-        addGiftWrapToCart();
-      }
     });
   }
 
@@ -4729,12 +5025,30 @@ function setupBirthdayCircle() {
       const dateVal = bdayInputDate.value;
       if (!dateVal) return;
 
+      const isBdayToday = isTodayBirthday(dateVal);
+
       // CHECK if birthday already registered (Firestore-backed lock)
       const existing = await window.VFS_DB.getBirthday(cleanPhone);
       if (existing) {
-        bdayResultText.innerHTML = `🎂 Birthday already registered for this number! Your BDAY3 coupon is unlocked.`;
-        bdayResultText.style.color = '#e67e22';
-        bdayResultText.style.display = 'block';
+        const checkBdayStr = existing.birthday;
+        const checkBdayToday = isTodayBirthday(checkBdayStr);
+        
+        if (checkBdayToday) {
+          localStorage.setItem(`vfs_bday_coupon_unlocked_${cleanPhone}`, 'true');
+          bdayResultText.innerHTML = `🎂 Happy Birthday! 🎉 Your BDAY3 coupon is unlocked.`;
+          bdayResultText.style.color = '#2ecc71';
+          bdayResultText.style.display = 'block';
+          
+          if (bdayCelebrationModal) {
+            bdayCelebrationModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+          }
+        } else {
+          localStorage.removeItem(`vfs_bday_coupon_unlocked_${cleanPhone}`);
+          bdayResultText.innerHTML = `🎂 Birthday already registered for this number! You will receive a surprise coupon on your birthday (${formatBdayDate(checkBdayStr)}).`;
+          bdayResultText.style.color = '#e67e22';
+          bdayResultText.style.display = 'block';
+        }
         return;
       }
 
@@ -4744,18 +5058,25 @@ function setupBirthdayCircle() {
 
       // Also save locally for coupon access
       localStorage.setItem(`vfs_birthday_phone_${cleanPhone}`, dateVal);
-      localStorage.setItem(`vfs_bday_coupon_unlocked_${cleanPhone}`, 'true');
 
-      // Display results success message in line
-      bdayResultText.innerHTML = `🎁 Successfully joined! Coupon code BDAY3 has been unlocked for phone: ${cleanPhone}`;
-      bdayResultText.style.color = '#2ecc71';
-      bdayResultText.style.display = 'block';
-      bdayForm.reset();
+      if (isBdayToday) {
+        localStorage.setItem(`vfs_bday_coupon_unlocked_${cleanPhone}`, 'true');
+        bdayResultText.innerHTML = `🎂 Happy Birthday! 🎉 Coupon code BDAY3 has been unlocked for phone: ${cleanPhone}`;
+        bdayResultText.style.color = '#2ecc71';
+        bdayResultText.style.display = 'block';
+        bdayForm.reset();
 
-      // Trigger Happy Birthday Celebration Modal immediately!
-      if (bdayCelebrationModal) {
-        bdayCelebrationModal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        // Trigger Happy Birthday Celebration Modal immediately!
+        if (bdayCelebrationModal) {
+          bdayCelebrationModal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
+      } else {
+        localStorage.removeItem(`vfs_bday_coupon_unlocked_${cleanPhone}`);
+        bdayResultText.innerHTML = `🎁 Successfully joined the Birthday Circle! You will receive a surprise coupon on your birthday (${formatBdayDate(dateVal)}).`;
+        bdayResultText.style.color = '#2ecc71';
+        bdayResultText.style.display = 'block';
+        bdayForm.reset();
       }
     });
   }
