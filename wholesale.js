@@ -5060,6 +5060,7 @@ function setupShoppingMode() {
                 wholesaleUser.paymentStatus = 'paid';
                 wholesaleUser.unlocked = true;
                 wholesaleUser.razorpayPaymentId = response.razorpay_payment_id;
+                wholesaleUnlocked = true; // ← critical: update module-level flag
 
                 if (window.VFS_CLOUD_ACTIVE && window.db) {
                   await window.db.collection('wholesale_users').doc(wholesaleUser.uid).update({
@@ -5077,12 +5078,12 @@ function setupShoppingMode() {
 
                 alert("🎉 Payment successful! Your Business Club membership has been activated and wholesale prices are unlocked!");
                 
-                // Close modal
-                const modal = $('#wholesaleUnlockModal');
-                if (modal) modal.classList.remove('active');
+                // Close the lock overlay using the CORRECT element ID
+                const lockOverlay = $('#royalLockOverlay');
+                if (lockOverlay) lockOverlay.style.display = 'none';
                 document.body.style.overflow = '';
                 
-                // Update views
+                // Update views — updateLockUI will now see wholesaleUnlocked=true and hide the overlay
                 updateModeUI();
                 updateLockUI();
                 renderProducts(null);
