@@ -44,9 +44,6 @@ module.exports = async (req, res) => {
     // Basic Auth header
     const auth = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
     
-    // For testing payment gateway, we temporarily force the amount to be 1 INR (100 paise)
-    const testAmountInPaise = 100;
-
     const response = await fetch('https://api.razorpay.com/v1/orders', {
       method: 'POST',
       headers: {
@@ -54,7 +51,7 @@ module.exports = async (req, res) => {
         'Authorization': `Basic ${auth}`
       },
       body: JSON.stringify({
-        amount: testAmountInPaise,
+        amount: Math.round(amount * 100), // Convert ₹ rupees → paise (Razorpay requires paise)
         currency: 'INR',
         receipt: receipt || `receipt_${Date.now()}`
       })
