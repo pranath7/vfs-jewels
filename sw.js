@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vfs-storefront-v43';
+const CACHE_NAME = 'vfs-storefront-v44';
 const ASSETS = [
   '/',
   '/index.html',
@@ -41,7 +41,7 @@ self.addEventListener('fetch', e => {
   }
 
   e.respondWith(
-    caches.match(e.request).then(cached => {
+    caches.match(e.request, { ignoreSearch: true }).then(cached => {
       return cached || fetch(e.request).then(res => {
         // Cache new static assets dynamically (like products images)
         if (e.request.url.includes('/assets/') || e.request.url.includes('res.cloudinary.com')) {
