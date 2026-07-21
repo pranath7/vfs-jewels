@@ -1,5 +1,20 @@
 [
   {
+    "id": 1,
+    "sku": "DEMO-TEST-001",
+    "name": "🧪 Demo Test Product",
+    "cat": "kadas",
+    "meta": "Testing Only",
+    "price": 1,
+    "mrp": 2,
+    "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg",
+    "rating": "5.0",
+    "reviews": 999,
+    "badge": "TEST",
+    "priceOnRequest": false,
+    "isDemo": true
+  },
+  {
     "id": 201,
     "sku": "SN-K001",
     "name": "VFS Designer Kada #01",
