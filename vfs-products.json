@@ -1316,7 +1316,8 @@
     "rating": "4.8",
     "reviews": 16,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 402,
@@ -1330,7 +1331,8 @@
     "rating": "4.8",
     "reviews": 24,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 403,
@@ -1344,7 +1346,8 @@
     "rating": "4.5",
     "reviews": 15,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 404,
@@ -1358,7 +1361,8 @@
     "rating": "4.6",
     "reviews": 17,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 405,
@@ -1372,7 +1376,8 @@
     "rating": "4.8",
     "reviews": 25,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 406,
@@ -1386,7 +1391,8 @@
     "rating": "4.5",
     "reviews": 27,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 407,
@@ -1400,7 +1406,8 @@
     "rating": "4.8",
     "reviews": 22,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 408,
@@ -1414,7 +1421,8 @@
     "rating": "4.7",
     "reviews": 35,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 409,
@@ -1428,7 +1436,8 @@
     "rating": "4.6",
     "reviews": 23,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 410,
@@ -1442,7 +1451,8 @@
     "rating": "4.7",
     "reviews": 33,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 411,
@@ -1456,7 +1466,8 @@
     "rating": "4.8",
     "reviews": 14,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 412,
@@ -1470,7 +1481,8 @@
     "rating": "4.7",
     "reviews": 24,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 413,
@@ -1484,7 +1496,8 @@
     "rating": "4.9",
     "reviews": 17,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 414,
@@ -1498,7 +1511,8 @@
     "rating": "4.9",
     "reviews": 27,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 415,
@@ -1512,7 +1526,8 @@
     "rating": "4.9",
     "reviews": 22,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 416,
@@ -1526,7 +1541,8 @@
     "rating": "4.5",
     "reviews": 25,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 417,
@@ -1540,7 +1556,8 @@
     "rating": "4.7",
     "reviews": 31,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 418,
@@ -1554,7 +1571,8 @@
     "rating": "4.8",
     "reviews": 31,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 419,
@@ -1568,7 +1586,8 @@
     "rating": "4.6",
     "reviews": 17,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 420,
@@ -1582,7 +1601,8 @@
     "rating": "4.6",
     "reviews": 23,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 421,
@@ -1596,7 +1616,8 @@
     "rating": "4.8",
     "reviews": 11,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 422,
@@ -1610,7 +1631,8 @@
     "rating": "4.5",
     "reviews": 28,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 423,
@@ -1624,7 +1646,8 @@
     "rating": "4.6",
     "reviews": 22,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 424,
@@ -1638,7 +1661,8 @@
     "rating": "4.5",
     "reviews": 12,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 425,
@@ -1652,7 +1676,8 @@
     "rating": "4.6",
     "reviews": 12,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 426,
@@ -1666,7 +1691,8 @@
     "rating": "4.7",
     "reviews": 24,
     "badge": "Exclusive",
-    "priceOnRequest": false
+    "priceOnRequest": false,
+    "wholesalePrice": 88
   },
   {
     "id": 501,
