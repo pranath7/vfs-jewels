@@ -1858,7 +1858,10 @@ function openCheckout() {
     return sum + (getCurrentProductPrice(p) * item.qty);
   }, 0);
 
-  if (cartSubtotal < 3000) {
+  // Demo product bypass: skip MOV for testing (id: 1)
+  const isDemoOnly = cart.length === 1 && cart[0].id === 1;
+
+  if (!isDemoOnly && cartSubtotal < 3000) {
     toast(`Minimum order value is ₹3,000. Add ${fmt(3000 - cartSubtotal)} more to proceed.`);
     return;
   }
@@ -2044,8 +2047,9 @@ $('#coForm').addEventListener('submit', async (e) => {
   const itemsList = await Promise.all(stockPromises);
   
   const gstAmount = Math.round(subtotal * 0.03);
-  // Dynamic tiered delivery charges
-  const shippingCost = subtotal > 10000 ? 190 : subtotal > 5000 ? 120 : 90;
+  // Dynamic tiered delivery charges (₹0 for demo product)
+  const isDemoCart = cart.length === 1 && cart[0].id === 1;
+  const shippingCost = isDemoCart ? 0 : (subtotal > 10000 ? 190 : subtotal > 5000 ? 120 : 90);
   
   // Calculate Wholesale Advance Deduction if applicable
   let advanceDeduction = 0;
