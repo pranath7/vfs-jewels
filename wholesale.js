@@ -519,7 +519,9 @@ const clOpt = (url, width) => {
       pathSegments.shift();
       cleanPath = pathSegments.join('/');
     }
-    return `${parts[0]}/upload/f_auto,q_95,w_${width}/${cleanPath}`;
+    const isBannerOrLogo = cleanPath.includes('banner') || cleanPath.includes('logo') || cleanPath.includes('icon') || cleanPath.includes('a4hfmqgh7wxjuzucvutj');
+    const cropTransform = !isBannerOrLogo ? 'c_crop,g_north,h_0.74,' : '';
+    return `${parts[0]}/upload/${cropTransform}f_auto,q_95,w_${width}/${cleanPath}`;
   }
   return url;
 };
