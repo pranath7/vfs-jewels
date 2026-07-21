@@ -20,13 +20,14 @@
     "name": "VFS Designer Kada #01",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg",
     "rating": "4.6",
     "reviews": 12,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 202,
@@ -34,13 +35,14 @@
     "name": "VFS Designer Kada #02",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178918/j0qhpmddqcww7jyfclpo.jpg",
     "rating": "4.7",
     "reviews": 15,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 203,
@@ -48,13 +50,14 @@
     "name": "VFS Designer Kada #03",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178918/d8vmmezbtwedza9gw64b.jpg",
     "rating": "4.8",
     "reviews": 18,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 204,
@@ -62,13 +65,14 @@
     "name": "VFS Designer Kada #04",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178919/em7mwrwmfx00nl8wpun1.jpg",
     "rating": "4.9",
     "reviews": 21,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 205,
@@ -76,13 +80,14 @@
     "name": "VFS Designer Kada #05",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178920/w5poym0duvb90ursvdev.jpg",
     "rating": "4.6",
     "reviews": 24,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 206,
@@ -90,13 +95,14 @@
     "name": "VFS Designer Kada #06",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178921/jory1vfmjdhh0qagmyfl.jpg",
     "rating": "4.7",
     "reviews": 27,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 207,
@@ -104,13 +110,14 @@
     "name": "VFS Designer Kada #07",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178922/cetvhjbqvarfycmzhntn.jpg",
     "rating": "4.8",
     "reviews": 30,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 208,
@@ -118,13 +125,14 @@
     "name": "VFS Designer Kada #08",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178923/zfrcjcmkpuxafyv04on5.jpg",
     "rating": "4.9",
     "reviews": 33,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 209,
@@ -132,13 +140,14 @@
     "name": "VFS Designer Kada #09",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178924/zq0p5l4psp1zfh2btxzp.jpg",
     "rating": "4.6",
     "reviews": 36,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 210,
@@ -146,13 +155,14 @@
     "name": "VFS Designer Kada #10",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178925/w4jdyqxhbuouv6oksiwg.jpg",
     "rating": "4.7",
     "reviews": 39,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 211,
@@ -160,13 +170,14 @@
     "name": "VFS Designer Kada #11",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 329,
+    "mrp": 494,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178926/bkafajsyk3obdoexbdop.jpg",
     "rating": "4.8",
     "reviews": 42,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 198
   },
   {
     "id": 212,
@@ -174,13 +185,14 @@
     "name": "VFS Designer Kada #12",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178927/dmii1bdkrfbtfcwfh7qp.jpg",
     "rating": "4.9",
     "reviews": 45,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 213,
@@ -188,13 +200,14 @@
     "name": "VFS Designer Kada #13",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178928/wcr0s6xqpnmbs98fz7dr.jpg",
     "rating": "4.6",
     "reviews": 48,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 214,
@@ -202,13 +215,14 @@
     "name": "VFS Designer Kada #14",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 330,
+    "mrp": 495,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178929/fojx0kassipwwftfcknh.jpg",
     "rating": "4.7",
     "reviews": 51,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 199
   },
   {
     "id": 215,
@@ -216,13 +230,14 @@
     "name": "VFS Designer Kada #15",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178929/degumookjbgnciecrk1w.jpg",
     "rating": "4.8",
     "reviews": 14,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 216,
@@ -230,13 +245,14 @@
     "name": "VFS Designer Kada #16",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178930/hadow30cqoea39phjvyx.jpg",
     "rating": "4.9",
     "reviews": 17,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 217,
@@ -244,13 +260,14 @@
     "name": "VFS Designer Kada #17",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178931/obphqfxf2veys5hpwwqy.jpg",
     "rating": "4.6",
     "reviews": 20,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 218,
@@ -258,13 +275,14 @@
     "name": "VFS Designer Kada #18",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 329,
+    "mrp": 494,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178932/o6uivxisjr80bzjwm0b0.jpg",
     "rating": "4.7",
     "reviews": 23,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 198
   },
   {
     "id": 219,
@@ -272,13 +290,14 @@
     "name": "VFS Designer Kada #19",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178932/jstxgmvyv9unn1af9iih.jpg",
     "rating": "4.8",
     "reviews": 26,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 220,
@@ -286,13 +305,14 @@
     "name": "VFS Designer Kada #20",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178934/xowv48eepyqj1pr3h0b6.jpg",
     "rating": "4.9",
     "reviews": 29,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 221,
@@ -300,13 +320,14 @@
     "name": "VFS Designer Kada #21",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 329,
+    "mrp": 494,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178935/bczaaywwqdt22rn8vv2b.jpg",
     "rating": "4.6",
     "reviews": 32,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 198
   },
   {
     "id": 222,
@@ -314,13 +335,14 @@
     "name": "VFS Designer Kada #22",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178935/deilwm2evxa7gpoahoao.jpg",
     "rating": "4.7",
     "reviews": 35,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 223,
@@ -328,13 +350,14 @@
     "name": "VFS Designer Kada #23",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178936/mq3sstgts4yofjakycq1.jpg",
     "rating": "4.8",
     "reviews": 38,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 224,
@@ -342,13 +365,14 @@
     "name": "VFS Designer Kada #24",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 329,
+    "mrp": 494,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183397/n8bmrsjttxaasvpdu2eo.jpg",
     "rating": "4.9",
     "reviews": 41,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 198
   },
   {
     "id": 225,
@@ -356,13 +380,14 @@
     "name": "VFS Designer Kada #25",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 420,
+    "mrp": 630,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183399/aczis8kte2knj6pnglrj.jpg",
     "rating": "4.6",
     "reviews": 44,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 253
   },
   {
     "id": 226,
@@ -370,13 +395,14 @@
     "name": "VFS Designer Kada #26",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 199,
+    "mrp": 298,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183400/t5gdt82rhxnrogftkhrb.jpg",
     "rating": "4.7",
     "reviews": 47,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 120
   },
   {
     "id": 227,
@@ -384,13 +410,14 @@
     "name": "VFS Designer Kada #27",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 286,
+    "mrp": 429,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183402/bkeswn7xhlegne0m3bas.jpg",
     "rating": "4.8",
     "reviews": 50,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 172
   },
   {
     "id": 228,
@@ -398,13 +425,14 @@
     "name": "VFS Designer Kada #28",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 286,
+    "mrp": 429,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183403/lmpf5ur44kzr98qnmkl6.jpg",
     "rating": "4.9",
     "reviews": 13,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 172
   },
   {
     "id": 229,
@@ -412,13 +440,14 @@
     "name": "VFS Designer Kada #29",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 309,
+    "mrp": 464,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183406/kgnpdu42ebdsovbgphc3.jpg",
     "rating": "4.6",
     "reviews": 16,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 186
   },
   {
     "id": 230,
@@ -426,13 +455,14 @@
     "name": "VFS Designer Kada #30",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 408,
+    "mrp": 612,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183407/u8n2utk4wn71v17ff65p.jpg",
     "rating": "4.7",
     "reviews": 19,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 246
   },
   {
     "id": 231,
@@ -440,13 +470,14 @@
     "name": "VFS Designer Kada #31",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 286,
+    "mrp": 429,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183409/nka5iv7ombpmbzbna5om.jpg",
     "rating": "4.8",
     "reviews": 22,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 172
   },
   {
     "id": 232,
@@ -454,13 +485,14 @@
     "name": "VFS Designer Kada #32",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 309,
+    "mrp": 464,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183410/puk5hquq8fumaxwj5dpx.jpg",
     "rating": "4.9",
     "reviews": 25,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 186
   },
   {
     "id": 233,
@@ -468,13 +500,14 @@
     "name": "VFS Designer Kada #33",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183411/lvgurzc4rwala7jcya7z.jpg",
     "rating": "4.6",
     "reviews": 28,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 234,
@@ -482,13 +515,14 @@
     "name": "VFS Designer Kada #34",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 329,
+    "mrp": 494,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183412/pix59rgta8lhbepfzj50.jpg",
     "rating": "4.7",
     "reviews": 31,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 198
   },
   {
     "id": 235,
@@ -496,13 +530,14 @@
     "name": "VFS Designer Kada #35",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 286,
+    "mrp": 429,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183413/hmhdogxmyd3bffzpspdc.jpg",
     "rating": "4.8",
     "reviews": 34,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 172
   },
   {
     "id": 236,
@@ -510,13 +545,14 @@
     "name": "VFS Designer Kada #36",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183414/f5vvyog7m4caap4jlosl.jpg",
     "rating": "4.9",
     "reviews": 37,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 237,
@@ -524,13 +560,14 @@
     "name": "VFS Designer Kada #37",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 199,
+    "mrp": 298,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183415/xqn4m0kgob2mr0ubzayx.jpg",
     "rating": "4.6",
     "reviews": 40,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 120
   },
   {
     "id": 238,
@@ -538,13 +575,14 @@
     "name": "VFS Designer Kada #38",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 236,
+    "mrp": 354,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183416/kklbimpezdyxlrqb6hd7.jpg",
     "rating": "4.7",
     "reviews": 43,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 142
   },
   {
     "id": 239,
@@ -552,13 +590,14 @@
     "name": "VFS Designer Kada #39",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 420,
+    "mrp": 630,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183417/gskjatvdchym7dudokfm.jpg",
     "rating": "4.8",
     "reviews": 46,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 253
   },
   {
     "id": 240,
@@ -566,13 +605,14 @@
     "name": "VFS Designer Kada #40",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 286,
+    "mrp": 429,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183418/fsqckzt2yrvlcqpppmjq.jpg",
     "rating": "4.9",
     "reviews": 49,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 172
   },
   {
     "id": 241,
@@ -580,13 +620,14 @@
     "name": "VFS Designer Kada #41",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 420,
+    "mrp": 630,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183419/jlvrdssz7x3b7nawyglb.jpg",
     "rating": "4.6",
     "reviews": 12,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 253
   },
   {
     "id": 242,
@@ -594,13 +635,14 @@
     "name": "VFS Designer Kada #42",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 309,
+    "mrp": 464,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183420/c61mrnccabtarwdqabz2.jpg",
     "rating": "4.7",
     "reviews": 15,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 186
   },
   {
     "id": 243,
@@ -608,13 +650,14 @@
     "name": "VFS Designer Kada #43",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 329,
+    "mrp": 494,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783183421/aukttd0gb7isoa4cjj3h.jpg",
     "rating": "4.8",
     "reviews": 18,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 198
   },
   {
     "id": 244,
@@ -622,13 +665,14 @@
     "name": "VFS Designer Kada #44",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 120,
+    "mrp": 180,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689665/sjm45i5f4itkriowqhaq.jpg",
     "rating": "4.9",
     "reviews": 21,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 72
   },
   {
     "id": 245,
@@ -636,13 +680,14 @@
     "name": "VFS Designer Kada #45",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 286,
+    "mrp": 429,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689669/bsm3piqe5sgadnaqdnrd.jpg",
     "rating": "4.6",
     "reviews": 24,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 172
   },
   {
     "id": 246,
@@ -650,13 +695,14 @@
     "name": "VFS Designer Kada #46",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 286,
+    "mrp": 429,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689674/xvwuzcd3bnviwx8eqe9b.jpg",
     "rating": "4.7",
     "reviews": 27,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 172
   },
   {
     "id": 247,
@@ -664,13 +710,14 @@
     "name": "VFS Designer Kada #47",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 71,
+    "mrp": 106,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689677/zacxwnswcqdu4g2o8c0s.jpg",
     "rating": "4.8",
     "reviews": 30,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 43
   },
   {
     "id": 248,
@@ -678,13 +725,14 @@
     "name": "VFS Designer Kada #48",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689681/xskkf77eoeo5eqdiinm0.jpg",
     "rating": "4.9",
     "reviews": 33,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 249,
@@ -692,13 +740,14 @@
     "name": "VFS Designer Kada #49",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689687/qe2m2qv2ym4wkc4xvfsj.jpg",
     "rating": "4.6",
     "reviews": 36,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 250,
@@ -706,13 +755,14 @@
     "name": "VFS Designer Kada #50",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689691/uoznjspz6qeeryuy29dm.jpg",
     "rating": "4.7",
     "reviews": 39,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 251,
@@ -720,13 +770,14 @@
     "name": "VFS Designer Kada #51",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689694/oo1k61cf51ykyfeujs4i.jpg",
     "rating": "4.8",
     "reviews": 42,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 252,
@@ -734,13 +785,14 @@
     "name": "VFS Designer Kada #52",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689698/jtuavxd9paz6xng4smkb.jpg",
     "rating": "4.9",
     "reviews": 45,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 253,
@@ -748,13 +800,14 @@
     "name": "VFS Designer Kada #53",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689702/yclgvbwrn01zbdfg1gir.jpg",
     "rating": "4.6",
     "reviews": 48,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 254,
@@ -762,13 +815,14 @@
     "name": "VFS Designer Kada #54",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 286,
+    "mrp": 429,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689705/lqqvkrdqh43zq3nahjdc.jpg",
     "rating": "4.7",
     "reviews": 10,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 172
   },
   {
     "id": 255,
@@ -776,13 +830,14 @@
     "name": "VFS Designer Kada #55",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689709/er3o1p5c1lv5putpg7mp.jpg",
     "rating": "4.8",
     "reviews": 13,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 256,
@@ -790,13 +845,14 @@
     "name": "VFS Designer Kada #56",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689713/i7my0ak5cs3gn94w0lov.jpg",
     "rating": "4.9",
     "reviews": 16,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 257,
@@ -804,13 +860,14 @@
     "name": "VFS Designer Kada #57",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689716/ttxwboeqass7955rlrct.jpg",
     "rating": "4.6",
     "reviews": 19,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 258,
@@ -818,13 +875,14 @@
     "name": "VFS Designer Kada #58",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 286,
+    "mrp": 429,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689719/a2kwc1txribdh7k3ybkv.jpg",
     "rating": "4.7",
     "reviews": 22,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 172
   },
   {
     "id": 259,
@@ -832,13 +890,14 @@
     "name": "VFS Designer Kada #59",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 286,
+    "mrp": 429,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689722/yanjauc2d6ooki70kitz.jpg",
     "rating": "4.8",
     "reviews": 25,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 172
   },
   {
     "id": 260,
@@ -846,13 +905,14 @@
     "name": "VFS Designer Kada #60",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689725/n884nscyxclfbnjhhjof.jpg",
     "rating": "4.9",
     "reviews": 28,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 261,
@@ -860,13 +920,14 @@
     "name": "VFS Designer Kada #61",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689729/wlvajfsuplcvkpu2qucl.jpg",
     "rating": "4.6",
     "reviews": 31,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 262,
@@ -874,13 +935,14 @@
     "name": "VFS Designer Kada #62",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689732/b1axil0b1rlsh6puznad.jpg",
     "rating": "4.7",
     "reviews": 34,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 263,
@@ -888,13 +950,14 @@
     "name": "VFS Designer Kada #63",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 120,
+    "mrp": 180,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689736/c0xblmluvmaey67eabyg.jpg",
     "rating": "4.8",
     "reviews": 37,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 72
   },
   {
     "id": 264,
@@ -902,13 +965,14 @@
     "name": "VFS Designer Kada #64",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 120,
+    "mrp": 180,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689739/jstckjphja5i48kvunfn.jpg",
     "rating": "4.9",
     "reviews": 40,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 72
   },
   {
     "id": 265,
@@ -916,13 +980,14 @@
     "name": "VFS Designer Kada #65",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689743/mijp52neiyomrxrfsfdi.jpg",
     "rating": "4.6",
     "reviews": 43,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 266,
@@ -930,13 +995,14 @@
     "name": "VFS Designer Kada #66",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689746/t982mrnnut67sdzfyzth.jpg",
     "rating": "4.7",
     "reviews": 46,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 267,
@@ -944,13 +1010,14 @@
     "name": "VFS Designer Kada #67",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689750/casi0lxwlraokvsso638.jpg",
     "rating": "4.8",
     "reviews": 49,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 268,
@@ -958,13 +1025,14 @@
     "name": "VFS Designer Kada #68",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689753/d3k8diai0vrt6uabisia.jpg",
     "rating": "4.9",
     "reviews": 11,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 269,
@@ -972,13 +1040,14 @@
     "name": "VFS Designer Kada #69",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 286,
+    "mrp": 429,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689757/dcnxxrpzl1jgbrutsdju.jpg",
     "rating": "4.6",
     "reviews": 14,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 172
   },
   {
     "id": 270,
@@ -986,13 +1055,14 @@
     "name": "VFS Designer Kada #70",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689761/jpzui328zdrxhl84d5st.jpg",
     "rating": "4.7",
     "reviews": 17,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 271,
@@ -1000,13 +1070,14 @@
     "name": "VFS Designer Kada #71",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783689765/abkkyxkriki3bvad135a.jpg",
     "rating": "4.8",
     "reviews": 20,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 301,
@@ -1014,13 +1085,14 @@
     "name": "VFS Gold Chain #01",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178938/vza7byllycs7nmz8bwdq.jpg",
     "rating": "4.6",
     "reviews": 10,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 302,
@@ -1028,13 +1100,14 @@
     "name": "VFS Gold Chain #02",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178939/dguesoyw4s03cb1y9ief.jpg",
     "rating": "4.7",
     "reviews": 14,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 303,
@@ -1042,13 +1115,14 @@
     "name": "VFS Gold Chain #03",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178940/vswytffuij1oasityf2i.jpg",
     "rating": "4.8",
     "reviews": 18,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 304,
@@ -1056,13 +1130,14 @@
     "name": "VFS Gold Chain #04",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178941/qoy6w51ygjbszrtcf2ef.jpg",
     "rating": "4.9",
     "reviews": 22,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 305,
@@ -1070,13 +1145,14 @@
     "name": "VFS Gold Chain #05",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178941/uu9wtaiv9bshk1y3trsz.jpg",
     "rating": "4.6",
     "reviews": 26,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 306,
@@ -1084,13 +1160,14 @@
     "name": "VFS Gold Chain #06",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178942/a5dpinkitzolrdkpbd56.jpg",
     "rating": "4.7",
     "reviews": 30,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 307,
@@ -1098,13 +1175,14 @@
     "name": "VFS Gold Chain #07",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178943/aa1iixfx4xm59m1q1sdx.jpg",
     "rating": "4.8",
     "reviews": 34,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 308,
@@ -1112,13 +1190,14 @@
     "name": "VFS Gold Chain #08",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178943/ysipsjrglrsjlfs02td9.jpg",
     "rating": "4.9",
     "reviews": 38,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 309,
@@ -1126,13 +1205,14 @@
     "name": "VFS Gold Chain #09",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178944/qckk55ackb90t40ktaa8.jpg",
     "rating": "4.6",
     "reviews": 12,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 310,
@@ -1140,13 +1220,14 @@
     "name": "VFS Gold Chain #10",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178945/zqajttwrvl4zxz1txylj.jpg",
     "rating": "4.7",
     "reviews": 16,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 311,
@@ -1154,13 +1235,14 @@
     "name": "VFS Gold Chain #11",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178946/ar7rtyo8njcemkbthexq.jpg",
     "rating": "4.8",
     "reviews": 20,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 312,
@@ -1168,13 +1250,14 @@
     "name": "VFS Gold Chain #12",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178947/v4ad0wpgrfbxudn0fpwa.jpg",
     "rating": "4.9",
     "reviews": 24,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 313,
@@ -1182,13 +1265,14 @@
     "name": "VFS Gold Chain #13",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178948/bwksqbswagtyce0so8y1.jpg",
     "rating": "4.6",
     "reviews": 28,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 314,
@@ -1196,13 +1280,14 @@
     "name": "VFS Gold Chain #14",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178949/pieihb2fs9nzhyww2jgs.jpg",
     "rating": "4.7",
     "reviews": 32,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 315,
@@ -1210,13 +1295,14 @@
     "name": "VFS Gold Chain #15",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178952/luctfemssi0bzbwzezsr.jpg",
     "rating": "4.8",
     "reviews": 36,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 401,
@@ -1588,13 +1674,14 @@
     "name": "VFS Designer Kada #72",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211095/vfs-jewels/kadas/c4tyerdcd0aqvcmbra2w.jpg",
     "rating": "4.6",
     "reviews": 33,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 502,
@@ -1602,13 +1689,14 @@
     "name": "VFS Designer Kada #73",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211100/vfs-jewels/kadas/zyjosbo0w2oshmpr45d2.jpg",
     "rating": "4.7",
     "reviews": 43,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 503,
@@ -1616,13 +1704,14 @@
     "name": "VFS Designer Kada #74",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 307,
+    "mrp": 460,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211105/vfs-jewels/kadas/vzt3uuhalgwwjuflhf8o.jpg",
     "rating": "4.8",
     "reviews": 26,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 185
   },
   {
     "id": 504,
@@ -1630,13 +1719,14 @@
     "name": "VFS Designer Kada #75",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211110/vfs-jewels/kadas/bfxsjmgekkisdxtbr1wm.jpg",
     "rating": "4.6",
     "reviews": 28,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 505,
@@ -1644,13 +1734,14 @@
     "name": "VFS Designer Kada #76",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211121/vfs-jewels/kadas/cjmxilhwe0o1kbu1bzue.jpg",
     "rating": "4.6",
     "reviews": 28,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 506,
@@ -1658,13 +1749,14 @@
     "name": "VFS Designer Kada #77",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211123/vfs-jewels/kadas/v1ggxnsxyuy4tosst9wk.jpg",
     "rating": "4.6",
     "reviews": 36,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 507,
@@ -1672,13 +1764,14 @@
     "name": "VFS Designer Kada #78",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 320,
+    "mrp": 480,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211126/vfs-jewels/kadas/sf2btwh6uisgh04ra0sl.jpg",
     "rating": "4.7",
     "reviews": 48,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 193
   },
   {
     "id": 508,
@@ -1686,13 +1779,14 @@
     "name": "VFS Designer Kada #79",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211128/vfs-jewels/kadas/yfblcwgu7twptszp88z1.jpg",
     "rating": "4.7",
     "reviews": 11,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 509,
@@ -1700,13 +1794,14 @@
     "name": "VFS Designer Kada #80",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211130/vfs-jewels/kadas/qpzao1t9cmfqjygwys7d.jpg",
     "rating": "4.6",
     "reviews": 46,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 510,
@@ -1714,13 +1809,14 @@
     "name": "VFS Designer Kada #81",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211131/vfs-jewels/kadas/qhsaic147w2ka001egl0.jpg",
     "rating": "4.8",
     "reviews": 14,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 511,
@@ -1728,13 +1824,14 @@
     "name": "VFS Designer Kada #82",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211132/vfs-jewels/kadas/mmn8yowlkqtmptrl8vt3.jpg",
     "rating": "4.7",
     "reviews": 37,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 512,
@@ -1742,13 +1839,14 @@
     "name": "VFS Designer Kada #83",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 307,
+    "mrp": 460,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211134/vfs-jewels/kadas/wwtcay1qpvxspnnnwlsq.jpg",
     "rating": "4.7",
     "reviews": 16,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 185
   },
   {
     "id": 513,
@@ -1756,13 +1854,14 @@
     "name": "VFS Designer Kada #84",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211135/vfs-jewels/kadas/m6aceh6c1lexeawelssm.jpg",
     "rating": "4.5",
     "reviews": 45,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 514,
@@ -1770,13 +1869,14 @@
     "name": "VFS Designer Kada #85",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211136/vfs-jewels/kadas/hdqzmoarptx8pcdsoqyo.jpg",
     "rating": "4.9",
     "reviews": 13,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 515,
@@ -1784,13 +1884,14 @@
     "name": "VFS Designer Kada #86",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211138/vfs-jewels/kadas/odndpoqxs6uayij4lskf.jpg",
     "rating": "4.8",
     "reviews": 47,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 516,
@@ -1798,13 +1899,14 @@
     "name": "VFS Designer Kada #87",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 322,
+    "mrp": 483,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211140/vfs-jewels/kadas/pasmuadkfk1bxuwbnak7.jpg",
     "rating": "4.7",
     "reviews": 46,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 194
   },
   {
     "id": 517,
@@ -1812,13 +1914,14 @@
     "name": "VFS Designer Kada #88",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 329,
+    "mrp": 494,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211141/vfs-jewels/kadas/o1zn2pw1r2t2vowy8mym.jpg",
     "rating": "4.9",
     "reviews": 22,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 198
   },
   {
     "id": 518,
@@ -1826,13 +1929,14 @@
     "name": "VFS Designer Kada #89",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 286,
+    "mrp": 429,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211142/vfs-jewels/kadas/d8rmucvx7smweiqmqejo.jpg",
     "rating": "4.7",
     "reviews": 20,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 172
   },
   {
     "id": 519,
@@ -1840,13 +1944,14 @@
     "name": "VFS Designer Kada #90",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 332,
+    "mrp": 498,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211146/vfs-jewels/kadas/r9ghhnydvu6xumx3593y.jpg",
     "rating": "4.9",
     "reviews": 41,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 200
   },
   {
     "id": 520,
@@ -1854,13 +1959,14 @@
     "name": "VFS Designer Kada #91",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 307,
+    "mrp": 460,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211147/vfs-jewels/kadas/bbo8bal0s1eakmz0hhup.jpg",
     "rating": "4.6",
     "reviews": 39,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 185
   },
   {
     "id": 521,
@@ -1868,13 +1974,14 @@
     "name": "VFS Designer Kada #92",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211148/vfs-jewels/kadas/wyhkaufyemhmk8hm3mmr.jpg",
     "rating": "4.9",
     "reviews": 48,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 522,
@@ -1882,13 +1989,14 @@
     "name": "VFS Designer Kada #93",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211150/vfs-jewels/kadas/lnm0wfrxbkzu3exmogz9.jpg",
     "rating": "4.9",
     "reviews": 43,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 523,
@@ -1896,13 +2004,14 @@
     "name": "VFS Designer Kada #94",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 199,
+    "mrp": 298,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211151/vfs-jewels/kadas/sjgx0amsghs96eljm15j.jpg",
     "rating": "4.5",
     "reviews": 14,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 120
   },
   {
     "id": 524,
@@ -1910,13 +2019,14 @@
     "name": "VFS Designer Kada #95",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 309,
+    "mrp": 464,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211152/vfs-jewels/kadas/oxdyplnbe7whfl7otjyt.jpg",
     "rating": "4.6",
     "reviews": 44,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 186
   },
   {
     "id": 525,
@@ -1924,13 +2034,14 @@
     "name": "VFS Designer Kada #96",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 309,
+    "mrp": 464,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211153/vfs-jewels/kadas/syvksycu7wdql1kidj8h.jpg",
     "rating": "4.6",
     "reviews": 35,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 186
   },
   {
     "id": 526,
@@ -1938,13 +2049,14 @@
     "name": "VFS Designer Kada #97",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 315,
+    "mrp": 472,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211155/vfs-jewels/kadas/bfsrlqtqcmy7nsgq8mt4.jpg",
     "rating": "4.9",
     "reviews": 36,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 190
   },
   {
     "id": 527,
@@ -1952,13 +2064,14 @@
     "name": "VFS Designer Kada #98",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211156/vfs-jewels/kadas/nvrehptexkj9epgmfjl0.jpg",
     "rating": "4.8",
     "reviews": 31,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 528,
@@ -1966,13 +2079,14 @@
     "name": "VFS Designer Kada #99",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211158/vfs-jewels/kadas/dftxf1757xhqunyfubsv.jpg",
     "rating": "4.9",
     "reviews": 32,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 529,
@@ -1980,13 +2094,14 @@
     "name": "VFS Designer Kada #100",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211160/vfs-jewels/kadas/jnsxlebtds1i6dapmxvn.jpg",
     "rating": "4.7",
     "reviews": 28,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 530,
@@ -1994,13 +2109,14 @@
     "name": "VFS Designer Kada #101",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211161/vfs-jewels/kadas/jduh5zwcg6dzt89qapii.jpg",
     "rating": "4.7",
     "reviews": 13,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 531,
@@ -2008,13 +2124,14 @@
     "name": "VFS Designer Kada #102",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211163/vfs-jewels/kadas/yt8pt4njgccr1vkmmqgu.jpg",
     "rating": "4.6",
     "reviews": 33,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 532,
@@ -2022,13 +2139,14 @@
     "name": "VFS Designer Kada #103",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 307,
+    "mrp": 460,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211165/vfs-jewels/kadas/j0txmbamnuyfdroq9gc1.jpg",
     "rating": "4.6",
     "reviews": 44,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 185
   },
   {
     "id": 533,
@@ -2036,13 +2154,14 @@
     "name": "VFS Designer Kada #104",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211167/vfs-jewels/kadas/rd00vftbvqma4wu3okrw.jpg",
     "rating": "4.6",
     "reviews": 24,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 534,
@@ -2050,13 +2169,14 @@
     "name": "VFS Designer Kada #105",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 320,
+    "mrp": 480,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211168/vfs-jewels/kadas/w4zoiapqinwpeg6su4lg.jpg",
     "rating": "4.6",
     "reviews": 26,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 193
   },
   {
     "id": 535,
@@ -2064,13 +2184,14 @@
     "name": "VFS Designer Kada #106",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 352,
+    "mrp": 528,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211170/vfs-jewels/kadas/dxnumbke2t70qmnv9wxr.jpg",
     "rating": "4.6",
     "reviews": 39,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 212
   },
   {
     "id": 536,
@@ -2078,13 +2199,14 @@
     "name": "VFS Designer Kada #107",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 264,
+    "mrp": 396,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211171/vfs-jewels/kadas/swzncccgiaiiogkpdwhz.jpg",
     "rating": "4.7",
     "reviews": 46,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 159
   },
   {
     "id": 537,
@@ -2092,13 +2214,14 @@
     "name": "VFS Designer Kada #108",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 264,
+    "mrp": 396,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211172/vfs-jewels/kadas/g5uwsr7typneh8ldtqtp.jpg",
     "rating": "4.6",
     "reviews": 19,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 159
   },
   {
     "id": 538,
@@ -2106,13 +2229,14 @@
     "name": "VFS Designer Kada #109",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211174/vfs-jewels/kadas/gcbuud9ylj4shsekedxc.jpg",
     "rating": "4.9",
     "reviews": 46,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 539,
@@ -2120,13 +2244,14 @@
     "name": "VFS Designer Kada #110",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 264,
+    "mrp": 396,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211175/vfs-jewels/kadas/d4rfrhjl3s7lz8tbcuab.jpg",
     "rating": "4.7",
     "reviews": 19,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 159
   },
   {
     "id": 540,
@@ -2134,13 +2259,14 @@
     "name": "VFS Designer Kada #111",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 264,
+    "mrp": 396,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211176/vfs-jewels/kadas/gvrq4cmewj7q4msh8ztk.jpg",
     "rating": "4.7",
     "reviews": 22,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 159
   },
   {
     "id": 541,
@@ -2148,13 +2274,14 @@
     "name": "VFS Designer Kada #112",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211178/vfs-jewels/kadas/vpecnph0wblva9gveocd.jpg",
     "rating": "4.6",
     "reviews": 47,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 542,
@@ -2162,13 +2289,14 @@
     "name": "VFS Designer Kada #113",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 307,
+    "mrp": 460,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211179/vfs-jewels/kadas/bv477fwolfoytximnt2h.jpg",
     "rating": "4.6",
     "reviews": 44,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 185
   },
   {
     "id": 543,
@@ -2176,13 +2304,14 @@
     "name": "VFS Designer Kada #114",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 264,
+    "mrp": 396,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211180/vfs-jewels/kadas/hptowqxmxpvjatp14rfb.jpg",
     "rating": "4.6",
     "reviews": 31,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 159
   },
   {
     "id": 544,
@@ -2190,13 +2319,14 @@
     "name": "VFS Designer Kada #115",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 286,
+    "mrp": 429,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211182/vfs-jewels/kadas/libp9whpnbj62qkurnap.jpg",
     "rating": "4.8",
     "reviews": 27,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 172
   },
   {
     "id": 545,
@@ -2204,13 +2334,14 @@
     "name": "VFS Designer Kada #116",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 335,
+    "mrp": 502,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211183/vfs-jewels/kadas/dkpngrjfiduxzfvvvbd9.jpg",
     "rating": "4.8",
     "reviews": 17,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 202
   },
   {
     "id": 546,
@@ -2218,13 +2349,14 @@
     "name": "VFS Designer Kada #117",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211184/vfs-jewels/kadas/s6nc4gllofcctgemjkkc.jpg",
     "rating": "4.6",
     "reviews": 12,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 547,
@@ -2232,13 +2364,14 @@
     "name": "VFS Designer Kada #118",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 314,
+    "mrp": 471,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211185/vfs-jewels/kadas/yuvclk1gmf4l0u1nf1xm.jpg",
     "rating": "4.9",
     "reviews": 34,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 189
   },
   {
     "id": 548,
@@ -2246,13 +2379,14 @@
     "name": "VFS Designer Kada #119",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211187/vfs-jewels/kadas/nxjqulktdjkx77y19kh4.jpg",
     "rating": "4.9",
     "reviews": 31,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 549,
@@ -2260,13 +2394,14 @@
     "name": "VFS Designer Kada #120",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 307,
+    "mrp": 460,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211188/vfs-jewels/kadas/s41nzbqq6z9ajq2asdpk.jpg",
     "rating": "4.8",
     "reviews": 28,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 185
   },
   {
     "id": 550,
@@ -2274,13 +2409,14 @@
     "name": "VFS Designer Kada #121",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 264,
+    "mrp": 396,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211189/vfs-jewels/kadas/h2goxgh7weeimke1jy8g.jpg",
     "rating": "4.6",
     "reviews": 23,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 159
   },
   {
     "id": 551,
@@ -2288,13 +2424,14 @@
     "name": "VFS Designer Kada #122",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 307,
+    "mrp": 460,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211190/vfs-jewels/kadas/kn2tulsm8yldlehwdsvy.jpg",
     "rating": "4.6",
     "reviews": 41,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 185
   },
   {
     "id": 552,
@@ -2302,13 +2439,14 @@
     "name": "VFS Designer Kada #123",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 241,
+    "mrp": 362,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211192/vfs-jewels/kadas/no675z4bxnrafeeqpmse.jpg",
     "rating": "4.5",
     "reviews": 47,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 145
   },
   {
     "id": 553,
@@ -2316,13 +2454,14 @@
     "name": "VFS Designer Kada #124",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211193/vfs-jewels/kadas/srsde8o1udeyrmmtugms.jpg",
     "rating": "4.5",
     "reviews": 41,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 554,
@@ -2330,13 +2469,14 @@
     "name": "VFS Designer Kada #125",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 307,
+    "mrp": 460,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211194/vfs-jewels/kadas/ua2iowc02kmj8xb9rbau.jpg",
     "rating": "4.9",
     "reviews": 49,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 185
   },
   {
     "id": 555,
@@ -2344,13 +2484,14 @@
     "name": "VFS Designer Kada #126",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 277,
+    "mrp": 416,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211196/vfs-jewels/kadas/rccrd8kpr2lpzyabzl74.jpg",
     "rating": "4.6",
     "reviews": 11,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 167
   },
   {
     "id": 556,
@@ -2358,13 +2499,14 @@
     "name": "VFS Designer Kada #127",
     "cat": "kadas",
     "meta": "Premium Kada",
-    "price": 0,
-    "mrp": 0,
+    "price": 359,
+    "mrp": 538,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211197/vfs-jewels/kadas/aq01n0o8uoizbofgfoap.jpg",
     "rating": "4.7",
     "reviews": 44,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 216
   },
   {
     "id": 316,
@@ -2372,13 +2514,14 @@
     "name": "VFS Gold Chain #16",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 246,
+    "mrp": 369,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211633/vfs-jewels/chains/w1r1vs6tzl3adt6iywm6.jpg",
     "rating": "4.9",
     "reviews": 23,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 148
   },
   {
     "id": 317,
@@ -2386,13 +2529,14 @@
     "name": "VFS Gold Chain #17",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 246,
+    "mrp": 369,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211634/vfs-jewels/chains/tvadpgrbtaslxksrsxhq.jpg",
     "rating": "4.8",
     "reviews": 48,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 148
   },
   {
     "id": 318,
@@ -2400,13 +2544,14 @@
     "name": "VFS Gold Chain #18",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 246,
+    "mrp": 369,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211636/vfs-jewels/chains/cf1pazy1evhwgkapqggl.jpg",
     "rating": "4.6",
     "reviews": 25,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 148
   },
   {
     "id": 319,
@@ -2414,13 +2559,14 @@
     "name": "VFS Gold Chain #19",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 246,
+    "mrp": 369,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211637/vfs-jewels/chains/uxnsqnsjxodjpwwy0p0l.jpg",
     "rating": "4.6",
     "reviews": 18,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 148
   },
   {
     "id": 320,
@@ -2428,13 +2574,14 @@
     "name": "VFS Gold Chain #20",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 208,
+    "mrp": 312,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211638/vfs-jewels/chains/hssemz1v4g2gvurmeycg.jpg",
     "rating": "4.8",
     "reviews": 29,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 125
   },
   {
     "id": 321,
@@ -2442,13 +2589,14 @@
     "name": "VFS Gold Chain #21",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 246,
+    "mrp": 369,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211639/vfs-jewels/chains/gz6re64howgnmnmyfhgx.jpg",
     "rating": "4.7",
     "reviews": 11,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 148
   },
   {
     "id": 322,
@@ -2456,13 +2604,14 @@
     "name": "VFS Gold Chain #22",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 193,
+    "mrp": 290,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211641/vfs-jewels/chains/besvhrmzmaoixvrkqkoq.jpg",
     "rating": "4.5",
     "reviews": 29,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 116
   },
   {
     "id": 323,
@@ -2470,13 +2619,14 @@
     "name": "VFS Gold Chain #23",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 246,
+    "mrp": 369,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211642/vfs-jewels/chains/uddemzgeeedlvgpuo2iq.jpg",
     "rating": "4.8",
     "reviews": 47,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 148
   },
   {
     "id": 324,
@@ -2484,13 +2634,14 @@
     "name": "VFS Gold Chain #24",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 246,
+    "mrp": 369,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211643/vfs-jewels/chains/rlfmt6icawkmnkc5p24z.jpg",
     "rating": "4.6",
     "reviews": 14,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 148
   },
   {
     "id": 325,
@@ -2498,13 +2649,14 @@
     "name": "VFS Gold Chain #25",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 246,
+    "mrp": 369,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211645/vfs-jewels/chains/vmlkmwsctkqz9xdndpbv.jpg",
     "rating": "4.6",
     "reviews": 29,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 148
   },
   {
     "id": 326,
@@ -2512,13 +2664,14 @@
     "name": "VFS Gold Chain #26",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 208,
+    "mrp": 312,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211646/vfs-jewels/chains/va2d3xtaf6sy4stiphjf.jpg",
     "rating": "4.7",
     "reviews": 47,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 125
   },
   {
     "id": 327,
@@ -2526,13 +2679,14 @@
     "name": "VFS Gold Chain #27",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 208,
+    "mrp": 312,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211648/vfs-jewels/chains/gxgoeqrzyceyajjan43y.jpg",
     "rating": "4.8",
     "reviews": 26,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 125
   },
   {
     "id": 328,
@@ -2540,13 +2694,14 @@
     "name": "VFS Gold Chain #28",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 329,
+    "mrp": 494,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211649/vfs-jewels/chains/fu6qzm4mv6bkzbcwivad.jpg",
     "rating": "4.5",
     "reviews": 41,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 198
   },
   {
     "id": 329,
@@ -2554,13 +2709,14 @@
     "name": "VFS Gold Chain #29",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 208,
+    "mrp": 312,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211651/vfs-jewels/chains/eelz77ogczpsqclevlu9.jpg",
     "rating": "4.8",
     "reviews": 18,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 125
   },
   {
     "id": 330,
@@ -2568,13 +2724,14 @@
     "name": "VFS Gold Chain #30",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 196,
+    "mrp": 294,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211653/vfs-jewels/chains/qk3ywqm2x63jvk0sd4xr.jpg",
     "rating": "4.8",
     "reviews": 39,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 118
   },
   {
     "id": 331,
@@ -2582,13 +2739,14 @@
     "name": "VFS Gold Chain #31",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 196,
+    "mrp": 294,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211654/vfs-jewels/chains/itt1cwxsb7rvrbdw5sv3.jpg",
     "rating": "4.8",
     "reviews": 33,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 118
   },
   {
     "id": 332,
@@ -2596,13 +2754,14 @@
     "name": "VFS Gold Chain #32",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 246,
+    "mrp": 369,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211655/vfs-jewels/chains/avz8izw1trx4dgh20txj.jpg",
     "rating": "4.9",
     "reviews": 21,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 148
   },
   {
     "id": 333,
@@ -2610,13 +2769,14 @@
     "name": "VFS Gold Chain #33",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 208,
+    "mrp": 312,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211657/vfs-jewels/chains/i57lh93kt0m3nw1kpqfq.jpg",
     "rating": "4.6",
     "reviews": 34,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 125
   },
   {
     "id": 334,
@@ -2624,13 +2784,14 @@
     "name": "VFS Gold Chain #34",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 246,
+    "mrp": 369,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211658/vfs-jewels/chains/yfwi3t1p2x8wj9zwrra8.jpg",
     "rating": "4.7",
     "reviews": 35,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 148
   },
   {
     "id": 335,
@@ -2638,13 +2799,14 @@
     "name": "VFS Gold Chain #35",
     "cat": "chains",
     "meta": "Premium Chain",
-    "price": 0,
-    "mrp": 0,
+    "price": 246,
+    "mrp": 369,
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1784211659/vfs-jewels/chains/zrvh5mlrcxpxo6v23r9j.jpg",
     "rating": "4.9",
     "reviews": 28,
     "badge": "Exclusive",
-    "priceOnRequest": true
+    "priceOnRequest": false,
+    "wholesalePrice": 148
   },
   {
     "id": 336,
