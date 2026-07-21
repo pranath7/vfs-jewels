@@ -82,7 +82,7 @@
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.gstatic.com https://*.firebaseio.com https://*.googleapis.com https://api.cloudinary.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://api.cloudinary.com https://*.razorpay.com https://cdn.razorpay.com; media-src 'self' blob: https://res.cloudinary.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com https://apis.google.com https://*.razorpay.com; connect-src 'self' https://*.gstatic.com https://*.firebaseio.com https://*.googleapis.com https://api.cloudinary.com https://*.firebaseapp.com https://cdnjs.cloudflare.com https://unpkg.com https://*.razorpay.com; frame-src 'self' https://*.instagram.com https://www.instagram.com https://*.firebaseapp.com https://*.razorpay.com; base-uri 'self'; object-src 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.gstatic.com https://*.firebaseio.com https://*.googleapis.com https://api.cloudinary.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://api.cloudinary.com https://*.razorpay.com https://cdn.razorpay.com; media-src 'self' blob: https://res.cloudinary.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com https://apis.google.com https://*.razorpay.com; connect-src 'self' https://*.gstatic.com https://*.firebaseio.com https://*.googleapis.com https://api.cloudinary.com https://*.firebaseapp.com https://cdnjs.cloudflare.com https://unpkg.com https://*.razorpay.com https://*.google.com; frame-src 'self' https://*.instagram.com https://www.instagram.com https://*.firebaseapp.com https://*.razorpay.com https://*.google.com; base-uri 'self'; object-src 'none';">
   <!-- Firebase Compatibility SDKs — deferred so they don't block render -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js" defer></script>
@@ -1431,7 +1431,7 @@
   </div>
 
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="wholesale.js?v=42" defer></script>
+  <script src="wholesale.js?v=43" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
