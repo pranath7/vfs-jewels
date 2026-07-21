@@ -1821,6 +1821,8 @@ window.printPhotoSlip = async function(orderId) {
     const stockBefore = item.stockBefore !== undefined ? item.stockBefore : 'N/A';
     const stockAfter = item.stockAfter !== undefined ? item.stockAfter : 'N/A';
     const skuStr = item.sku || 'N/A';
+    // Use direct Cloudinary URL (no transforms) so crossorigin works
+    const imgSrc = (item.img || '').replace(/\/upload\/[^/]+\//, '/upload/');
 
     return `
       <div class="dispatch-slip-page" style="page-break-after: always; box-sizing: border-box; padding: 40px; background: #ffffff; color: #000000; font-family: 'Lato', sans-serif; min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between;">
@@ -1836,7 +1838,7 @@ window.printPhotoSlip = async function(orderId) {
         </div>
 
         <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 40px;">
-          <img src="${item.img || 'assets/placeholder.png'}" style="max-width: 450px; max-height: 450px; object-fit: contain; border: 1px solid #eee; padding: 10px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" alt="Product Image">
+          <img src="${imgSrc}" crossorigin="anonymous" onerror="this.onerror=null;this.style.display='none'" style="max-width: 450px; max-height: 450px; object-fit: contain; border: 1px solid #eee; padding: 10px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" alt="Product Image">
         </div>
 
         <div style="background: #fdfefe; border: 1px solid #ebf5fb; border-left: 5px solid #2980b9; padding: 25px; border-radius: 6px;">
@@ -1863,7 +1865,7 @@ window.printPhotoSlip = async function(orderId) {
   const printContainer = $('#invoicePrintContainer');
   printContainer.innerHTML = pagesHtml;
 
-  // Wait for all images inside printContainer to load before triggering window.print()
+  // Wait for all images inside printContainer to load
   const images = printContainer.querySelectorAll('img');
   const loadPromises = Array.from(images).map(img => {
     if (img.complete) return Promise.resolve();
@@ -1872,10 +1874,45 @@ window.printPhotoSlip = async function(orderId) {
       img.addEventListener('error', resolve);
     });
   });
-
   await Promise.all(loadPromises);
-  window.print();
+
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    // On mobile: use html2canvas to create a downloadable PNG
+    adminToast('Generating slip image...');
+    try {
+      const pages = printContainer.querySelectorAll('.dispatch-slip-page');
+      for (let i = 0; i < pages.length; i++) {
+        const canvas = await html2canvas(pages[i], {
+          scale: 2,
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: '#ffffff',
+          scrollY: 0,
+          scrollX: 0
+        });
+        const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.92));
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `VFS_Slip_${order.id}_Item${i + 1}.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+      }
+      adminToast(`✅ Slip downloaded (${pages.length} image${pages.length > 1 ? 's' : ''})!`);
+    } catch (err) {
+      console.error('Mobile slip generation failed:', err);
+      adminToast('❌ Slip generation failed. Please try on desktop.');
+    }
+  } else {
+    // Desktop: use system print dialog
+    window.print();
+  }
 };
+
 
 // ── Reload Action ──
 $('#btnReload').addEventListener('click', () => {

@@ -857,7 +857,7 @@ function renderProducts(filter) {
                   <svg viewBox="0 0 24 24" fill="${isWL ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
                 </button>
     <div class="p-img">
-      <img src="${clOpt(p.img, 600)}" alt="${p.name}" loading="lazy">
+      <img src="${clOpt(p.img, 600)}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src='${p.img}'" crossorigin="anonymous">
       ${quickActionHtml}
     </div>
                 <div class="p-info">
@@ -934,6 +934,22 @@ function renderProducts(filter) {
   });
 
   container.querySelectorAll('.p-card').forEach(card => {
+    // Touch-aware tap: only open PDP if finger didn't scroll (delta < 12px)
+    let _touchStartX = 0, _touchStartY = 0;
+    card.addEventListener('touchstart', (e) => {
+      _touchStartX = e.changedTouches[0].clientX;
+      _touchStartY = e.changedTouches[0].clientY;
+    }, { passive: true });
+    card.addEventListener('touchend', (e) => {
+      const dx = Math.abs(e.changedTouches[0].clientX - _touchStartX);
+      const dy = Math.abs(e.changedTouches[0].clientY - _touchStartY);
+      if (dx < 12 && dy < 12) {
+        e.preventDefault();
+        const id = +card.dataset.id;
+        openPDP(id);
+      }
+    });
+    // Desktop click
     card.addEventListener('click', () => {
       const id = +card.dataset.id;
       openPDP(id);
@@ -1083,7 +1099,21 @@ function loadNextBatch(cat, list, scrollRow) {
       });
     }
 
-    // 4. Click card to open modal details
+    // 4. Click card to open modal details (touch-aware for mobile)
+    let _batchTouchX = 0, _batchTouchY = 0;
+    card.addEventListener('touchstart', (e) => {
+      _batchTouchX = e.changedTouches[0].clientX;
+      _batchTouchY = e.changedTouches[0].clientY;
+    }, { passive: true });
+    card.addEventListener('touchend', (e) => {
+      const dx = Math.abs(e.changedTouches[0].clientX - _batchTouchX);
+      const dy = Math.abs(e.changedTouches[0].clientY - _batchTouchY);
+      if (dx < 12 && dy < 12) {
+        e.preventDefault();
+        const id = +card.dataset.id;
+        openPDP(id);
+      }
+    });
     card.addEventListener('click', () => {
       const id = +card.dataset.id;
       openPDP(id);
@@ -1806,7 +1836,7 @@ if (checkPinBtn) {
     // Simulate check
     const days = 2 + Math.floor(Math.random() * 4);
     res.className = 'pin-result ok';
-    res.innerHTML = `✓ Delivery available! Estimated ${days}–${days + 2} business days.<br><span style="font-weight:700;color:var(--color-secondary)">Express Shipping: ₹90 applies!</span>`;
+    res.innerHTML = `✓ Delivery available! Estimated ${days}–${days + 2} business days.<br><span style="font-weight:700;color:var(--color-secondary)">Shipping: ₹90 (≤₹5k) · ₹120 (₹5–10k) · ₹190 (>₹10k)</span>`;
   });
 }
 
@@ -1819,18 +1849,23 @@ function openCheckout() {
     toast('Your cart is empty! Add products first.');
     return;
   }
-  
+
+  // MOV: ₹3,000 for all orders
+  const fullCatalog = getFullCatalog();
+  const cartSubtotal = cart.reduce((sum, item) => {
+    const p = fullCatalog.find(x => x.id === item.id);
+    if (!p) return sum;
+    return sum + (getCurrentProductPrice(p) * item.qty);
+  }, 0);
+
+  if (cartSubtotal < 3000) {
+    toast(`Minimum order value is ₹3,000. Add ${fmt(3000 - cartSubtotal)} more to proceed.`);
+    return;
+  }
+
   if (shoppingMode === 'wholesale') {
-    const fullCatalog = getFullCatalog();
-    const subtotal = cart.reduce((sum, item) => {
-      const p = fullCatalog.find(x => x.id === item.id);
-      if (!p) return sum;
-      const price = getCurrentProductPrice(p);
-      return sum + (price * item.qty);
-    }, 0);
-    
-    if (subtotal < 4000) {
-      toast(`Wholesale MOQ is ₹4,000. Add ${fmt(4000 - subtotal)} more to proceed.`);
+    if (cartSubtotal < 3000) {
+      toast(`Wholesale MOQ is ₹3,000. Add ${fmt(3000 - cartSubtotal)} more to proceed.`);
       return;
     }
   }
@@ -2009,7 +2044,8 @@ $('#coForm').addEventListener('submit', async (e) => {
   const itemsList = await Promise.all(stockPromises);
   
   const gstAmount = Math.round(subtotal * 0.03);
-  const shippingCost = 90;
+  // Dynamic tiered delivery charges
+  const shippingCost = subtotal > 10000 ? 190 : subtotal > 5000 ? 120 : 90;
   
   // Calculate Wholesale Advance Deduction if applicable
   let advanceDeduction = 0;
