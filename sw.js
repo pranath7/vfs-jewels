@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vfs-storefront-v44';
+const CACHE_NAME = 'vfs-storefront-v46';
 const ASSETS = [
   '/',
   '/index.html',
@@ -35,7 +35,8 @@ self.addEventListener('fetch', e => {
     e.request.method !== 'GET' || 
     e.request.url.includes('googleapis.com') || 
     e.request.url.includes('firebaseio.com') ||
-    e.request.url.includes('api.cloudinary.com')
+    e.request.url.includes('api.cloudinary.com') ||
+    e.request.url.includes('res.cloudinary.com') // Exclude Cloudinary CDN from SW caching
   ) {
     return; // Pass through to network natively
   }
@@ -43,8 +44,8 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true }).then(cached => {
       return cached || fetch(e.request).then(res => {
-        // Cache new static assets dynamically (like products images)
-        if (e.request.url.includes('/assets/') || e.request.url.includes('res.cloudinary.com')) {
+        // Cache new static assets dynamically (only local assets, not Cloudinary)
+        if (e.request.url.includes('/assets/')) {
           const resClone = res.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(e.request, resClone));
         }
