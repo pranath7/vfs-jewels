@@ -2246,6 +2246,24 @@ async function finalizeOrderAndProceed(paymentMethod, transactionId = '') {
     // Trigger local products view re-render to reflect OOS / Sold Out statuses
     renderProducts(currentFilter);
 
+    // ── AUTO SEND WHATSAPP ORDER CONFIRMATION TO CUSTOMER ──
+    try {
+      const waResponse = await fetch('/api/send-order-whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(activeCheckoutOrder)
+      });
+      const waResult = await waResponse.json();
+      if (waResult.success) {
+        console.log('✅ WhatsApp order confirmation sent to customer:', waResult.message);
+      } else {
+        console.warn('⚠️ WhatsApp notification failed (order still placed):', waResult.error || waResult.details);
+      }
+    } catch (waErr) {
+      // Non-blocking: order is already placed, WhatsApp notification is a bonus
+      console.warn('⚠️ WhatsApp notification skipped (network issue):', waErr.message);
+    }
+
   } catch (err) {
     console.error("Order submission, wallet debit, or stock deduction failed:", err);
   }
