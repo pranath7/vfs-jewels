@@ -6,10 +6,14 @@
 
 const https = require('https');
 
-// WhatsApp Cloud API Configuration
-const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || 'EAATYq2BlZCkUBSJIJlN1fIkouGwutZCESHmv0LM6dnd4iXzFe8nmu3q0wrZBoHYbcOlrikZAmiSy5JP9c3pDnURidrwMxz6XtZBASZBTEIM8cMsI3PGAKW65SdBxP6xQcKaIy9PXUDEUKTZBjwvHoIlYp1Q3DPs5Q20JpwReaxYisKqS9Ou3SCn2a5zU2vaUCCmtQZDZD';
-const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || '1306137785911069';
+// WhatsApp Cloud API Configuration — MUST be set as Vercel Environment Variables
+const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
 const VERSION = 'v19.0';
+
+if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
+  console.error('❌ WHATSAPP_TOKEN and PHONE_NUMBER_ID must be set as environment variables in Vercel.');
+}
 
 function sendWhatsAppMessage(to, messageBody) {
   return new Promise((resolve, reject) => {
@@ -69,6 +73,11 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // Ensure API credentials are configured
+    if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
+      return res.status(500).json({ error: 'WhatsApp API credentials not configured. Set WHATSAPP_TOKEN and PHONE_NUMBER_ID in Vercel Environment Variables.' });
+    }
+
     const order = req.body;
 
     // Validate required fields
