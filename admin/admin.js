@@ -3613,31 +3613,52 @@ async function loadWhatsAppLogs() {
   container.innerHTML = `<div style="text-align:center; padding:40px; color:#8e8e93; font-size:1.3rem;">Loading WhatsApp activity logs...</div>`;
 
   try {
-    const listUrl = `https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/whatsapp_logs`;
-    const res = await fetch(listUrl);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    const docs = data.documents || [];
+    let logs = [];
 
-    if (docs.length === 0) {
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
+      const snap = await window.db.collection('whatsapp_logs').get();
+      snap.forEach(doc => {
+        const d = doc.data();
+        logs.push({
+          id: doc.id,
+          timestamp: d.timestamp || 0,
+          recipient: d.recipient || 'Customer',
+          phone: d.phone || '',
+          type: d.type || 'Notification',
+          orderId: d.orderId || '',
+          status: d.status || 'SENT',
+          messageId: d.messageId || '',
+          preview: d.preview || ''
+        });
+      });
+      logs.sort((a, b) => b.timestamp - a.timestamp);
+    } else {
+      const listUrl = `https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/whatsapp_logs`;
+      const res = await fetch(listUrl);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const docs = data.documents || [];
+
+      logs = docs.map(d => {
+        const f = d.fields || {};
+        return {
+          id: d.name.split('/').pop(),
+          timestamp: parseInt(f.timestamp?.integerValue || '0'),
+          recipient: f.recipient?.stringValue || 'Customer',
+          phone: f.phone?.stringValue || '',
+          type: f.type?.stringValue || 'Notification',
+          orderId: f.orderId?.stringValue || '',
+          status: f.status?.stringValue || 'SENT',
+          messageId: f.messageId?.stringValue || '',
+          preview: f.preview?.stringValue || ''
+        };
+      }).sort((a, b) => b.timestamp - a.timestamp);
+    }
+
+    if (logs.length === 0) {
       container.innerHTML = `<div style="text-align:center; padding:40px; color:#8e8e93; font-size:1.3rem;">No WhatsApp logs recorded yet.</div>`;
       return;
     }
-
-    const logs = docs.map(d => {
-      const f = d.fields || {};
-      return {
-        id: d.name.split('/').pop(),
-        timestamp: parseInt(f.timestamp?.integerValue || '0'),
-        recipient: f.recipient?.stringValue || 'Customer',
-        phone: f.phone?.stringValue || '',
-        type: f.type?.stringValue || 'Notification',
-        orderId: f.orderId?.stringValue || '',
-        status: f.status?.stringValue || 'SENT',
-        messageId: f.messageId?.stringValue || '',
-        preview: f.preview?.stringValue || ''
-      };
-    }).sort((a, b) => b.timestamp - a.timestamp);
 
     window._allWaLogsCache = logs;
     filterAndRenderWaLogs();
