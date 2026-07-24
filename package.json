@@ -1,0 +1,9 @@
+{
+  "name": "vfs-jewels",
+  "version": "1.0.0",
+  "description": "VFS Jewels Storefront & WhatsApp API",
+  "main": "app.js",
+  "dependencies": {
+    "pdfkit": "^0.15.0"
+  }
+}

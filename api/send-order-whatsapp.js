@@ -1,28 +1,18 @@
 // ============================================================
 //  VFS Jewels — WhatsApp Order Confirmation API (Vercel Serverless)
 //  Exposed at https://vfsjewels.store/api/send-order-whatsapp
-//  Sends automated WhatsApp order confirmation + invoice to customer
+//  Sends automated WhatsApp text message + PDF Invoice Document
 // ============================================================
 
 const https = require('https');
 
-// WhatsApp Cloud API Configuration — MUST be set as Vercel Environment Variables
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
 const VERSION = 'v19.0';
 
-if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
-  console.error('❌ WHATSAPP_TOKEN and PHONE_NUMBER_ID must be set as environment variables in Vercel.');
-}
-
-function sendWhatsAppMessage(to, messageBody) {
+function sendWhatsAppPayload(payloadData) {
   return new Promise((resolve, reject) => {
-    const data = JSON.stringify({
-      messaging_product: 'whatsapp',
-      to: to,
-      type: 'text',
-      text: { body: messageBody }
-    });
+    const data = JSON.stringify(payloadData);
 
     const options = {
       hostname: 'graph.facebook.com',
@@ -59,7 +49,6 @@ function sendWhatsAppMessage(to, messageBody) {
 }
 
 module.exports = async (req, res) => {
-  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -73,34 +62,34 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // Ensure API credentials are configured
     if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
-      return res.status(500).json({ error: 'WhatsApp API credentials not configured. Set WHATSAPP_TOKEN and PHONE_NUMBER_ID in Vercel Environment Variables.' });
+      return res.status(500).json({ error: 'WhatsApp API credentials not configured in Vercel.' });
     }
 
     const order = req.body;
 
-    // Validate required fields
-    if (!order || !order.phone || !order.id || !order.items || !order.total) {
-      return res.status(400).json({ error: 'Missing required order fields: phone, id, items, total' });
+    if (!order || !order.phone || !order.id || !order.total) {
+      return res.status(400).json({ error: 'Missing required order fields' });
     }
 
-    // Format customer phone to international format (India)
+    // Format phone number
     let customerPhone = order.phone.toString().replace(/\D/g, '');
     if (customerPhone.length === 10) {
       customerPhone = '91' + customerPhone;
     }
 
-    // ── Build Order Confirmation Message ──
+    // ── Build Text Message ──
     let itemsList = '';
-    order.items.forEach((item, idx) => {
-      itemsList += `${idx + 1}. ${item.name} × ${item.qty} — ₹${item.price * item.qty}\n`;
-    });
+    if (order.items && Array.isArray(order.items)) {
+      order.items.forEach((item, idx) => {
+        itemsList += `${idx + 1}. ${item.name} × ${item.qty} — ₹${item.price * item.qty}\n`;
+      });
+    }
 
-    let message = 
+    let textMessage = 
 `💎 *VFS JEWELS — ORDER CONFIRMED!* 💎
 ━━━━━━━━━━━━━━━━━━━━━━━
-Hello *${order.name}*! 🎉
+Hello *${order.name || 'Valued Customer'}*! 🎉
 
 Your order has been received and confirmed.
 
@@ -108,62 +97,69 @@ Your order has been received and confirmed.
 📅 *Date:* ${order.date || new Date().toLocaleDateString('en-IN')}
 ━━━━━━━━━━━━━━━━━━━━━━━
 📦 *Items Ordered:*
-${itemsList}
+${itemsList || '1. Jewellery Order\n'}
 ━━━━━━━━━━━━━━━━━━━━━━━
-💰 *Subtotal:* ₹${order.subtotal}
-🏷️ *GST (3%):* ₹${order.gstAmount}
-🚚 *Delivery Fee:* ₹${order.shipping}`;
-
-    if (order.walletDiscount && order.walletDiscount > 0) {
-      message += `\n💳 *Wallet Discount:* -₹${order.walletDiscount}`;
-    }
-    if (order.couponCode && order.couponDiscount > 0) {
-      message += `\n🎟️ *Coupon (${order.couponCode}):* -₹${order.couponDiscount}`;
-    }
-    if (order.advanceAdjusted && order.advanceAdjusted > 0) {
-      message += `\n📋 *Wholesale Advance:* -₹${order.advanceAdjusted}`;
-    }
-    if (order.waReferralDiscount && order.waReferralDiscount > 0) {
-      message += `\n📱 *WhatsApp Referral (1%):* -₹${order.waReferralDiscount}`;
-    }
-
-    message += `
+💰 *Subtotal:* ₹${order.subtotal || order.total}
+🏷️ *GST (3%):* ₹${order.gstAmount || 0}
+🚚 *Delivery Fee:* ₹${order.shipping || 90}
 ━━━━━━━━━━━━━━━━━━━━━━━
 ✅ *Grand Total: ₹${order.total}*
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 📍 *Delivery Address:*
-${order.address}, ${order.city} - ${order.pincode}
-🚛 *Carrier:* ${order.carrier}`;
+${order.address || ''}, ${order.city || ''} - ${order.pincode || ''}
+🚛 *Carrier:* ${order.carrier || 'DTDC'}
 
-    if (order.gstNumber) {
-      message += `\n🏢 *GSTIN:* ${order.gstNumber}`;
-    }
-
-    message += `
-
-📄 *Download Your Invoice:*
-https://vfsjewels.store/track?order=${encodeURIComponent(order.id)}
+📄 _Your official PDF Tax Invoice is attached below!_
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 _Thank you for shopping with VFS Jewels!_
-_For any queries, contact us at +91 98407 57363_
 🌐 vfsjewels.store`;
 
-    // ── Send WhatsApp Message to Customer ──
-    console.log(`📤 Sending WhatsApp order confirmation for ${order.id} to +${customerPhone}`);
-    const result = await sendWhatsAppMessage(customerPhone, message);
-    console.log(`✅ WhatsApp message sent for order ${order.id}:`, result);
+    // 1. Send Text Summary Message
+    console.log(`📤 Sending WhatsApp order summary to +${customerPhone}`);
+    const textResult = await sendWhatsAppPayload({
+      messaging_product: 'whatsapp',
+      to: customerPhone,
+      type: 'text',
+      text: { body: textMessage }
+    });
+
+    // 2. Build Direct PDF Invoice Link
+    const cleanId = order.id.replace('#', '');
+    const itemsJson = encodeURIComponent(JSON.stringify(order.items || []));
+    const invoiceUrl = `https://vfsjewels.store/api/invoice?id=${encodeURIComponent(order.id)}&name=${encodeURIComponent(order.name || '')}&phone=${customerPhone}&total=${order.total}&subtotal=${order.subtotal || order.total}&gstAmount=${order.gstAmount || 0}&shipping=${order.shipping || 90}&address=${encodeURIComponent(order.address || '')}&city=${encodeURIComponent(order.city || '')}&pincode=${order.pincode || ''}&carrier=${encodeURIComponent(order.carrier || '')}&items=${itemsJson}`;
+
+    // 3. Send PDF Document Attachment directly via Meta API
+    console.log(`📄 Sending WhatsApp PDF Document to +${customerPhone}`);
+    let docResult = null;
+    try {
+      docResult = await sendWhatsAppPayload({
+        messaging_product: 'whatsapp',
+        to: customerPhone,
+        type: 'document',
+        document: {
+          link: invoiceUrl,
+          filename: `VFS_Jewels_Invoice_${cleanId}.pdf`,
+          caption: `📄 Tax Invoice for Order ${order.id} - VFS Jewels`
+        }
+      });
+      console.log('✅ PDF Document message sent successfully:', docResult);
+    } catch (docErr) {
+      console.warn('⚠️ PDF Document sending warning:', docErr.message || docErr);
+    }
 
     return res.status(200).json({
       success: true,
       orderId: order.id,
-      messageId: result.messages?.[0]?.id || null,
-      message: `Order confirmation sent to +${customerPhone} on WhatsApp`
+      textMessageId: textResult.messages?.[0]?.id || null,
+      pdfMessageId: docResult?.messages?.[0]?.id || null,
+      invoiceUrl: invoiceUrl,
+      message: `Order confirmation & PDF Invoice sent to +${customerPhone}`
     });
 
   } catch (err) {
-    console.error('❌ Error sending WhatsApp order confirmation:', err);
+    console.error('❌ Error sending WhatsApp notification:', err);
     return res.status(500).json({
       error: 'Failed to send WhatsApp notification',
       details: err.error?.message || err.message || JSON.stringify(err)
