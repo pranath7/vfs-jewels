@@ -5101,6 +5101,21 @@ function setupShoppingMode() {
                 localStorage.setItem('vfs_wholesale_users', JSON.stringify(mockUsers));
                 saveState();
 
+                // ── SEND AUTOMATED WHATSAPP WELCOME MESSAGE ──
+                try {
+                  fetch('https://www.vfsjewels.store/api/send-wholesale-welcome', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      name: wholesaleUser.name || 'Reseller',
+                      shopName: wholesaleUser.shopName || '',
+                      phone: wholesaleUser.phone
+                    })
+                  }).then(r => r.json()).then(res => {
+                    console.log('✅ Wholesale Welcome WhatsApp sent:', res);
+                  }).catch(err => console.warn('WhatsApp welcome notification warning:', err));
+                } catch(e) {}
+
                 alert("🎉 Payment successful! Your Business Club membership has been activated and wholesale prices are unlocked!");
                 
                 // Close the lock overlay using the CORRECT element ID
