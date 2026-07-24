@@ -1,7 +1,7 @@
 // ============================================================
 //  VFS Jewels — WhatsApp Order Confirmation API (Vercel Serverless)
-//  Exposed at https://vfsjewels.store/api/send-order-whatsapp
-//  Sends automated WhatsApp text message + PDF Invoice Document
+//  Exposed at https://www.vfsjewels.store/api/send-order-whatsapp
+//  Sends automated WhatsApp text summary + PDF Tax Invoice Document
 // ============================================================
 
 const https = require('https');
@@ -53,9 +53,7 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -125,10 +123,9 @@ _Thank you for shopping with VFS Jewels!_
       text: { body: textMessage }
     });
 
-    // 2. Build Direct PDF Invoice Link
+    // 2. Build Direct PDF Invoice Link (using www.vfsjewels.store to avoid 308 redirects)
     const cleanId = order.id.replace('#', '');
-    const itemsJson = encodeURIComponent(JSON.stringify(order.items || []));
-    const invoiceUrl = `https://vfsjewels.store/api/invoice?id=${encodeURIComponent(order.id)}&name=${encodeURIComponent(order.name || '')}&phone=${customerPhone}&total=${order.total}&subtotal=${order.subtotal || order.total}&gstAmount=${order.gstAmount || 0}&shipping=${order.shipping || 90}&address=${encodeURIComponent(order.address || '')}&city=${encodeURIComponent(order.city || '')}&pincode=${order.pincode || ''}&carrier=${encodeURIComponent(order.carrier || '')}&items=${itemsJson}`;
+    const invoiceUrl = `https://www.vfsjewels.store/api/invoice?id=${encodeURIComponent(order.id)}&name=${encodeURIComponent(order.name || '')}&phone=${customerPhone}&total=${order.total}&subtotal=${order.subtotal || order.total}&gstAmount=${order.gstAmount || 0}&shipping=${order.shipping || 90}&address=${encodeURIComponent(order.address || '')}&city=${encodeURIComponent(order.city || '')}&pincode=${order.pincode || ''}&carrier=${encodeURIComponent(order.carrier || '')}`;
 
     // 3. Send PDF Document Attachment directly via Meta API
     console.log(`📄 Sending WhatsApp PDF Document to +${customerPhone}`);
