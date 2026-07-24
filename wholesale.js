@@ -2042,8 +2042,7 @@ $('#coForm').addEventListener('submit', async (e) => {
   // Calculate Wholesale Advance Deduction if applicable
   let advanceDeduction = 0;
   if (shoppingMode === 'wholesale') {
-    const isFirst = !wholesaleUser || wholesaleUser.ordersCount === 0;
-    advanceDeduction = isFirst ? 1000 : 500;
+    advanceDeduction = 1;
   }
 
   // Calculate Coupon Discount (3% of subtotal)
@@ -4811,18 +4810,15 @@ function setupShoppingMode() {
       if (!wholesaleUser) {
         showLockScreen('royalScreenTerms');
       } else {
-        const isFirstOrder = !wholesaleUser.ordersCount || wholesaleUser.ordersCount === 0;
-        const amount = isFirstOrder ? 1000 : 500;
+        const amount = 1;
         window._royalAdvanceAmount = amount; // used by Razorpay handler
         const labelEl = $('#royalPayAmountLabel');
         const subtextEl = $('#royalUnlockSubtext');
         const btnLabelEl = $('#royalBtnPayLabel');
-        if (labelEl) labelEl.innerHTML = `₹${amount.toLocaleString('en-IN')}`;
-        if (btnLabelEl) btnLabelEl.innerHTML = `₹${amount.toLocaleString('en-IN')}`;
+        if (labelEl) labelEl.innerHTML = `₹${amount}`;
+        if (btnLabelEl) btnLabelEl.innerHTML = `₹${amount}`;
         if (subtextEl) {
-          subtextEl.innerHTML = isFirstOrder
-            ? 'Pay your initial ₹1,000 security advance to unlock wholesale prices.'
-            : 'Pay ₹500 advance to unlock wholesale prices for your next order.';
+          subtextEl.innerHTML = 'Pay ₹1 portal fee to unlock wholesale prices.';
         }
         showLockScreen('royalScreenUnlock');
       }
@@ -5025,9 +5021,7 @@ function setupShoppingMode() {
 
         const configKeyId = window.VFS_CONFIG?.razorpay?.keyId;
 
-        // 1. Fetch Razorpay Order ID from backend (dynamic amount: ₹1,000 new / ₹500 renewal)
-        const advanceAmount = window._royalAdvanceAmount ||
-          ((!wholesaleUser.ordersCount || wholesaleUser.ordersCount === 0) ? 1000 : 500);
+        const advanceAmount = window._royalAdvanceAmount || 1;
         const createRes = await fetch('/api/create-razorpay-order', {
           method: 'POST',
           headers: {

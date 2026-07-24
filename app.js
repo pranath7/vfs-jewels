@@ -2051,8 +2051,7 @@ $('#coForm').addEventListener('submit', async (e) => {
   // Calculate Wholesale Advance Deduction if applicable
   let advanceDeduction = 0;
   if (shoppingMode === 'wholesale') {
-    const isFirst = !wholesaleUser || wholesaleUser.ordersCount === 0;
-    advanceDeduction = isFirst ? 1000 : 500;
+    advanceDeduction = 1;
   }
 
   // Calculate Coupon Discount (3% of subtotal)
