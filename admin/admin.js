@@ -884,6 +884,8 @@ $$('.bottom-nav-btn').forEach(btn => {
       loadReports();
     } else if (activeTab === 'banners') {
       loadBanners();
+    } else if (activeTab === 'walogs') {
+      loadWhatsAppLogs();
     }
   });
 });
@@ -895,8 +897,13 @@ function updateHeaderTitles() {
   const smsPanel = $('#smsLogPanel');
   const courierStats = $('#courierDistributionArea');
   
-  const isAltTab = ['catalog', 'search', 'returns', 'moderation', 'customers', 'reports', 'banners'].includes(activeTab);
+  const isAltTab = ['catalog', 'search', 'returns', 'moderation', 'customers', 'reports', 'banners', 'walogs'].includes(activeTab);
   const isAltStages = ['preparing', 'ready', 'completed', 'cancelled'].includes(activeTab);
+  
+  if (activeTab === 'walogs') {
+    title.textContent = 'WhatsApp Notification Logs';
+    subtitle.textContent = 'Live tracking history of automated order confirmations, invoices, and welcome messages.';
+  }
   
   if (kpis) {
     kpis.style.display = (isAltTab || isAltStages) ? 'none' : 'grid';
@@ -3594,9 +3601,129 @@ window.triggerResetDatabase = async function() {
   localKeys.forEach(k => localStorage.removeItem(k));
 
   adminToast("Local cache reset complete! Reloading dashboard... 🌸");
+}
+
+// ── WHATSAPP NOTIFICATION LOGS MODULE ──
+window._allWaLogsCache = [];
+
+async function loadWhatsAppLogs() {
+  const container = $('#waLogsListContainer');
+  if (!container) return;
+
+  container.innerHTML = `<div style="text-align:center; padding:40px; color:#8e8e93; font-size:1.3rem;">Loading WhatsApp activity logs...</div>`;
+
+  try {
+    const listUrl = `https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/whatsapp_logs`;
+    const res = await fetch(listUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const docs = data.documents || [];
+
+    if (docs.length === 0) {
+      container.innerHTML = `<div style="text-align:center; padding:40px; color:#8e8e93; font-size:1.3rem;">No WhatsApp logs recorded yet.</div>`;
+      return;
+    }
+
+    const logs = docs.map(d => {
+      const f = d.fields || {};
+      return {
+        id: d.name.split('/').pop(),
+        timestamp: parseInt(f.timestamp?.integerValue || '0'),
+        recipient: f.recipient?.stringValue || 'Customer',
+        phone: f.phone?.stringValue || '',
+        type: f.type?.stringValue || 'Notification',
+        orderId: f.orderId?.stringValue || '',
+        status: f.status?.stringValue || 'SENT',
+        messageId: f.messageId?.stringValue || '',
+        preview: f.preview?.stringValue || ''
+      };
+    }).sort((a, b) => b.timestamp - a.timestamp);
+
+    window._allWaLogsCache = logs;
+    filterAndRenderWaLogs();
+  } catch (err) {
+    console.error('Failed to load WhatsApp logs:', err);
+    container.innerHTML = `<div style="text-align:center; padding:40px; color:#e74c3c; font-size:1.3rem;">Error loading WhatsApp logs: ${err.message}</div>`;
+  }
+}
+
+function filterAndRenderWaLogs() {
+  const search = ($('#waLogSearchInput')?.value || '').toLowerCase().trim();
+  const filterType = $('#waLogFilterSelect')?.value || 'all';
+
+  let filtered = window._allWaLogsCache || [];
+
+  if (filterType !== 'all') {
+    filtered = filtered.filter(l => l.type === filterType);
+  }
+
+  if (search) {
+    filtered = filtered.filter(l => 
+      l.phone.toLowerCase().includes(search) || 
+      l.orderId.toLowerCase().includes(search) ||
+      l.recipient.toLowerCase().includes(search)
+    );
+  }
+
+  renderWhatsAppLogsList(filtered);
+}
+
+function renderWhatsAppLogsList(logs) {
+  const container = $('#waLogsListContainer');
+  if (!container) return;
+
+  if (!logs || logs.length === 0) {
+    container.innerHTML = `<div style="text-align:center; padding:40px; color:#8e8e93; font-size:1.3rem;">No matching WhatsApp logs found.</div>`;
+    return;
+  }
+
+  const html = logs.map(log => {
+    const dateStr = log.timestamp ? new Date(log.timestamp).toLocaleString('en-IN') : 'N/A';
+    const statusColor = log.status === 'DELIVERED' ? '#27ae60' : log.status === 'READ' ? '#3498db' : '#f39c12';
+
+    return `
+      <div style="background:var(--color-surface-card); border:1px solid var(--color-border); border-radius:var(--rounded-md); padding:16px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="background:rgba(37,211,102,0.15); color:#25D366; font-weight:700; padding:3px 10px; border-radius:20px; font-size:1.15rem;">💬 ${log.type}</span>
+            ${log.orderId ? `<span style="background:#2a2a2e; color:#D4AF37; font-weight:700; padding:3px 8px; border-radius:4px; font-size:1.1rem;">Order ${log.orderId}</span>` : ''}
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; font-size:1.15rem;">
+            <span style="color:${statusColor}; font-weight:700; text-transform:uppercase;">● ${log.status}</span>
+            <span style="color:#8e8e93;">${dateStr}</span>
+          </div>
+        </div>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:4px;">
+          <div style="font-size:1.35rem; font-weight:700; color:#fff;">
+            👤 ${log.recipient} <span style="color:#8e8e93; font-weight:400; font-size:1.2rem;">(+${log.phone})</span>
+          </div>
+          <a href="https://wa.me/${log.phone}" target="_blank" rel="noopener" style="color:#25D366; font-size:1.2rem; text-decoration:none; font-weight:600;">Open Chat 📲</a>
+        </div>
+
+        <div style="font-size:1.25rem; color:#ccc; background:#121214; padding:10px 12px; border-radius:6px; margin-top:4px; font-family:var(--font-body);">
+          ${log.preview || 'WhatsApp notification delivered to customer.'}
+        </div>
+
+        ${log.messageId ? `<div style="font-size:1.05rem; color:#666; font-family:monospace;">Meta ID: ${log.messageId}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = html;
+}
+
+// Event Listeners for WhatsApp Logs
+document.addEventListener('DOMContentLoaded', () => {
+  const btnRefresh = $('#btnRefreshWaLogs');
+  const searchInput = $('#waLogSearchInput');
+  const filterSelect = $('#waLogFilterSelect');
+
+  if (btnRefresh) btnRefresh.addEventListener('click', loadWhatsAppLogs);
+  if (searchInput) searchInput.addEventListener('input', filterAndRenderWaLogs);
+  if (filterSelect) filterSelect.addEventListener('change', filterAndRenderWaLogs);
   
   setTimeout(() => {
     window.location.reload();
   }, 1000);
-};
-
+});

@@ -2,6 +2,7 @@
 //  VFS Jewels — WhatsApp Wholesale Welcome API (Vercel Serverless)
 //  Exposed at https://www.vfsjewels.store/api/send-wholesale-welcome
 //  Sends automated WhatsApp welcome notification when a user joins Wholesale Business Club
+//  Logs all outbound notifications to Firestore 'whatsapp_logs'
 // ============================================================
 
 const https = require('https');
@@ -9,6 +10,7 @@ const https = require('https');
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
 const VERSION = 'v19.0';
+const PROJECT_ID = 'vfs-jewellery';
 
 function sendWhatsAppPayload(payloadData) {
   return new Promise((resolve, reject) => {
@@ -43,6 +45,38 @@ function sendWhatsAppPayload(payloadData) {
     });
 
     req.on('error', reject);
+    req.write(data);
+    req.end();
+  });
+}
+
+function logToFirestore(logData) {
+  return new Promise((resolve) => {
+    const data = JSON.stringify({
+      fields: {
+        timestamp: { integerValue: Date.now() },
+        recipient: { stringValue: logData.recipient || 'Reseller' },
+        phone: { stringValue: logData.phone || '' },
+        type: { stringValue: logData.type || 'Wholesale Welcome' },
+        orderId: { stringValue: '' },
+        status: { stringValue: logData.status || 'SENT' },
+        messageId: { stringValue: logData.messageId || '' },
+        preview: { stringValue: (logData.preview || '').substring(0, 150) }
+      }
+    });
+
+    const options = {
+      hostname: 'firestore.googleapis.com',
+      path: `/v1/projects/${PROJECT_ID}/databases/(default)/documents/whatsapp_logs`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(data)
+      }
+    };
+
+    const req = https.request(options, () => resolve());
+    req.on('error', () => resolve());
     req.write(data);
     req.end();
   });
@@ -102,9 +136,19 @@ _Thank you for partnering with VFS Jewels!_
       text: { body: welcomeMessage }
     });
 
+    const msgId = result.messages?.[0]?.id || '';
+    await logToFirestore({
+      recipient: name,
+      phone: customerPhone,
+      type: 'Wholesale Welcome',
+      status: 'SENT',
+      messageId: msgId,
+      preview: `Wholesale membership activated for ${name} (${shopName})`
+    });
+
     return res.status(200).json({
       success: true,
-      messageId: result.messages?.[0]?.id || null,
+      messageId: msgId,
       message: `Wholesale Welcome WhatsApp message sent to +${customerPhone}`
     });
 

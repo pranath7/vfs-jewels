@@ -2,6 +2,7 @@
 //  VFS Jewels — WhatsApp Order Confirmation API (Vercel Serverless)
 //  Exposed at https://www.vfsjewels.store/api/send-order-whatsapp
 //  Sends automated WhatsApp text summary + PDF Tax Invoice Document
+//  Logs all outbound notifications to Firestore 'whatsapp_logs'
 // ============================================================
 
 const https = require('https');
@@ -9,6 +10,7 @@ const https = require('https');
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
 const VERSION = 'v19.0';
+const PROJECT_ID = 'vfs-jewellery';
 
 function sendWhatsAppPayload(payloadData) {
   return new Promise((resolve, reject) => {
@@ -48,6 +50,38 @@ function sendWhatsAppPayload(payloadData) {
   });
 }
 
+function logToFirestore(logData) {
+  return new Promise((resolve) => {
+    const data = JSON.stringify({
+      fields: {
+        timestamp: { integerValue: Date.now() },
+        recipient: { stringValue: logData.recipient || 'Customer' },
+        phone: { stringValue: logData.phone || '' },
+        type: { stringValue: logData.type || 'Order Notification' },
+        orderId: { stringValue: logData.orderId || '' },
+        status: { stringValue: logData.status || 'SENT' },
+        messageId: { stringValue: logData.messageId || '' },
+        preview: { stringValue: (logData.preview || '').substring(0, 150) }
+      }
+    });
+
+    const options = {
+      hostname: 'firestore.googleapis.com',
+      path: `/v1/projects/${PROJECT_ID}/databases/(default)/documents/whatsapp_logs`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(data)
+      }
+    };
+
+    const req = https.request(options, () => resolve());
+    req.on('error', () => resolve());
+    req.write(data);
+    req.end();
+  });
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -70,13 +104,11 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Missing required order fields' });
     }
 
-    // Format phone number
     let customerPhone = order.phone.toString().replace(/\D/g, '');
     if (customerPhone.length === 10) {
       customerPhone = '91' + customerPhone;
     }
 
-    // ── Build Text Message ──
     let itemsList = '';
     if (order.items && Array.isArray(order.items)) {
       order.items.forEach((item, idx) => {
@@ -123,7 +155,18 @@ _Thank you for shopping with VFS Jewels!_
       text: { body: textMessage }
     });
 
-    // 2. Build Direct PDF Invoice Link (using www.vfsjewels.store to avoid 308 redirects)
+    const textMsgId = textResult.messages?.[0]?.id || '';
+    await logToFirestore({
+      recipient: order.name || 'Customer',
+      phone: customerPhone,
+      type: 'Order Confirmation',
+      orderId: order.id,
+      status: 'SENT',
+      messageId: textMsgId,
+      preview: `Order ${order.id} confirmed for ${order.name} (Total: ₹${order.total})`
+    });
+
+    // 2. Build Direct PDF Invoice Link
     const cleanId = order.id.replace('#', '');
     const invoiceUrl = `https://www.vfsjewels.store/api/invoice?id=${encodeURIComponent(order.id)}&name=${encodeURIComponent(order.name || '')}&phone=${customerPhone}&total=${order.total}&subtotal=${order.subtotal || order.total}&gstAmount=${order.gstAmount || 0}&shipping=${order.shipping || 90}&address=${encodeURIComponent(order.address || '')}&city=${encodeURIComponent(order.city || '')}&pincode=${order.pincode || ''}&carrier=${encodeURIComponent(order.carrier || '')}`;
 
@@ -141,7 +184,17 @@ _Thank you for shopping with VFS Jewels!_
           caption: `📄 Tax Invoice for Order ${order.id} - VFS Jewels`
         }
       });
-      console.log('✅ PDF Document message sent successfully:', docResult);
+      
+      const docMsgId = docResult?.messages?.[0]?.id || '';
+      await logToFirestore({
+        recipient: order.name || 'Customer',
+        phone: customerPhone,
+        type: 'PDF Invoice Attachment',
+        orderId: order.id,
+        status: 'SENT',
+        messageId: docMsgId,
+        preview: `Attached PDF Invoice VFS_Jewels_Invoice_${cleanId}.pdf`
+      });
     } catch (docErr) {
       console.warn('⚠️ PDF Document sending warning:', docErr.message || docErr);
     }
@@ -149,7 +202,7 @@ _Thank you for shopping with VFS Jewels!_
     return res.status(200).json({
       success: true,
       orderId: order.id,
-      textMessageId: textResult.messages?.[0]?.id || null,
+      textMessageId: textMsgId,
       pdfMessageId: docResult?.messages?.[0]?.id || null,
       invoiceUrl: invoiceUrl,
       message: `Order confirmation & PDF Invoice sent to +${customerPhone}`

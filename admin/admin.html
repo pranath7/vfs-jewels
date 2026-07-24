@@ -432,6 +432,31 @@
         </div>
       </section>
 
+      <!-- TAB: WHATSAPP NOTIFICATION LOGS -->
+      <section class="tab-panel" id="panelWalogs" style="display:none;">
+        <div class="orders-panel-container">
+          <div class="panel-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h2 style="color:var(--color-secondary);">💬 WhatsApp Notification Logs</h2>
+            <button class="btn-secondary-dark" id="btnRefreshWaLogs" style="padding:8px 16px; font-size:1.2rem; cursor:pointer;">🔄 Refresh Logs</button>
+          </div>
+          <p style="font-size:1.25rem; color:#8e8e93; margin-bottom:20px;">Live history of automated WhatsApp order confirmations, PDF invoices, and Wholesale welcome messages sent to customers.</p>
+          
+          <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+            <input type="text" id="waLogSearchInput" placeholder="Search by Phone Number or Order ID..." style="flex:1; min-width:200px; padding:10px 14px; font-size:1.3rem; border:1px solid var(--color-border); border-radius:var(--rounded-md); background:var(--color-surface-card); color:#fff; outline:none;">
+            <select id="waLogFilterSelect" style="padding:10px 14px; font-size:1.3rem; border:1px solid var(--color-border); border-radius:var(--rounded-md); background:var(--color-surface-card); color:#fff; outline:none; cursor:pointer;">
+              <option value="all">All Message Types</option>
+              <option value="Order Confirmation">Order Confirmation</option>
+              <option value="PDF Invoice Attachment">PDF Invoice</option>
+              <option value="Wholesale Welcome">Wholesale Welcome</option>
+            </select>
+          </div>
+
+          <div id="waLogsListContainer" style="display:flex; flex-direction:column; gap:12px;">
+            <div style="text-align:center; padding:40px; color:#8e8e93; font-size:1.3rem;">Loading WhatsApp activity logs...</div>
+          </div>
+        </div>
+      </section>
+
     </div>
   </main>
 
@@ -466,6 +491,10 @@
     <button class="bottom-nav-btn" data-tab="cancelled">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
       <span>Cancelled</span>
+    </button>
+    <button class="bottom-nav-btn" data-tab="walogs">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      <span>WhatsApp</span>
     </button>
     <button class="bottom-nav-btn" data-tab="search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
