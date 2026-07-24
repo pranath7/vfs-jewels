@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // 1. PRODUCTS, STOCK, BANNERS & SETTINGS (Public read, authenticated/admin write)
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    
+    match /product_stock/{stockId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // 2. ORDERS (Strict user-level privacy: users only read their own orders)
+    match /orders/{orderId} {
+      allow create: if true; // Public checkout placement
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || resource.data.uid == request.auth.uid);
+      allow update, delete: if isAuthenticated();
+    }
+
+    // 3. WHOLESALE USERS (Users can ONLY read & write their own reseller profile row)
+    match /wholesale_users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // 4. WALLET CREDITS (Users can ONLY read & write their own store credit balance)
+    match /wallet_credits/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // 5. RETURNS (Users can ONLY read & write their own return claims)
+    match /returns/{returnId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // 6. REVIEWS (Public read, authenticated create/update)
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // 7. CUSTOMER BIRTHDAYS (Isolated to matching user account)
+    match /customer_birthdays/{birthdayId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // 8. WHATSAPP LOGS (Backend Vercel Serverless API and Admin access)
+    match /whatsapp_logs/{logId} {
+      allow read, write: if true;
+    }
+  }
+}
