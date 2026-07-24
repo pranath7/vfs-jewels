@@ -3722,8 +3722,4 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnRefresh) btnRefresh.addEventListener('click', loadWhatsAppLogs);
   if (searchInput) searchInput.addEventListener('input', filterAndRenderWaLogs);
   if (filterSelect) filterSelect.addEventListener('change', filterAndRenderWaLogs);
-  
-  setTimeout(() => {
-    window.location.reload();
-  }, 1000);
 });
