@@ -1811,25 +1811,68 @@ window.printInvoice = async function(orderId) {
   window.print();
 };
 
-// ── Print Photo Dispatch Slip Builder ──
+// ── Helper: Mobile Slip Preview Modal ──
+function openSlipPreviewModal(imgUrl, orderId, itemNum) {
+  let modal = document.getElementById('slipPreviewModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'slipPreviewModal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(8px);';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = `
+    <div style="background:#1b1b1e; border:1px solid #2a2a2e; border-radius:12px; max-width:95vw; max-height:90vh; display:flex; flex-direction:column; padding:16px; text-align:center;">
+      <h3 style="color:#D4AF37; font-size:1.6rem; margin-bottom:8px;">Dispatch Slip #${orderId}</h3>
+      <p style="color:#8e8e93; font-size:1.2rem; margin-bottom:12px;">Long-press image to Save / Share on mobile</p>
+      <div style="overflow-y:auto; max-height:65vh; margin-bottom:12px; border-radius:8px;">
+        <img src="${imgUrl}" style="width:100%; max-width:500px; display:block; margin:0 auto; border-radius:6px;" alt="Dispatch Slip">
+      </div>
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <a href="${imgUrl}" download="VFS_Slip_${orderId}_Item${itemNum}.jpg" style="background:#27ae60; color:#fff; padding:10px 20px; border-radius:6px; font-weight:700; text-decoration:none; font-size:1.3rem;">Save Image</a>
+        <button onclick="document.getElementById('slipPreviewModal').style.display='none'" style="background:#3a3a3c; color:#fff; border:none; padding:10px 20px; border-radius:6px; font-weight:700; font-size:1.3rem; cursor:pointer;">Close</button>
+      </div>
+    </div>
+  `;
+  modal.style.display = 'flex';
+}
+
+// ── Print Photo Dispatch Slip Builder (Mobile & Desktop Compatible) ──
 window.printPhotoSlip = async function(orderId) {
   const ordersList = await window.VFS_DB.getOrders();
   const order = ordersList.find(o => o.id === orderId);
   if (!order) return;
 
-  const pagesHtml = order.items.map((item, idx) => {
+  adminToast('Generating dispatch slip image...');
+
+  // Pre-process images into Base64 to prevent mobile CORS taints
+  const pagesHtmlPromises = order.items.map(async (item) => {
     const stockBefore = item.stockBefore !== undefined ? item.stockBefore : 'N/A';
     const stockAfter = item.stockAfter !== undefined ? item.stockAfter : 'N/A';
     const skuStr = item.sku || 'N/A';
-    // Use direct Cloudinary URL (no transforms) so crossorigin works
-    const imgSrc = (item.img || '').replace(/\/upload\/[^/]+\//, '/upload/');
+    
+    let imgSrc = item.img || '';
+    if (imgSrc) {
+      try {
+        const corsUrl = imgSrc.replace(/\/upload\/[^/]+\//, '/upload/');
+        const res = await fetch(corsUrl, { mode: 'cors' });
+        const blob = await res.blob();
+        imgSrc = await new Promise(r => {
+          const reader = new FileReader();
+          reader.onloadend = () => r(reader.result);
+          reader.onerror = () => r(imgSrc);
+          reader.readAsDataURL(blob);
+        });
+      } catch(e) {
+        // Keep original URL on error
+      }
+    }
 
     return `
-      <div class="dispatch-slip-page" style="page-break-after: always; box-sizing: border-box; padding: 40px; background: #ffffff; color: #000000; font-family: 'Lato', sans-serif; min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between;">
-        <div style="border-bottom: 2px solid #D4AF37; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+      <div class="dispatch-slip-page" style="box-sizing: border-box; padding: 25px; background: #ffffff; color: #000000; font-family: 'Lato', sans-serif; width: 680px; margin: 0 auto 20px auto; border: 1px solid #ddd; border-radius: 8px;">
+        <div style="border-bottom: 2px solid #D4AF37; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
           <div>
-            <div style="font-size: 24px; font-weight: 900; color: #000000; letter-spacing: 1px;">VFS<span style="color:#D4AF37;">.</span> Dispatch Slip</div>
-            <p style="font-size: 9px; color: #666; margin: 4px 0 0 0;">Imitation Fashion Jewellery</p>
+            <div style="font-size: 22px; font-weight: 900; color: #000000; letter-spacing: 1px;">VFS<span style="color:#D4AF37;">.</span> Dispatch Slip</div>
+            <p style="font-size: 9px; color: #666; margin: 2px 0 0 0;">Imitation Fashion Jewellery</p>
           </div>
           <div style="text-align: right; font-size: 10px; color: #000000;">
             <p style="margin: 2px 0;"><strong>Order ID:</strong> ${order.id}</p>
@@ -1837,79 +1880,75 @@ window.printPhotoSlip = async function(orderId) {
           </div>
         </div>
 
-        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 40px;">
-          <img src="${imgSrc}" crossorigin="anonymous" onerror="this.onerror=null;this.style.display='none'" style="max-width: 450px; max-height: 450px; object-fit: contain; border: 1px solid #eee; padding: 10px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" alt="Product Image">
+        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 25px;">
+          <img src="${imgSrc}" style="max-width: 380px; max-height: 380px; object-fit: contain; border: 1px solid #eee; padding: 8px; border-radius: 8px;" alt="Product Image">
         </div>
 
-        <div style="background: #fdfefe; border: 1px solid #ebf5fb; border-left: 5px solid #2980b9; padding: 25px; border-radius: 6px;">
-          <h2 style="font-size: 22px; color: #2c3e50; margin: 0 0 12px 0; font-weight: 700;">${item.name}</h2>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 13px; line-height: 1.6; color: #34495e;">
+        <div style="background: #fdfefe; border: 1px solid #ebf5fb; border-left: 5px solid #2980b9; padding: 18px; border-radius: 6px;">
+          <h2 style="font-size: 18px; color: #2c3e50; margin: 0 0 10px 0; font-weight: 700;">${item.name}</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 12px; line-height: 1.5; color: #34495e;">
             <div>
-              <p style="margin: 4px 0;"><strong>Product Code/SKU:</strong> <span style="font-family: monospace; font-size: 14px;">${skuStr}</span></p>
-              <p style="margin: 4px 0;"><strong>Quantity Ordered:</strong> <span style="font-size: 16px; font-weight: 700; color: #e74c3c;">${item.qty} pcs</span></p>
+              <p style="margin: 3px 0;"><strong>SKU:</strong> <span style="font-family: monospace;">${skuStr}</span></p>
+              <p style="margin: 3px 0;"><strong>Qty:</strong> <span style="font-weight: 700; color: #e74c3c;">${item.qty} pcs</span></p>
             </div>
-            <div style="border-left: 1px dashed #d5dbdb; padding-left: 20px;">
-              <p style="margin: 4px 0;"><strong>Stock Before Purchase:</strong> <span style="font-size: 15px; font-weight: 700; color: #7f8c8d;">${stockBefore}</span></p>
-              <p style="margin: 4px 0;"><strong>Stock After Purchase:</strong> <span style="font-size: 15px; font-weight: 700; color: #27ae60;">${stockAfter}</span></p>
+            <div style="border-left: 1px dashed #d5dbdb; padding-left: 15px;">
+              <p style="margin: 3px 0;"><strong>Stock Before:</strong> ${stockBefore}</p>
+              <p style="margin: 3px 0;"><strong>Stock After:</strong> <span style="font-weight: 700; color: #27ae60;">${stockAfter}</span></p>
             </div>
           </div>
         </div>
 
-        <div style="margin-top: 30px; border-top: 1px solid #eeeeee; padding-top: 15px; text-align: center; font-size: 10px; color: #95a5a6;">
-          <p>Please cross-check stock count before packaging. Handcrafted in India &bull; vfsjewels.store</p>
-        </div>
-      </div>
     `;
-  }).join('');
-
-  const printContainer = $('#invoicePrintContainer');
-  printContainer.innerHTML = pagesHtml;
-
-  // Wait for all images inside printContainer to load
-  const images = printContainer.querySelectorAll('img');
-  const loadPromises = Array.from(images).map(img => {
-    if (img.complete) return Promise.resolve();
-    return new Promise(resolve => {
-      img.addEventListener('load', resolve);
-      img.addEventListener('error', resolve);
-    });
   });
-  await Promise.all(loadPromises);
 
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const pagesHtml = (await Promise.all(pagesHtmlPromises)).join('');
 
-  if (isMobile) {
-    // On mobile: use html2canvas to create a downloadable PNG
-    adminToast('Generating slip image...');
-    try {
-      const pages = printContainer.querySelectorAll('.dispatch-slip-page');
-      for (let i = 0; i < pages.length; i++) {
-        const canvas = await html2canvas(pages[i], {
-          scale: 2,
-          useCORS: true,
-          allowTaint: false,
-          backgroundColor: '#ffffff',
-          scrollY: 0,
-          scrollX: 0
-        });
-        const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.92));
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `VFS_Slip_${order.id}_Item${i + 1}.jpg`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 3000);
-      }
-      adminToast(`✅ Slip downloaded (${pages.length} image${pages.length > 1 ? 's' : ''})!`);
-    } catch (err) {
-      console.error('Mobile slip generation failed:', err);
-      adminToast('❌ Slip generation failed. Please try on desktop.');
+  // Offscreen rendering container
+  let renderWrapper = document.getElementById('slipRenderWrapper');
+  if (!renderWrapper) {
+    renderWrapper = document.createElement('div');
+    renderWrapper.id = 'slipRenderWrapper';
+    document.body.appendChild(renderWrapper);
+  }
+
+  renderWrapper.style.cssText = 'position:fixed; top:0; left:0; z-index:-9999; width:720px; background:#ffffff; display:block; visibility:visible; opacity:0.01;';
+  renderWrapper.innerHTML = pagesHtml;
+
+  // Wait for images
+  const imgs = renderWrapper.querySelectorAll('img');
+  await Promise.all(Array.from(imgs).map(img => img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })));
+
+  try {
+    const pages = renderWrapper.querySelectorAll('.dispatch-slip-page');
+    for (let i = 0; i < pages.length; i++) {
+      const canvas = await html2canvas(pages[i], {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      });
+      
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.92));
+      const blobUrl = URL.createObjectURL(blob);
+      
+      // Auto download attempt
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `VFS_Slip_${order.id}_Item${i + 1}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // Open mobile preview modal for easy save/share
+      openSlipPreviewModal(blobUrl, order.id, i + 1);
     }
-  } else {
-    // Desktop: use system print dialog
-    window.print();
+    adminToast('✅ Dispatch slip generated!');
+  } catch (err) {
+    console.error('Photo slip generation error:', err);
+    adminToast('❌ Slip generation failed.', 'error');
+  } finally {
+    renderWrapper.style.display = 'none';
+    renderWrapper.innerHTML = '';
   }
 };
 
