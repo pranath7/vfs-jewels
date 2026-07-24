@@ -1817,138 +1817,188 @@ function openSlipPreviewModal(imgUrl, orderId, itemNum) {
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'slipPreviewModal';
-    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(8px);';
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.88);z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(10px);';
     document.body.appendChild(modal);
   }
   modal.innerHTML = `
-    <div style="background:#1b1b1e; border:1px solid #2a2a2e; border-radius:12px; max-width:95vw; max-height:90vh; display:flex; flex-direction:column; padding:16px; text-align:center;">
-      <h3 style="color:#D4AF37; font-size:1.6rem; margin-bottom:8px;">Dispatch Slip #${orderId}</h3>
-      <p style="color:#8e8e93; font-size:1.2rem; margin-bottom:12px;">Long-press image to Save / Share on mobile</p>
-      <div style="overflow-y:auto; max-height:65vh; margin-bottom:12px; border-radius:8px;">
+    <div style="background:#1b1b1e; border:1px solid #2a2a2e; border-radius:14px; max-width:95vw; max-height:92vh; display:flex; flex-direction:column; padding:16px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+      <h3 style="color:#D4AF37; font-size:1.6rem; margin-bottom:4px; font-weight:700;">Dispatch Slip ${orderId}</h3>
+      <p style="color:#8e8e93; font-size:1.15rem; margin-bottom:12px;">Tap & Hold image to Save / Share on phone</p>
+      <div style="overflow-y:auto; max-height:65vh; margin-bottom:14px; border-radius:8px; background:#fff; padding:6px;">
         <img src="${imgUrl}" style="width:100%; max-width:500px; display:block; margin:0 auto; border-radius:6px;" alt="Dispatch Slip">
       </div>
       <div style="display:flex; gap:10px; justify-content:center;">
-        <a href="${imgUrl}" download="VFS_Slip_${orderId}_Item${itemNum}.jpg" style="background:#27ae60; color:#fff; padding:10px 20px; border-radius:6px; font-weight:700; text-decoration:none; font-size:1.3rem;">Save Image</a>
-        <button onclick="document.getElementById('slipPreviewModal').style.display='none'" style="background:#3a3a3c; color:#fff; border:none; padding:10px 20px; border-radius:6px; font-weight:700; font-size:1.3rem; cursor:pointer;">Close</button>
+        <a href="${imgUrl}" download="VFS_Slip_${orderId}_Item${itemNum}.jpg" target="_blank" style="background:#27ae60; color:#fff; padding:10px 22px; border-radius:8px; font-weight:700; text-decoration:none; font-size:1.3rem;">Save Image</a>
+        <button onclick="document.getElementById('slipPreviewModal').style.display='none'" style="background:#3a3a3c; color:#fff; border:none; padding:10px 22px; border-radius:8px; font-weight:700; font-size:1.3rem; cursor:pointer;">Close</button>
       </div>
     </div>
   `;
   modal.style.display = 'flex';
 }
 
-// ── Print Photo Dispatch Slip Builder (Mobile & Desktop Compatible) ──
+// ── Pure HTML5 2D Canvas Photo Slip Generator (100% Mobile Compatible) ──
+async function generatePhotoSlipCanvas(order, item) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 750;
+  canvas.height = 960;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Top Accent Bar (Gold)
+  ctx.fillStyle = '#D4AF37';
+  ctx.fillRect(0, 0, canvas.width, 12);
+
+  // Header Title: VFS. Dispatch Slip
+  ctx.fillStyle = '#000000';
+  ctx.font = '900 28px "Lato", sans-serif';
+  ctx.fillText('VFS', 40, 60);
+
+  ctx.fillStyle = '#D4AF37';
+  ctx.fillText('.', 102, 60);
+
+  ctx.fillStyle = '#000000';
+  ctx.font = '700 22px "Lato", sans-serif';
+  ctx.fillText('Dispatch Slip', 118, 60);
+
+  ctx.fillStyle = '#666666';
+  ctx.font = '400 12px "Lato", sans-serif';
+  ctx.fillText('Handcrafted Premium Imitation Jewellery • vfsjewels.store', 40, 80);
+
+  // Header Right: Order Info
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#000000';
+  ctx.font = '700 14px "Lato", sans-serif';
+  ctx.fillText(`Order ID: ${order.id}`, 710, 52);
+  ctx.font = '400 13px "Lato", sans-serif';
+  ctx.fillText(`Customer: ${order.name || 'Customer'}`, 710, 72);
+  ctx.textAlign = 'left';
+
+  // Divider Line
+  ctx.strokeStyle = '#D4AF37';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(40, 100);
+  ctx.lineTo(710, 100);
+  ctx.stroke();
+
+  // Load Product Image
+  let imgSrc = (item.img || '').replace(/\/upload\/[^/]+\//, '/upload/');
+  if (imgSrc) {
+    try {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      await new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve;
+        img.src = imgSrc;
+      });
+      if (img.complete && img.naturalWidth > 0) {
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(40, 120, 670, 430);
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(40, 120, 670, 430);
+
+        const maxW = 630;
+        const maxH = 390;
+        let scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+        let w = img.naturalWidth * scale;
+        let h = img.naturalHeight * scale;
+        let x = 40 + (670 - w) / 2;
+        let y = 120 + (430 - h) / 2;
+
+        ctx.drawImage(img, x, y, w, h);
+      }
+    } catch(e) {}
+  }
+
+  // Product Details Box
+  ctx.fillStyle = '#fdfefe';
+  ctx.fillRect(40, 575, 670, 250);
+  ctx.strokeStyle = '#ebf5fb';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(40, 575, 670, 250);
+
+  ctx.fillStyle = '#2980b9';
+  ctx.fillRect(40, 575, 6, 250);
+
+  ctx.fillStyle = '#1e293b';
+  ctx.font = '700 22px "Lato", sans-serif';
+  ctx.fillText((item.name || 'Jewellery Item').substring(0, 42), 65, 615);
+
+  ctx.font = '400 15px "Lato", sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.fillText('Product Code / SKU:', 65, 665);
+  ctx.font = '700 16px monospace';
+  ctx.fillStyle = '#0f172a';
+  ctx.fillText(item.sku || 'N/A', 230, 665);
+
+  ctx.font = '400 15px "Lato", sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.fillText('Quantity Ordered:', 65, 715);
+  ctx.font = '900 22px "Lato", sans-serif';
+  ctx.fillStyle = '#e74c3c';
+  ctx.fillText(`${item.qty || 1} pcs`, 230, 715);
+
+  ctx.strokeStyle = '#d5dbdb';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(380, 595);
+  ctx.lineTo(380, 805);
+  ctx.stroke();
+
+  ctx.font = '400 15px "Lato", sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.fillText('Stock Before Purchase:', 405, 665);
+  ctx.font = '700 18px "Lato", sans-serif';
+  ctx.fillStyle = '#64748b';
+  ctx.fillText(`${item.stockBefore !== undefined ? item.stockBefore : 'N/A'}`, 600, 665);
+
+  ctx.font = '400 15px "Lato", sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.fillText('Stock After Purchase:', 405, 715);
+  ctx.font = '900 18px "Lato", sans-serif';
+  ctx.fillStyle = '#27ae60';
+  ctx.fillText(`${item.stockAfter !== undefined ? item.stockAfter : 'N/A'}`, 600, 715);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#95a5a6';
+  ctx.font = '400 12px "Lato", sans-serif';
+  ctx.fillText('Please cross-check stock count before packaging • Handcrafted in India • vfsjewels.store', 375, 875);
+
+  return canvas.toDataURL('image/jpeg', 0.95);
+}
+
+// ── Print Photo Dispatch Slip Builder (100% Mobile & Desktop Compatible) ──
 window.printPhotoSlip = async function(orderId) {
   const ordersList = await window.VFS_DB.getOrders();
   const order = ordersList.find(o => o.id === orderId);
   if (!order) return;
 
-  adminToast('Generating dispatch slip image...');
-
-  // Pre-process images into Base64 to prevent mobile CORS taints
-  const pagesHtmlPromises = order.items.map(async (item) => {
-    const stockBefore = item.stockBefore !== undefined ? item.stockBefore : 'N/A';
-    const stockAfter = item.stockAfter !== undefined ? item.stockAfter : 'N/A';
-    const skuStr = item.sku || 'N/A';
-    
-    let imgSrc = item.img || '';
-    if (imgSrc) {
-      try {
-        const corsUrl = imgSrc.replace(/\/upload\/[^/]+\//, '/upload/');
-        const res = await fetch(corsUrl, { mode: 'cors' });
-        const blob = await res.blob();
-        imgSrc = await new Promise(r => {
-          const reader = new FileReader();
-          reader.onloadend = () => r(reader.result);
-          reader.onerror = () => r(imgSrc);
-          reader.readAsDataURL(blob);
-        });
-      } catch(e) {
-        // Keep original URL on error
-      }
-    }
-
-    return `
-      <div class="dispatch-slip-page" style="box-sizing: border-box; padding: 25px; background: #ffffff; color: #000000; font-family: 'Lato', sans-serif; width: 680px; margin: 0 auto 20px auto; border: 1px solid #ddd; border-radius: 8px;">
-        <div style="border-bottom: 2px solid #D4AF37; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-size: 22px; font-weight: 900; color: #000000; letter-spacing: 1px;">VFS<span style="color:#D4AF37;">.</span> Dispatch Slip</div>
-            <p style="font-size: 9px; color: #666; margin: 2px 0 0 0;">Imitation Fashion Jewellery</p>
-          </div>
-          <div style="text-align: right; font-size: 10px; color: #000000;">
-            <p style="margin: 2px 0;"><strong>Order ID:</strong> ${order.id}</p>
-            <p style="margin: 2px 0;"><strong>Recipient:</strong> ${order.name}</p>
-          </div>
-        </div>
-
-        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 25px;">
-          <img src="${imgSrc}" style="max-width: 380px; max-height: 380px; object-fit: contain; border: 1px solid #eee; padding: 8px; border-radius: 8px;" alt="Product Image">
-        </div>
-
-        <div style="background: #fdfefe; border: 1px solid #ebf5fb; border-left: 5px solid #2980b9; padding: 18px; border-radius: 6px;">
-          <h2 style="font-size: 18px; color: #2c3e50; margin: 0 0 10px 0; font-weight: 700;">${item.name}</h2>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 12px; line-height: 1.5; color: #34495e;">
-            <div>
-              <p style="margin: 3px 0;"><strong>SKU:</strong> <span style="font-family: monospace;">${skuStr}</span></p>
-              <p style="margin: 3px 0;"><strong>Qty:</strong> <span style="font-weight: 700; color: #e74c3c;">${item.qty} pcs</span></p>
-            </div>
-            <div style="border-left: 1px dashed #d5dbdb; padding-left: 15px;">
-              <p style="margin: 3px 0;"><strong>Stock Before:</strong> ${stockBefore}</p>
-              <p style="margin: 3px 0;"><strong>Stock After:</strong> <span style="font-weight: 700; color: #27ae60;">${stockAfter}</span></p>
-            </div>
-          </div>
-        </div>
-
-    `;
-  });
-
-  const pagesHtml = (await Promise.all(pagesHtmlPromises)).join('');
-
-  // Offscreen rendering container
-  let renderWrapper = document.getElementById('slipRenderWrapper');
-  if (!renderWrapper) {
-    renderWrapper = document.createElement('div');
-    renderWrapper.id = 'slipRenderWrapper';
-    document.body.appendChild(renderWrapper);
-  }
-
-  renderWrapper.style.cssText = 'position:fixed; top:0; left:0; z-index:-9999; width:720px; background:#ffffff; display:block; visibility:visible; opacity:0.01;';
-  renderWrapper.innerHTML = pagesHtml;
-
-  // Wait for images
-  const imgs = renderWrapper.querySelectorAll('img');
-  await Promise.all(Array.from(imgs).map(img => img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })));
+  adminToast('Generating photo slip image...');
 
   try {
-    const pages = renderWrapper.querySelectorAll('.dispatch-slip-page');
-    for (let i = 0; i < pages.length; i++) {
-      const canvas = await html2canvas(pages[i], {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff'
-      });
-      
-      const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.92));
-      const blobUrl = URL.createObjectURL(blob);
-      
+    for (let i = 0; i < order.items.length; i++) {
+      const dataUrl = await generatePhotoSlipCanvas(order, order.items[i]);
+
       // Auto download attempt
       const a = document.createElement('a');
-      a.href = blobUrl;
+      a.href = dataUrl;
       a.download = `VFS_Slip_${order.id}_Item${i + 1}.jpg`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
 
       // Open mobile preview modal for easy save/share
-      openSlipPreviewModal(blobUrl, order.id, i + 1);
+      openSlipPreviewModal(dataUrl, order.id, i + 1);
     }
     adminToast('✅ Dispatch slip generated!');
   } catch (err) {
-    console.error('Photo slip generation error:', err);
-    adminToast('❌ Slip generation failed.', 'error');
-  } finally {
-    renderWrapper.style.display = 'none';
-    renderWrapper.innerHTML = '';
+    console.error('Photo slip error:', err);
+    adminToast('❌ Failed to generate slip.', 'error');
   }
 };
 
