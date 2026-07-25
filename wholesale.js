@@ -451,6 +451,7 @@ function getFullCatalog() {
 }
 
 const CATEGORY_BANNERS = {
+  bracelets: { title: "Bracelets Collection", desc: "Elegant handcrafted anti-tarnish gold & CZ bracelets.", img: "https://res.cloudinary.com/cwx4zame/image/upload/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg" },
   necklaces: { title: "Necklaces Collection", desc: "Exquisite handcrafted gold & CZ necklace sets.", img: "https://res.cloudinary.com/cwx4zame/image/upload/v1784987541/necklaces/nkfoqzblg8cengy6hrda.jpg" },
   kadas: { title: "Kadas Collection", desc: "Premium handcrafted daily-wear gold plated Kadas.", img: "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg" },
   chains: { title: "Chains Collection", desc: "Classic and luxury gold-plated chains and necklaces.", img: "https://res.cloudinary.com/cwx4zame/image/upload/v1783178938/vza7byllycs7nmz8bwdq.jpg" },
