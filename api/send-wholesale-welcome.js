@@ -122,7 +122,7 @@ Congratulations! Your **VFS Jewels Wholesale Business Club** membership is now *
 • Priority Dispatch & Customer Support
 
 🌐 *Access Wholesale Catalog Now:*
-https://www.vfsjewels.store/wholesale
+https://www.vfsjewels.store/wholesale.html
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 _Thank you for partnering with VFS Jewels!_
