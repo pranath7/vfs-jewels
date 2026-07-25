@@ -3014,21 +3014,17 @@ async function loadCustomers() {
  
       const joined = c.registeredAt ? new Date(c.registeredAt).toLocaleDateString('en-IN') : '-';
       
-      // Wholesale Portal Status & Approval Action
+      // Wholesale Portal Status (Online Gateway Automated)
       let statusHtml = '';
-      if (c.unlocked) {
+      if (c.unlocked || c.paymentStatus === 'paid') {
         statusHtml = `
           <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
-            <span style="color:#27AE60; font-weight:700; font-size:1.15rem;">Approved / Unlocked</span>
-            <button class="btn-card-secondary" onclick="sendWelcomeWhatsApp('${escapeHtml(c.name || 'Reseller')}', '${escapeHtml(phoneDisplay)}')" style="font-size:1.05rem; padding:4px 8px; border-radius:4px; font-weight:700; cursor:pointer; background:#25d366; color:#fff; border-color:#25d366;">💬 Welcome</button>
+            <span style="color:#27AE60; font-weight:700; font-size:1.15rem;">● Unlocked (Paid Online)</span>
+            <button class="btn-card-secondary" onclick="openWaDirectChat('${escapeHtml(phoneDisplay)}', '${escapeHtml(c.name || 'Reseller')}')" style="font-size:1.05rem; padding:4px 8px; border-radius:4px; font-weight:700; cursor:pointer; background:#25d366; color:#fff; border:none;">💬 Chat WhatsApp</button>
           </div>
         `;
       } else {
-        if (c.paymentStatus === 'pending') {
-          statusHtml = `<button class="btn-card-primary" onclick="approveWholesaleUser('${c.uid || c.phone || c.id}')" style="font-size:1.15rem; padding:6px 12px; border-radius:4px; font-weight:700; cursor:pointer;">Accept Payment & Unlock</button>`;
-        } else {
-          statusHtml = `<span style="color:#e67e22; font-weight:700;">Locked (No Payment)</span>`;
-        }
+        statusHtml = `<span style="color:#e67e22; font-weight:600; font-size:1.1rem;">Pending Payment</span>`;
       }
  
       return `<tr>
