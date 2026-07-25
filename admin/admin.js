@@ -2827,12 +2827,24 @@ window.markOrderDelivered = async function(orderId) {
   const ordersList = await window.VFS_DB.getOrders();
   const order = ordersList.find(o => o.id === orderId);
   if (order) {
-    await window.VFS_DB.updateOrder(orderId, { status: 'delivered' });
-    adminToast(`Order ${orderId} marked as Delivered! 📦✓`);
+    await window.VFS_DB.updateOrder(orderId, { status: 'completed', deliveredAt: Date.now() });
+    adminToast(`Order ${orderId} marked as Delivered & completed! 📦✓`);
     
-    // Log Simulated SMS
-    const smsMsg = `VFS Jewels: Your Order ${order.id} has been delivered. Thank you for shopping with us!`;
-    logSimulatedSMS(order.phone, smsMsg);
+    // Trigger automated WhatsApp delivery notification to customer
+    try {
+      fetch('/api/sync-courier-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: order.id,
+          targetStatus: 'completed',
+          phone: order.phone,
+          name: order.name,
+          trackingId: order.trackingId || '',
+          carrier: order.carrier || 'DTDC'
+        })
+      });
+    } catch(e) {}
     
     await loadDashboard();
   }
@@ -3854,6 +3866,27 @@ document.addEventListener('DOMContentLoaded', () => {
       } finally {
         btnSendChat.disabled = false;
         btnSendChat.style.opacity = '1';
+      }
+    });
+  }
+
+  const btnSyncCourier = $('#btnSyncCourier');
+  if (btnSyncCourier) {
+    btnSyncCourier.addEventListener('click', async () => {
+      btnSyncCourier.disabled = true;
+      btnSyncCourier.textContent = 'Syncing...';
+      try {
+        const res = await fetch('/api/sync-courier-status');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to sync courier statuses');
+        
+        adminToast(`🚚 Courier Sync Complete! Scanned ${data.scannedCount || 0} orders, updated ${data.autoDeliveredOrders?.length || 0} as DELIVERED!`);
+        await loadDashboard();
+      } catch (err) {
+        adminToast('Courier sync warning: ' + err.message, 'error');
+      } finally {
+        btnSyncCourier.disabled = false;
+        btnSyncCourier.textContent = '🚚 Sync Deliveries';
       }
     });
   }
