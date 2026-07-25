@@ -3719,7 +3719,12 @@ function renderWhatsAppLogsList(logs) {
           <div style="font-size:1.35rem; font-weight:700; color:#fff;">
             👤 ${log.recipient} <span style="color:#8e8e93; font-weight:400; font-size:1.2rem;">(+${log.phone})</span>
           </div>
-          <a href="https://wa.me/${log.phone}" target="_blank" rel="noopener" style="color:#25D366; font-size:1.2rem; text-decoration:none; font-weight:600;">Open Chat 📲</a>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button onclick="openWaDirectChat('${log.phone}', '${log.recipient}')" style="background:#25D366; color:#fff; font-size:1.2rem; font-weight:700; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:6px;">
+              💬 Direct Chat
+            </button>
+            <a href="https://wa.me/${log.phone}" target="_blank" rel="noopener" style="color:#8e8e93; font-size:1.1rem; text-decoration:none; padding:4px 8px;">Web ↗</a>
+          </div>
         </div>
 
         <div style="font-size:1.25rem; color:#ccc; background:#121214; padding:10px 12px; border-radius:6px; margin-top:4px; font-family:var(--font-body);">
@@ -3734,13 +3739,122 @@ function renderWhatsAppLogsList(logs) {
   container.innerHTML = html;
 }
 
-// Event Listeners for WhatsApp Logs
+// ── DIRECT 2-WAY WHATSAPP CHAT MODAL LOGIC ──
+window._activeChatPhone = '';
+window._activeChatRecipient = '';
+
+window.openWaDirectChat = function(phone, recipientName) {
+  const modal = $('#waChatModal');
+  const headerName = $('#waChatHeaderName');
+  const headerPhone = $('#waChatHeaderPhone');
+  const externalLink = $('#waChatExternalLink');
+  const chatInput = $('#waChatInput');
+
+  if (!modal) return;
+
+  const cleanPhone = phone.toString().replace(/\D/g, '');
+  window._activeChatPhone = cleanPhone;
+  window._activeChatRecipient = recipientName || 'Customer';
+
+  if (headerName) headerName.textContent = recipientName || 'Customer Chat';
+  if (headerPhone) headerPhone.textContent = `+${cleanPhone}`;
+  if (externalLink) externalLink.href = `https://wa.me/${cleanPhone}`;
+  if (chatInput) chatInput.value = '';
+
+  modal.style.display = 'flex';
+  renderWaChatHistory();
+};
+
+function renderWaChatHistory() {
+  const chatHistory = $('#waChatHistory');
+  if (!chatHistory) return;
+
+  const phone = window._activeChatPhone;
+  if (!phone) return;
+
+  const logs = (window._allWaLogsCache || []).filter(l => {
+    const p = (l.phone || '').toString().replace(/\D/g, '');
+    return p.includes(phone) || phone.includes(p);
+  });
+
+  if (logs.length === 0) {
+    chatHistory.innerHTML = `<div style="text-align:center; color:#888; font-size:1.2rem; margin:auto;">No message history with this customer. Type below to start chat!</div>`;
+    return;
+  }
+
+  const thread = [...logs].sort((a, b) => a.timestamp - b.timestamp);
+
+  const html = thread.map(msg => {
+    const isOutbound = msg.status === 'SENT' || msg.status === 'DELIVERED' || msg.status === 'READ';
+    const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '';
+
+    return `
+      <div style="display:flex; flex-direction:column; align-items: ${isOutbound ? 'flex-end' : 'flex-start'}; margin-bottom:6px;">
+        <div style="max-width: 82%; background: ${isOutbound ? '#054c3b' : '#1e1e24'}; color: #fff; padding: 10px 14px; border-radius: 12px; font-size: 1.25rem; line-height: 1.4; white-space: pre-wrap; word-break: break-word; border:1px solid ${isOutbound ? '#0e624f' : '#2a2a2e'};">
+          <div style="font-size:1.05rem; font-weight:700; color:${isOutbound ? '#25D366' : '#D4AF37'}; margin-bottom:4px;">${msg.type || 'Message'}</div>
+          ${msg.preview || ''}
+          <div style="font-size: 0.95rem; color: rgba(255,255,255,0.6); text-align: right; margin-top: 4px;">${timeStr} ${isOutbound ? '✓✓' : ''}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  chatHistory.innerHTML = html;
+  chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+// Event Listeners for WhatsApp Logs & Direct Chat
 document.addEventListener('DOMContentLoaded', () => {
   const btnRefresh = $('#btnRefreshWaLogs');
   const searchInput = $('#waLogSearchInput');
   const filterSelect = $('#waLogFilterSelect');
+  const btnSendChat = $('#btnSendWaChat');
+  const closeChatModal = $('#closeWaChatModal');
 
   if (btnRefresh) btnRefresh.addEventListener('click', loadWhatsAppLogs);
   if (searchInput) searchInput.addEventListener('input', filterAndRenderWaLogs);
   if (filterSelect) filterSelect.addEventListener('change', filterAndRenderWaLogs);
+
+  if (closeChatModal) {
+    closeChatModal.addEventListener('click', () => {
+      const modal = $('#waChatModal');
+      if (modal) modal.style.display = 'none';
+    });
+  }
+
+  if (btnSendChat) {
+    btnSendChat.addEventListener('click', async () => {
+      const input = $('#waChatInput');
+      const msg = input ? input.value.trim() : '';
+      if (!msg || !window._activeChatPhone) return;
+
+      btnSendChat.disabled = true;
+      btnSendChat.style.opacity = '0.6';
+
+      try {
+        const res = await fetch('/api/send-custom-whatsapp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: window._activeChatPhone,
+            message: msg,
+            recipientName: window._activeChatRecipient
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to send WhatsApp message');
+
+        input.value = '';
+        adminToast('WhatsApp message sent directly to customer! 🚀');
+
+        await loadWhatsAppLogs();
+        renderWaChatHistory();
+      } catch (err) {
+        alert('Error sending WhatsApp message: ' + err.message);
+      } finally {
+        btnSendChat.disabled = false;
+        btnSendChat.style.opacity = '1';
+      }
+    });
+  }
 });
