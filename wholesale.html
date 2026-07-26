@@ -1423,11 +1423,11 @@
   </div>
 
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="wholesale.js?t=1785056588" defer></script>
+  <script src="wholesale.js?v=50" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js?t=1785056518').then(reg => {
+        navigator.serviceWorker.register('/sw.js?v=50').then(reg => {
           reg.update();
         }).catch(() => {});
       });
