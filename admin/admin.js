@@ -882,6 +882,8 @@ $$('.bottom-nav-btn').forEach(btn => {
       loadCustomers();
     } else if (activeTab === 'reports') {
       loadReports();
+    } else if (activeTab === 'slots') {
+      loadSlotPanel();
     } else if (activeTab === 'banners') {
       loadBanners();
     } else if (activeTab === 'walogs') {
@@ -954,7 +956,9 @@ function updateHeaderTitles() {
   } else if (activeTab === 'reports') {
     title.textContent = 'Reports & Analytics';
     subtitle.textContent = 'View sales, month-over-month revenue, courier distribution, and product trends.';
-  } else if (activeTab === 'banners') {
+  } else if (activeTab === 'slots') {
+      loadSlotPanel();
+    } else if (activeTab === 'banners') {
     title.textContent = 'Banner Manager';
     subtitle.textContent = 'Manage home page marketing and promotion banners.';
   }
@@ -3995,3 +3999,26 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+
+
+// Handle top header 8:30 PM Slots button & bottom nav slots button
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-tab="slots"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => {
+        p.classList.remove('active');
+        p.style.display = '';
+      });
+      const navBtn = document.querySelector('.bottom-nav-btn[data-tab="slots"]');
+      if (navBtn) navBtn.classList.add('active');
+      const panel = document.getElementById('panelSlots');
+      if (panel) panel.classList.add('active');
+      const title = document.getElementById('tabTitle');
+      const sub = document.getElementById('tabSubtitle');
+      if (title) title.textContent = "📹 8:30 PM Live Video Slot Management";
+      if (sub) sub.textContent = "Toggle daily live session, set Google Meet URL, and dispatch WhatsApp join links.";
+      loadSlotPanel();
+    });
+  });
+});
