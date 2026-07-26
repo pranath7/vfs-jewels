@@ -5582,6 +5582,7 @@ function switchModeSeamlessly(targetMode) {
   }
   localStorage.setItem('vfs_user_mode', targetMode);
   localStorage.setItem('vfs_shopping_mode', targetMode);
+  sessionStorage.setItem('vfs_welcome_session_shown', 'true');
   document.documentElement.setAttribute('data-shopping-mode', targetMode);
   
   const modal = document.getElementById('welcomeModeModal');
@@ -5601,6 +5602,42 @@ function switchModeSeamlessly(targetMode) {
   
   if (typeof toast === 'function') {
     toast(targetMode === 'wholesale' ? 'Unlocked Wholesale Reseller Rates 📦' : 'Retail Store Active 🛍️');
+  }
+}
+
+function initWelcomeModeModal() {
+  const modal = document.getElementById('welcomeModeModal');
+  const openBtn = document.getElementById('openModeModal');
+  const sessionShown = sessionStorage.getItem('vfs_welcome_session_shown');
+  
+  // Show welcome popup modal automatically on landing for new sessions
+  if (modal && !sessionShown) {
+    modal.style.display = 'flex';
+  }
+  
+  // Open modal anytime user clicks Mode button in header
+  if (openBtn && modal) {
+    openBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      modal.style.display = 'flex';
+    });
+  }
+  
+  const wholesaleBtn = document.getElementById('chooseWholesaleBtn');
+  const retailBtn = document.getElementById('chooseRetailBtn');
+  
+  if (wholesaleBtn) {
+    wholesaleBtn.onclick = (e) => {
+      e.preventDefault();
+      switchModeSeamlessly('wholesale');
+    };
+  }
+  
+  if (retailBtn) {
+    retailBtn.onclick = (e) => {
+      e.preventDefault();
+      switchModeSeamlessly('retail');
+    };
   }
 }
 
