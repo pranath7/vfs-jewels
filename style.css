@@ -112,26 +112,160 @@ body {
 }
 
 [data-theme="dark"] .site-header,
-[data-theme="dark"] .announcement-bar,
 [data-theme="dark"] .cat-item,
-[data-theme="dark"] .banner-card,
 [data-theme="dark"] .footer,
 [data-theme="dark"] .cart-drawer,
-[data-theme="dark"] .search-overlay-content {
+[data-theme="dark"] .search-overlay-content,
+[data-theme="dark"] .mobile-bottom-nav,
+[data-theme="dark"] .delivery-strip,
+[data-theme="dark"] .banners-section,
+[data-theme="dark"] .seo-footer-section {
   background-color: var(--bg-secondary) !important;
   color: var(--text-primary) !important;
   border-color: var(--border-color) !important;
 }
 
-[data-theme="dark"] a,
-[data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, [data-theme="dark"] h4,
-[data-theme="dark"] p, [data-theme="dark"] span, [data-theme="dark"] div {
-  color: var(--text-primary);
+[data-theme="dark"] .announcement-bar {
+  background-color: #1c202c !important;
+  color: #D4AF37 !important;
+  border-bottom: 1px solid #2e3547 !important;
 }
 
-[data-theme="dark"] .p-card {
-  background-color: var(--bg-card);
-  border-color: var(--border-color);
+/* Cards & Containers */
+[data-theme="dark"] .p-card,
+[data-theme="dark"] .shelf-card,
+[data-theme="dark"] .tinder-card,
+[data-theme="dark"] .banner-card,
+[data-theme="dark"] .brand-story-section,
+[data-theme="dark"] .timeline-card,
+[data-theme="dark"] .review-card,
+[data-theme="dark"] .birthday-card,
+[data-theme="dark"] .modal-card,
+[data-theme="dark"] .pdp-modal-content,
+[data-theme="dark"] .cart-item {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .google-reviews-marquee-section {
+  background-color: var(--bg-primary) !important;
+}
+
+/* Product Card Images & Icon Backgrounds */
+[data-theme="dark"] .p-img,
+[data-theme="dark"] .cat-circle,
+[data-theme="dark"] .tinder-card .tinder-img-box {
+  background-color: var(--bg-neutral) !important;
+}
+
+/* Typography Specifics (Prevent Color Flattening) */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] .p-name,
+[data-theme="dark"] .cart-item-title,
+[data-theme="dark"] .modal-title,
+[data-theme="dark"] .section-title {
+  color: #F5F6F8 !important;
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] label,
+[data-theme="dark"] .p-meta,
+[data-theme="dark"] .text-muted {
+  color: var(--text-secondary);
+}
+
+/* Price & Badge High Contrast Rules */
+[data-theme="dark"] .price-now,
+[data-theme="dark"] .p-prices .price-now,
+[data-theme="dark"] .cart-item-price {
+  color: #D4AF37 !important;
+}
+
+[data-theme="dark"] .price-was {
+  color: #949BAE !important;
+  text-decoration: line-through;
+}
+
+[data-theme="dark"] .price-off {
+  background-color: rgba(39, 174, 96, 0.2) !important;
+  color: #2ecc71 !important;
+}
+
+[data-theme="dark"] .p-badge,
+[data-theme="dark"] .sale-ribbon,
+[data-theme="dark"] .cart-count {
+  background-color: #D4AF37 !important;
+  color: #121212 !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="dark"] .p-badge.sale {
+  background-color: #e74c3c !important;
+  color: #ffffff !important;
+}
+
+/* Button & Action Legibility in Dark Mode */
+[data-theme="dark"] .btn-primary,
+[data-theme="dark"] .p-quick,
+[data-theme="dark"] .unlock-prices-btn,
+[data-theme="dark"] .open-slot-modal-btn,
+[data-theme="dark"] #guideToVCBtn,
+[data-theme="dark"] .checkout-btn {
+  background-color: #D4AF37 !important;
+  color: #121212 !important;
+  font-weight: 800 !important;
+  border-color: #D4AF37 !important;
+}
+
+[data-theme="dark"] .btn-primary:hover,
+[data-theme="dark"] .p-quick:hover {
+  background-color: #b89628 !important;
+  color: #121212 !important;
+}
+
+[data-theme="dark"] .btn-secondary,
+[data-theme="dark"] .btn-secondary-dark,
+[data-theme="dark"] .qty-btn,
+[data-theme="dark"] .modal-close,
+[data-theme="dark"] .close-btn {
+  background-color: var(--bg-neutral) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+/* Input & Form Legibility in Dark Mode */
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="tel"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] input[type="url"],
+[data-theme="dark"] input[type="search"],
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background-color: var(--bg-neutral) !important;
+  color: #FFFFFF !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: #949BAE !important;
+}
+
+/* Mode Switch & PDP Modals in Dark Mode */
+[data-theme="dark"] .mode-option-card {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .mode-option-card.active {
+  border-color: #D4AF37 !important;
+  box-shadow: 0 0 15px rgba(212,175,55,0.2) !important;
 }
 
 /* === Reset & Scroll Enhancements === */
