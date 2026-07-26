@@ -1,8 +1,5 @@
 import os
-import io
-import requests
 import fitz  # PyMuPDF
-from PIL import Image as PILImage
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.platypus import (
@@ -11,104 +8,20 @@ from reportlab.platypus import (
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
-# ── 12 COMPLETELY UNIQUE, DISTINCT PRODUCTS WITH VALID UNIQUE CLOUDINARY PHOTOS ──
+# ── 12 COMPLETELY UNIQUE PRODUCTS WITH 12 DISTINCT PHOTO ASSETS ──
 SAMPLE_PRODUCTS = [
-    {
-        "sku": "VFS-KAD-01",
-        "name": "Anti-Tarnish Emerald Kada #01",
-        "qty": 2,
-        "price": 499,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg",
-        "local_fallback": "assets/bracelets.png"
-    },
-    {
-        "sku": "VFS-KAD-02",
-        "name": "CZ Solitaire Bangle Kada #02",
-        "qty": 1,
-        "price": 599,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178918/j0qhpmddqcww7jyfclpo.jpg",
-        "local_fallback": "assets/bracelets.png"
-    },
-    {
-        "sku": "VFS-KAD-03",
-        "name": "Royal Gold Lattice Kada #03",
-        "qty": 3,
-        "price": 649,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178918/d8vmmezbtwedza9gw64b.jpg",
-        "local_fallback": "assets/bracelets.png"
-    },
-    {
-        "sku": "VFS-KAD-04",
-        "name": "Daily Wear Sleek Kada #04",
-        "qty": 4,
-        "price": 449,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178919/em7mwrwmfx00nl8wpun1.jpg",
-        "local_fallback": "assets/bracelets.png"
-    },
-    {
-        "sku": "VFS-CHN-05",
-        "name": "Kandy 316L Snake Gold Chain #05",
-        "qty": 2,
-        "price": 599,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178938/vza7byllycs7nmz8bwdq.jpg",
-        "local_fallback": "assets/chains.png"
-    },
-    {
-        "sku": "VFS-CHN-06",
-        "name": "Curb Link Gold Chain #06",
-        "qty": 1,
-        "price": 699,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178939/dguesoyw4s03cb1y9ief.jpg",
-        "local_fallback": "assets/chains.png"
-    },
-    {
-        "sku": "VFS-CHN-07",
-        "name": "Rope Twist Luxury Chain #07",
-        "qty": 2,
-        "price": 749,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178940/vswytffuij1oasityf2i.jpg",
-        "local_fallback": "assets/chains.png"
-    },
-    {
-        "sku": "VFS-CHN-08",
-        "name": "Box Link Heavy Chain #08",
-        "qty": 1,
-        "price": 849,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178941/qoy6w51ygjbszrtcf2ef.jpg",
-        "local_fallback": "assets/chains.png"
-    },
-    {
-        "sku": "VFS-EAR-09",
-        "name": "Handcrafted Pearl Clover Earrings #09",
-        "qty": 2,
-        "price": 499,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783694425/kuk50yyh9yzosthcsxkk.png",
-        "local_fallback": "assets/earrings.png"
-    },
-    {
-        "sku": "VFS-NEC-10",
-        "name": "CZ Infinity Pendant Necklace #10",
-        "qty": 1,
-        "price": 799,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1784987541/necklaces/nkfoqzblg8cengy6hrda.jpg",
-        "local_fallback": "assets/necklaces.png"
-    },
-    {
-        "sku": "VFS-NEC-11",
-        "name": "Solitaire Crystal Choker #11",
-        "qty": 2,
-        "price": 999,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg",
-        "local_fallback": "assets/necklaces.png"
-    },
-    {
-        "sku": "VFS-KAD-12",
-        "name": "Heavy Designer Kada #12",
-        "qty": 3,
-        "price": 899,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178920/w5poym0duvb90ursvdev.jpg",
-        "local_fallback": "assets/bracelets.png"
-    }
+    {"sku": "VFS-KAD-01", "name": "Anti-Tarnish Emerald Kada #01", "qty": 2, "price": 499, "img_file": "assets/p_photo_1.png"},
+    {"sku": "VFS-NEC-02", "name": "CZ Infinity Pendant Necklace #02", "qty": 1, "price": 799, "img_file": "assets/p_photo_2.png"},
+    {"sku": "VFS-EAR-03", "name": "Handcrafted Pearl Clover Earrings #03", "qty": 3, "price": 499, "img_file": "assets/p_photo_3.png"},
+    {"sku": "VFS-RNG-04", "name": "Solitaire Diamond Ring #04", "qty": 4, "price": 399, "img_file": "assets/p_photo_4.png"},
+    {"sku": "VFS-CHN-05", "name": "Kandy 316L Snake Gold Chain #05", "qty": 2, "price": 599, "img_file": "assets/p_photo_5.png"},
+    {"sku": "VFS-CHK-06", "name": "Ruby Red CZ Choker #06", "qty": 1, "price": 1299, "img_file": "assets/p_photo_6.png"},
+    {"sku": "VFS-CHN-07", "name": "Heavy Gold Curb Chain #07", "qty": 2, "price": 699, "img_file": "assets/p_photo_7.png"},
+    {"sku": "VFS-JHM-08", "name": "Traditional Gold Jhumkas #08", "qty": 1, "price": 549, "img_file": "assets/p_photo_8.png"},
+    {"sku": "VFS-RNG-09", "name": "Royal Sapphire Blue Ring #09", "qty": 2, "price": 499, "img_file": "assets/p_photo_9.png"},
+    {"sku": "VFS-BRC-10", "name": "Luxury Tennis Crystal Bracelet #10", "qty": 1, "price": 899, "img_file": "assets/p_photo_10.png"},
+    {"sku": "VFS-KAD-11", "name": "Black Enamel Gold Kada #11", "qty": 2, "price": 749, "img_file": "assets/p_photo_11.png"},
+    {"sku": "VFS-NEC-12", "name": "Multi-Strand Layered Necklace #12", "qty": 3, "price": 1199, "img_file": "assets/p_photo_12.png"}
 ]
 
 ORDER_META = {
@@ -126,43 +39,6 @@ ORDER_META = {
         "email": "client@vfsjewels.store"
     }
 }
-
-# ── Helper to Download & Cache Unique Product Images ──
-def get_product_image_path(idx, url, fallback):
-    unique_filename = os.path.abspath(f"item_photo_{idx}.png")
-    try:
-        r = requests.get(url, timeout=5)
-        if r.status_code == 200 and len(r.content) > 1000:
-            pil_img = PILImage.open(io.BytesIO(r.content)).convert('RGB')
-            w, h = pil_img.size
-            min_dim = min(w, h)
-            left = (w - min_dim) / 2
-            top = (h - min_dim) / 2
-            right = (w + min_dim) / 2
-            bottom = (h + min_dim) / 2
-            pil_img = pil_img.crop((left, top, right, bottom))
-            pil_img.save(unique_filename)
-            return unique_filename
-    except Exception as e:
-        print(f"Error fetching online photo {idx}: {e}")
-
-    if os.path.exists(fallback):
-        try:
-            pil_img = PILImage.open(fallback).convert('RGB')
-            w, h = pil_img.size
-            min_dim = min(w, h)
-            left = (w - min_dim) / 2
-            top = (h - min_dim) / 2
-            right = (w + min_dim) / 2
-            bottom = (h + min_dim) / 2
-            pil_img = pil_img.crop((left, top, right, bottom))
-            pil_img.save(unique_filename)
-            return unique_filename
-        except Exception as e:
-            print(f"Fallback error {fallback}: {e}")
-
-    return None
-
 
 # ── BUILD OFFICIAL INVOICE PDF (Screenshot 1 Format) ──
 def build_invoice_pdf(filename="vfs_invoice_sample_12_items.pdf"):
@@ -356,7 +232,7 @@ def build_invoice_pdf(filename="vfs_invoice_sample_12_items.pdf"):
     print(f"Successfully generated Invoice PDF: {filename}")
 
 
-# ── BUILD PRODUCT PHOTO SLIP PDF (Screenshot 2 Format with 12 COMPLETELY UNIQUE REAL PHOTOS) ──
+# ── BUILD PRODUCT PHOTO SLIP PDF (12 COMPLETELY UNIQUE PRODUCT PHOTOS) ──
 def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
     doc = SimpleDocTemplate(
         filename,
@@ -421,7 +297,7 @@ def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
 
     card_elements = []
     for idx, p in enumerate(SAMPLE_PRODUCTS):
-        img_path = get_product_image_path(idx, p["img_url"], p["local_fallback"])
+        img_file = p["img_file"]
         
         info_lines = [
             Paragraph(f"<b>qty orderd :</b> {p['qty']}", card_text_style),
@@ -430,8 +306,8 @@ def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
             Paragraph(f"<b>product code :</b> {p['sku']}", card_text_style),
         ]
 
-        if img_path and os.path.exists(img_path):
-            img_obj = Image(img_path, width=1.5*inch, height=1.5*inch)
+        if os.path.exists(img_file):
+            img_obj = Image(img_file, width=1.55*inch, height=1.55*inch)
             card_content = Table([[img_obj], [info_lines]], colWidths=[3.3*inch])
         else:
             card_content = Table([["[PRODUCT PHOTO]"], [info_lines]], colWidths=[3.3*inch])
@@ -469,7 +345,7 @@ def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
             story.append(PageBreak())
 
     doc.build(story)
-    print(f"Successfully generated Photo Slip PDF with 12 UNIQUE EMBEDDED PHOTOS: {filename}")
+    print(f"Successfully generated Photo Slip PDF with 12 UNIQUE PHOTOS: {filename}")
 
 
 # ── CONVERT PDF PAGES TO HIGH-RES PNG PREVIEW IMAGES ──
@@ -478,12 +354,11 @@ def render_pdf_to_images(pdf_filename, output_prefix):
     saved_images = []
     for page_idx in range(len(doc)):
         page = doc[page_idx]
-        pix = page.get_pixmap(dpi=200) # High Resolution 200 DPI
+        pix = page.get_pixmap(dpi=200) # High Resolution
         out_name = f"{output_prefix}_page_{page_idx+1}.png"
         out_path = os.path.join(os.getcwd(), out_name)
         pix.save(out_path)
         
-        # Copy to assets dir for web viewing
         assets_path = os.path.join(os.getcwd(), 'assets', out_name)
         pix.save(assets_path)
         
