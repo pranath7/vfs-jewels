@@ -5628,19 +5628,20 @@ function switchModeSeamlessly(targetMode) {
 }
 
 function initWelcomeModeModal() {
+  const savedMode = localStorage.getItem('vfs_user_mode');
+  const sessionShown = sessionStorage.getItem('vfs_welcome_session_shown');
   const modal = document.getElementById('welcomeModeModal');
   const openBtn = document.getElementById('openModeModal');
-  const sessionShown = sessionStorage.getItem('vfs_welcome_session_shown');
   
-  if (modal && !sessionShown) {
+  if ((!savedMode || !sessionShown) && modal) {
     modal.style.display = 'flex';
   }
   
   if (openBtn && modal) {
-    openBtn.addEventListener('click', (e) => {
+    openBtn.onclick = (e) => {
       e.preventDefault();
       modal.style.display = 'flex';
-    });
+    };
   }
   
   const wholesaleBtn = document.getElementById('chooseWholesaleBtn');
@@ -5649,6 +5650,7 @@ function initWelcomeModeModal() {
   if (wholesaleBtn) {
     wholesaleBtn.onclick = (e) => {
       e.preventDefault();
+      if (modal) modal.style.display = 'none';
       openWholesaleFunnel();
     };
   }
@@ -5656,80 +5658,7 @@ function initWelcomeModeModal() {
   if (retailBtn) {
     retailBtn.onclick = (e) => {
       e.preventDefault();
-      switchModeSeamlessly('retail');
-    };
-  }
-
-  // Step 1: Wholesale T&C Checkbox & Accept Button
-  const termsCheckbox = document.getElementById('agreeWholesaleTerms');
-  const acceptTermsBtn = document.getElementById('btnAcceptTerms');
-  const cancelTermsBtn = document.getElementById('btnCancelTerms');
-
-  if (termsCheckbox && acceptTermsBtn) {
-    termsCheckbox.onchange = () => {
-      if (termsCheckbox.checked) {
-        acceptTermsBtn.disabled = false;
-        acceptTermsBtn.style.opacity = '1';
-        acceptTermsBtn.style.cursor = 'pointer';
-      } else {
-        acceptTermsBtn.disabled = true;
-        acceptTermsBtn.style.opacity = '0.6';
-        acceptTermsBtn.style.cursor = 'not-allowed';
-      }
-    };
-
-    acceptTermsBtn.onclick = (e) => {
-      e.preventDefault();
-      if (!termsCheckbox.checked) return;
-      openWholesaleLoginModal();
-    };
-  }
-
-  if (cancelTermsBtn) {
-    cancelTermsBtn.onclick = (e) => {
-      e.preventDefault();
-      switchModeSeamlessly('retail');
-    };
-  }
-
-  // Step 2: Login / Registration Handlers
-  const btnCancelLogin = document.getElementById('btnCancelLogin');
-  if (btnCancelLogin) {
-    btnCancelLogin.onclick = (e) => {
-      e.preventDefault();
-      switchModeSeamlessly('retail');
-    };
-  }
-
-  const btnRegisterUser = document.getElementById('btnRegisterUser');
-  if (btnRegisterUser) {
-    btnRegisterUser.onclick = (e) => {
-      e.preventDefault();
-      openWholesaleUnlockModal();
-    };
-  }
-
-  // Step 3: Unlock / UPI Payment Handlers
-  const btnSimulateSuccess = document.getElementById('btnSimulateSuccess');
-  if (btnSimulateSuccess) {
-    btnSimulateSuccess.onclick = (e) => {
-      e.preventDefault();
-      completeWholesaleUnlock();
-    };
-  }
-
-  const upiBtns = document.querySelectorAll('.upi-pay-btn');
-  upiBtns.forEach(btn => {
-    btn.onclick = (e) => {
-      e.preventDefault();
-      completeWholesaleUnlock();
-    };
-  });
-
-  const btnCancelUnlock = document.getElementById('btnCancelUnlock');
-  if (btnCancelUnlock) {
-    btnCancelUnlock.onclick = (e) => {
-      e.preventDefault();
+      if (modal) modal.style.display = 'none';
       switchModeSeamlessly('retail');
     };
   }
@@ -5747,216 +5676,15 @@ function openWholesaleTermsModal() {
   }
 }
 
-function initWelcomeModeModal() {
-  const modal = document.getElementById('welcomeModeModal');
-  const openBtn = document.getElementById('openModeModal');
-  const sessionShown = sessionStorage.getItem('vfs_welcome_session_shown');
-  
-  // Show welcome popup modal automatically on landing for new sessions
-  if (modal && !sessionShown) {
-    modal.style.display = 'flex';
-  }
-  
-  // Open modal anytime user clicks Mode button in header
-  if (openBtn && modal) {
-    openBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      modal.style.display = 'flex';
-    });
-  }
-  
-  const wholesaleBtn = document.getElementById('chooseWholesaleBtn');
-  const retailBtn = document.getElementById('chooseRetailBtn');
-  
-  if (wholesaleBtn) {
-    wholesaleBtn.onclick = (e) => {
-      e.preventDefault();
-      openWholesaleTermsModal();
-    };
-  }
-  
-  if (retailBtn) {
-    retailBtn.onclick = (e) => {
-      e.preventDefault();
-      switchModeSeamlessly('retail');
-    };
-  }
 
-  // Bind Wholesale T&C Checkbox & Accept Button
-  const termsCheckbox = document.getElementById('agreeWholesaleTerms');
-  const acceptTermsBtn = document.getElementById('btnAcceptTerms');
-  const cancelTermsBtn = document.getElementById('btnCancelTerms');
 
-  if (termsCheckbox && acceptTermsBtn) {
-    termsCheckbox.onchange = () => {
-      if (termsCheckbox.checked) {
-        acceptTermsBtn.disabled = false;
-        acceptTermsBtn.style.opacity = '1';
-        acceptTermsBtn.style.cursor = 'pointer';
-      } else {
-        acceptTermsBtn.disabled = true;
-        acceptTermsBtn.style.opacity = '0.6';
-        acceptTermsBtn.style.cursor = 'not-allowed';
-      }
-    };
 
-    acceptTermsBtn.onclick = (e) => {
-      e.preventDefault();
-      if (!termsCheckbox.checked) return;
-      switchModeSeamlessly('wholesale');
-    };
-  }
 
-  if (cancelTermsBtn) {
-    cancelTermsBtn.onclick = (e) => {
-      e.preventDefault();
-      const termsModal = document.getElementById('wholesaleTermsModal');
-      if (termsModal) termsModal.classList.remove('active');
-      switchModeSeamlessly('retail');
-    };
-  }
-}
 
-function initWelcomeModeModal() {
-  const modal = document.getElementById('welcomeModeModal');
-  const openBtn = document.getElementById('openModeModal');
-  const sessionShown = sessionStorage.getItem('vfs_welcome_session_shown');
-  
-  // Show welcome popup modal automatically on landing for new sessions
-  if (modal && !sessionShown) {
-    modal.style.display = 'flex';
-  }
-  
-  // Open modal anytime user clicks Mode button in header
-  if (openBtn && modal) {
-    openBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      modal.style.display = 'flex';
-    });
-  }
-  
-  const wholesaleBtn = document.getElementById('chooseWholesaleBtn');
-  const retailBtn = document.getElementById('chooseRetailBtn');
-  
-  if (wholesaleBtn) {
-    wholesaleBtn.onclick = (e) => {
-      e.preventDefault();
-      switchModeSeamlessly('wholesale');
-    };
-  }
-  
-  if (retailBtn) {
-    retailBtn.onclick = (e) => {
-      e.preventDefault();
-      switchModeSeamlessly('retail');
-    };
-  }
-}
 
-function initWelcomeModeModal() {
-  const modal = document.getElementById('welcomeModeModal');
-  const openBtn = document.getElementById('openModeModal');
-  
-  // Show welcome popup modal on landing if user hasn't made a choice yet or wants to switch
-  const savedMode = localStorage.getItem('vfs_user_mode');
-  if (modal && !savedMode) {
-    modal.style.display = 'flex';
-  }
-  
-  // Open modal anytime user clicks Mode button in header
-  if (openBtn && modal) {
-    openBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      modal.style.display = 'flex';
-    });
-  }
-  
-  const wholesaleBtn = document.getElementById('chooseWholesaleBtn');
-  const retailBtn = document.getElementById('chooseRetailBtn');
-  
-  if (wholesaleBtn) {
-    wholesaleBtn.onclick = (e) => {
-      e.preventDefault();
-      switchModeSeamlessly('wholesale');
-    };
-  }
-  
-  if (retailBtn) {
-    retailBtn.onclick = (e) => {
-      e.preventDefault();
-      switchModeSeamlessly('retail');
-    };
-  }
-}
 
-function initWelcomeModeModal() {
-  const modal = document.getElementById('welcomeModeModal');
-  const openBtn = document.getElementById('openModeModal');
-  
-  // Hide modal by default on load (Retail is default)
-  if (modal) {
-    modal.style.display = 'none';
-  }
-  
-  // Open modal ONLY when user clicks Mode button
-  if (openBtn && modal) {
-    openBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      modal.style.display = 'flex';
-    });
-  }
-  
-  const wholesaleBtn = document.getElementById('chooseWholesaleBtn');
-  const retailBtn = document.getElementById('chooseRetailBtn');
-  
-  if (wholesaleBtn) {
-    wholesaleBtn.onclick = (e) => {
-      e.preventDefault();
-      switchModeSeamlessly('wholesale');
-    };
-  }
-  
-  if (retailBtn) {
-    retailBtn.onclick = (e) => {
-      e.preventDefault();
-      switchModeSeamlessly('retail');
-    };
-  }
-}
 
-function initWelcomeModeModal() {
-  const savedMode = localStorage.getItem('vfs_user_mode');
-  const sessionShown = sessionStorage.getItem('vfs_welcome_session_shown');
-  const modal = document.getElementById('welcomeModeModal');
-  const openBtn = document.getElementById('openModeModal');
-  
-  if ((!savedMode || !sessionShown) && modal) {
-    modal.style.display = 'flex';
-  }
-  
-  if (openBtn && modal) {
-    openBtn.addEventListener('click', () => {
-      modal.style.display = 'flex';
-    });
-  }
-  
-  const wholesaleBtn = document.getElementById('chooseWholesaleBtn');
-  const retailBtn = document.getElementById('chooseRetailBtn');
-  
-  if (wholesaleBtn) {
-    wholesaleBtn.onclick = (e) => {
-      e.preventDefault();
-      switchModeSeamlessly('wholesale');
-    };
-  }
-  
-  if (retailBtn) {
-    retailBtn.onclick = (e) => {
-      e.preventDefault();
-      switchModeSeamlessly('retail');
-    };
-  }
-}
+
 
 function initKeyboardArrowNav() {
   window.addEventListener('keydown', (e) => {
