@@ -1,16 +1,17 @@
 import os
 import io
 import requests
+import fitz  # PyMuPDF
 from PIL import Image as PILImage
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, KeepTogether, PageBreak
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
-# ── 12 Real Products with Valid Image URLs & Local Fallbacks ──
+# ── 12 Real Products Data with Working Cloudinary URLs ──
 SAMPLE_PRODUCTS = [
     {
         "sku": "VFS-KAD-01",
@@ -126,33 +127,45 @@ ORDER_META = {
     }
 }
 
-def fetch_image(url, fallback_path, target_width=1.4*inch, target_height=1.4*inch):
-    # Try fetching online image first
+# ── Helper to Download & Cache Unique Product Images ──
+def get_product_image_path(idx, url, fallback):
+    unique_filename = os.path.abspath(f"item_photo_{idx}.png")
     try:
-        resp = requests.get(url, timeout=5)
-        if resp.status_code == 200:
-            img_data = io.BytesIO(resp.content)
-            pil_img = PILImage.open(img_data).convert('RGB')
-            temp_path = os.path.join(os.getcwd(), 'temp_item_photo.png')
-            pil_img.save(temp_path)
-            return Image(temp_path, width=target_width, height=target_height)
+        r = requests.get(url, timeout=5)
+        if r.status_code == 200 and len(r.content) > 1000:
+            pil_img = PILImage.open(io.BytesIO(r.content)).convert('RGB')
+            # Crop to square aspect ratio
+            w, h = pil_img.size
+            min_dim = min(w, h)
+            left = (w - min_dim) / 2
+            top = (h - min_dim) / 2
+            right = (w + min_dim) / 2
+            bottom = (h + min_dim) / 2
+            pil_img = pil_img.crop((left, top, right, bottom))
+            pil_img.save(unique_filename)
+            return unique_filename
     except Exception as e:
-        print(f"Online fetch error {url}: {e}")
+        print(f"Error fetching online photo {idx}: {e}")
 
-    # Local fallback image
-    if os.path.exists(fallback_path):
+    if os.path.exists(fallback):
         try:
-            pil_img = PILImage.open(fallback_path).convert('RGB')
-            temp_path = os.path.join(os.getcwd(), 'temp_fallback_photo.png')
-            pil_img.save(temp_path)
-            return Image(temp_path, width=target_width, height=target_height)
+            pil_img = PILImage.open(fallback).convert('RGB')
+            w, h = pil_img.size
+            min_dim = min(w, h)
+            left = (w - min_dim) / 2
+            top = (h - min_dim) / 2
+            right = (w + min_dim) / 2
+            bottom = (h + min_dim) / 2
+            pil_img = pil_img.crop((left, top, right, bottom))
+            pil_img.save(unique_filename)
+            return unique_filename
         except Exception as e:
-            print(f"Local fallback error {fallback_path}: {e}")
-            
+            print(f"Fallback error {fallback}: {e}")
+
     return None
 
 
-# ── BUILD INVOICE PDF (Matching Screenshot 1) ──
+# ── BUILD OFFICIAL INVOICE PDF (Screenshot 1 Format) ──
 def build_invoice_pdf(filename="vfs_invoice_sample_12_items.pdf"):
     doc = SimpleDocTemplate(
         filename,
@@ -230,9 +243,7 @@ def build_invoice_pdf(filename="vfs_invoice_sample_12_items.pdf"):
         [left_header, [Paragraph("INVOICE", inv_title_style), Spacer(1, 4), meta_table]]
     ]
     header_table = Table(header_table_data, colWidths=[4.2*inch, 3.1*inch])
-    header_table.setStyle(TableStyle([
-        ('VALIGN', (0,0), (-1,-1), 'TOP'),
-    ]))
+    header_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP')]))
     story.append(header_table)
     story.append(Spacer(1, 15))
 
@@ -346,7 +357,7 @@ def build_invoice_pdf(filename="vfs_invoice_sample_12_items.pdf"):
     print(f"Successfully generated Invoice PDF: {filename}")
 
 
-# ── BUILD PRODUCT PHOTO SLIP PDF WITH REAL PHOTOS (Matching Screenshot 2) ──
+# ── BUILD PRODUCT PHOTO SLIP PDF (Screenshot 2 Format with Real Embedded Photos) ──
 def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
     doc = SimpleDocTemplate(
         filename,
@@ -411,7 +422,7 @@ def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
 
     card_elements = []
     for idx, p in enumerate(SAMPLE_PRODUCTS):
-        img_obj = fetch_image(p["img_url"], p["local_fallback"], target_width=1.4*inch, target_height=1.4*inch)
+        img_path = get_product_image_path(idx, p["img_url"], p["local_fallback"])
         
         info_lines = [
             Paragraph(f"<b>qty orderd :</b> {p['qty']}", card_text_style),
@@ -420,7 +431,8 @@ def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
             Paragraph(f"<b>product code :</b> {p['sku']}", card_text_style),
         ]
 
-        if img_obj:
+        if img_path and os.path.exists(img_path):
+            img_obj = Image(img_path, width=1.5*inch, height=1.5*inch)
             card_content = Table([[img_obj], [info_lines]], colWidths=[3.3*inch])
         else:
             card_content = Table([["[PRODUCT PHOTO]"], [info_lines]], colWidths=[3.3*inch])
@@ -458,9 +470,33 @@ def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
             story.append(PageBreak())
 
     doc.build(story)
-    print(f"Successfully generated Photo Slip PDF with REAL PHOTOS: {filename}")
+    print(f"Successfully generated Photo Slip PDF with REAL EMBEDDED PHOTOS: {filename}")
+
+
+# ── CONVERT PDF PAGES TO HIGH-RES PNG PREVIEW IMAGES ──
+def render_pdf_to_images(pdf_filename, output_prefix):
+    doc = fitz.open(pdf_filename)
+    saved_images = []
+    for page_idx in range(len(doc)):
+        page = doc[page_idx]
+        pix = page.get_pixmap(dpi=200) # High Resolution
+        out_name = f"{output_prefix}_page_{page_idx+1}.png"
+        out_path = os.path.join(os.getcwd(), out_name)
+        pix.save(out_path)
+        
+        # Also copy to assets/ for web viewing
+        assets_path = os.path.join(os.getcwd(), 'assets', out_name)
+        pix.save(assets_path)
+        
+        saved_images.append(out_path)
+        print(f"Rendered {pdf_filename} Page {page_idx+1} -> {out_name}")
+    return saved_images
 
 
 if __name__ == '__main__':
     build_invoice_pdf("vfs_invoice_sample_12_items.pdf")
     build_photo_slip_pdf("vfs_photo_slip_sample_12_items.pdf")
+    
+    # Convert both PDFs to crisp PNG preview images
+    render_pdf_to_images("vfs_invoice_sample_12_items.pdf", "vfs_invoice_sample")
+    render_pdf_to_images("vfs_photo_slip_sample_12_items.pdf", "vfs_photo_slip_sample")
