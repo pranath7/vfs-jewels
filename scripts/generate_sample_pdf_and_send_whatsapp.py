@@ -10,91 +10,103 @@ from reportlab.platypus import (
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
-# ── Sample 12 Products Data ──
+# ── 12 Real Products with Valid Image URLs & Local Fallbacks ──
 SAMPLE_PRODUCTS = [
     {
         "sku": "VFS-KAD-01",
         "name": "Anti-Tarnish Emerald Kada #01",
         "qty": 2,
         "price": 499,
-        "img": "https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_300/v1783183759/bracelets.png"
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg",
+        "local_fallback": "assets/bracelets.png"
     },
     {
         "sku": "VFS-NEC-02",
         "name": "CZ Infinity Pendant Necklace #02",
         "qty": 1,
         "price": 799,
-        "img": "https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_300/v1783183759/necklaces.png"
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1784987541/necklaces/nkfoqzblg8cengy6hrda.jpg",
+        "local_fallback": "assets/necklaces.png"
     },
     {
         "sku": "VFS-EAR-03",
         "name": "Handcrafted Pearl Clover Earrings #03",
         "qty": 3,
         "price": 499,
-        "img": "https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_300/v1783183759/earrings.png"
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783694425/kuk50yyh9yzosthcsxkk.png",
+        "local_fallback": "assets/earrings.png"
     },
     {
         "sku": "VFS-RNG-04",
         "name": "Solitaire Adjustable Ring #04",
         "qty": 4,
         "price": 399,
-        "img": "https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_300/v1783183759/rings.png"
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg",
+        "local_fallback": "assets/rings.png"
     },
     {
         "sku": "VFS-CHN-05",
         "name": "Kandy 316L Snake Gold Chain #05",
         "qty": 2,
         "price": 599,
-        "img": "https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_300/v1783183759/chains.png"
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178938/vza7byllycs7nmz8bwdq.jpg",
+        "local_fallback": "assets/chains.png"
     },
     {
         "sku": "VFS-BRC-06",
         "name": "Luxury Tennis Crystal Bracelet #06",
         "qty": 1,
         "price": 899,
-        "img": "https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_300/v1783183759/bracelets.png"
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg",
+        "local_fallback": "assets/bracelets.png"
     },
     {
         "sku": "VFS-KAD-07",
         "name": "Royal CZ Bangle Kada #07",
         "qty": 2,
         "price": 699,
-        "img": "https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_300/v1783183759/bracelets.png"
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg",
+        "local_fallback": "assets/bracelets.png"
     },
     {
         "sku": "VFS-NEC-08",
         "name": "Layered Choker Set #08",
         "qty": 1,
         "price": 1299,
-        "img": "https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_300/v1783183759/necklaces.png"
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1784987541/necklaces/nkfoqzblg8cengy6hrda.jpg",
+        "local_fallback": "assets/necklaces.png"
     },
     {
         "sku": "VFS-EAR-09",
         "name": "Austrian CZ Drop Jhumkas #09",
         "qty": 2,
         "price": 549,
-        "img": "https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_300/v1783183759/earrings.png"
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783694425/kuk50yyh9yzosthcsxkk.png",
+        "local_fallback": "assets/earrings.png"
     },
     {
         "sku": "VFS-RNG-10",
         "name": "Vintage Gold Open Ring #10",
         "qty": 5,
         "price": 299,
-        "img": "https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_300/v1783183759/rings.png"
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg",
+        "local_fallback": "assets/rings.png"
     },
     {
         "sku": "VFS-CHN-11",
         "name": "Classic Curb Statement Chain #11",
         "qty": 2,
         "price": 649,
-        "img": "https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_300/v1783183759/chains.png"
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178938/vza7byllycs7nmz8bwdq.jpg",
+        "local_fallback": "assets/chains.png"
     },
     {
         "sku": "VFS-BRC-12",
         "name": "Charm Link Bracelet #12",
         "qty": 3,
         "price": 449,
-        "img": "https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_300/v1783183759/bracelets.png"
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg",
+        "local_fallback": "assets/bracelets.png"
     }
 ]
 
@@ -114,19 +126,29 @@ ORDER_META = {
     }
 }
 
-# ── Helper to Download Image ──
-def fetch_image(url, target_width=1.5*inch, target_height=1.5*inch):
+def fetch_image(url, fallback_path, target_width=1.4*inch, target_height=1.4*inch):
+    # Try fetching online image first
     try:
         resp = requests.get(url, timeout=5)
         if resp.status_code == 200:
             img_data = io.BytesIO(resp.content)
-            pil_img = PILImage.open(img_data)
-            temp_path = os.path.join(os.getcwd(), 'temp_item.png')
+            pil_img = PILImage.open(img_data).convert('RGB')
+            temp_path = os.path.join(os.getcwd(), 'temp_item_photo.png')
             pil_img.save(temp_path)
             return Image(temp_path, width=target_width, height=target_height)
     except Exception as e:
-        print(f"Failed image fetch {url}: {e}")
-    # Fallback placeholder block
+        print(f"Online fetch error {url}: {e}")
+
+    # Local fallback image
+    if os.path.exists(fallback_path):
+        try:
+            pil_img = PILImage.open(fallback_path).convert('RGB')
+            temp_path = os.path.join(os.getcwd(), 'temp_fallback_photo.png')
+            pil_img.save(temp_path)
+            return Image(temp_path, width=target_width, height=target_height)
+        except Exception as e:
+            print(f"Local fallback error {fallback_path}: {e}")
+            
     return None
 
 
@@ -143,7 +165,6 @@ def build_invoice_pdf(filename="vfs_invoice_sample_12_items.pdf"):
 
     styles = getSampleStyleSheet()
 
-    # Custom styles
     title_style = ParagraphStyle(
         'CompanyTitle',
         parent=styles['Normal'],
@@ -174,13 +195,12 @@ def build_invoice_pdf(filename="vfs_invoice_sample_12_items.pdf"):
         fontName='Helvetica-Bold',
         fontSize=26,
         leading=28,
-        alignment=2, # Right align
+        alignment=2,
         textColor=colors.HexColor('#222222')
     )
 
     story = []
 
-    # 1. Top Header (Company Left, INVOICE Right)
     left_header = [
         Paragraph("VIKRAM FANCY STORE (VFS)", title_style),
         Paragraph("VFS JEWELS", brand_sub),
@@ -216,7 +236,6 @@ def build_invoice_pdf(filename="vfs_invoice_sample_12_items.pdf"):
     story.append(header_table)
     story.append(Spacer(1, 15))
 
-    # 2. BILL TO & SHIP TO Boxes
     c = ORDER_META["customer"]
     bill_to_content = [
         Paragraph("<b>Name:</b> " + c["name"], store_info),
@@ -263,7 +282,6 @@ def build_invoice_pdf(filename="vfs_invoice_sample_12_items.pdf"):
     story.append(address_table)
     story.append(Spacer(1, 15))
 
-    # 3. Item Table
     item_header_style = ParagraphStyle('ItemHeader', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=8.5, textColor=colors.HexColor('#111111'))
     item_cell_style = ParagraphStyle('ItemCell', parent=styles['Normal'], fontName='Helvetica', fontSize=8.5, textColor=colors.HexColor('#222222'))
     item_cell_bold = ParagraphStyle('ItemCellBold', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=8.5, textColor=colors.HexColor('#222222'))
@@ -305,7 +323,6 @@ def build_invoice_pdf(filename="vfs_invoice_sample_12_items.pdf"):
     story.append(item_table)
     story.append(Spacer(1, 10))
 
-    # 4. Totals Box at bottom right
     totals_data = [
         [Paragraph("Subtotal:", store_info), Paragraph(f"Rs. {subtotal:,}", store_info)],
         [Paragraph("GST (3%):", store_info), Paragraph(f"Rs. {gst_fee:,}", store_info)],
@@ -329,7 +346,7 @@ def build_invoice_pdf(filename="vfs_invoice_sample_12_items.pdf"):
     print(f"Successfully generated Invoice PDF: {filename}")
 
 
-# ── BUILD PRODUCT PHOTO SLIP PDF (Matching Screenshot 2) ──
+# ── BUILD PRODUCT PHOTO SLIP PDF WITH REAL PHOTOS (Matching Screenshot 2) ──
 def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
     doc = SimpleDocTemplate(
         filename,
@@ -369,11 +386,9 @@ def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
 
     story = []
 
-    # 1. Header Title
     story.append(Paragraph("VIKRAM FANCY STORE (VFS) PRODUCT PHOTO SLIP", header_title_style))
     story.append(Spacer(1, 8))
 
-    # 2. Billed From & Billed To
     c = ORDER_META["customer"]
     billed_info = [
         [
@@ -394,10 +409,9 @@ def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
     story.append(billed_table)
     story.append(Spacer(1, 12))
 
-    # 3. Product Cards Grid (2 Columns per Row)
     card_elements = []
     for idx, p in enumerate(SAMPLE_PRODUCTS):
-        img_obj = fetch_image(p["img"], target_width=1.4*inch, target_height=1.4*inch)
+        img_obj = fetch_image(p["img_url"], p["local_fallback"], target_width=1.4*inch, target_height=1.4*inch)
         
         info_lines = [
             Paragraph(f"<b>qty orderd :</b> {p['qty']}", card_text_style),
@@ -423,7 +437,6 @@ def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
         ]))
         card_elements.append(card_content)
 
-    # Pair cards into 2-column rows
     grid_rows = []
     for i in range(0, len(card_elements), 2):
         row = [card_elements[i]]
@@ -433,7 +446,6 @@ def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
             row.append(Spacer(1, 1))
         grid_rows.append(row)
 
-    # Group into pages (6 cards per page = 3 rows per page)
     for r_idx, r in enumerate(grid_rows):
         grid_table = Table([r], colWidths=[3.65*inch, 3.65*inch])
         grid_table.setStyle(TableStyle([
@@ -446,7 +458,7 @@ def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
             story.append(PageBreak())
 
     doc.build(story)
-    print(f"Successfully generated Photo Slip PDF: {filename}")
+    print(f"Successfully generated Photo Slip PDF with REAL PHOTOS: {filename}")
 
 
 if __name__ == '__main__':
