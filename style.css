@@ -4057,3 +4057,15 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 
 
 
+
+
+/* Guaranteed 100% Uncropped Product Images */
+.p-img img,
+.p-card img,
+.product-card img,
+.shelf-card img,
+.tinder-card .tinder-img-box img {
+  object-fit: contain !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}

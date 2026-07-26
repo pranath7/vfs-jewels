@@ -522,8 +522,8 @@ const clOpt = (url, width) => {
       cleanPath = pathSegments.join('/');
     }
     const isBannerOrLogo = cleanPath.includes('banner') || cleanPath.includes('logo') || cleanPath.includes('icon') || cleanPath.includes('a4hfmqgh7wxjuzucvutj');
-    const cropTransform = !isBannerOrLogo ? 'c_crop,g_north,h_0.74,' : '';
-    return `${parts[0]}/upload/${cropTransform}f_auto,q_95,w_${width}/${cleanPath}`;
+    const cropTransform = '';
+    return `${parts[0]}/upload/f_auto,q_95,w_${width}/${cleanPath}`;
   }
   return url;
 };
@@ -5283,7 +5283,7 @@ async function renderProductShelves() {
       <div class="p-card" style="cursor:pointer;position:relative;" onclick="openPDP(${p.id})">
         ${badgeHtml}
         <div class="p-img">
-          <img src="${clOpt(p.img, 300)}" alt="${p.name}" loading="lazy" style="width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;">
+          <img src="${clOpt(p.img, 300)}" alt="${p.name}" loading="lazy" style="width:100%;height:220px;object-fit:contain;background:#fafafa;border-radius:8px 8px 0 0;">
         </div>
         <div class="p-info" style="padding:10px 8px;">
           <div class="p-meta" style="font-size:1.1rem;color:#888;">${p.meta || ''}</div>
