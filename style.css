@@ -389,7 +389,36 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   background: var(--color-neutral);
 }
 
-.hero-slider { position: relative; }
+.hero-slider { position: relative; user-select: none; touch-action: pan-y; }
+
+.hero-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 2.2rem;
+  line-height: 1;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(4px);
+  padding-bottom: 3px;
+}
+.hero-nav-btn:hover {
+  background: rgba(212, 175, 55, 0.9);
+  color: #121212;
+  border-color: #D4AF37;
+}
+.hero-prev { left: 16px; }
+.hero-next { right: 16px; }
 
 .hero-slide {
   display: none;

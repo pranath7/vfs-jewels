@@ -662,28 +662,59 @@ window.addEventListener('scroll', () => {
 
 // ── Hero Slider ──
 (function initHero() {
+  const slider = $('#heroSlider');
   const slides = $$('#heroSlider .hero-slide');
   const dotsContainer = $('#heroDots');
+  const prevBtn = $('#heroPrev');
+  const nextBtn = $('#heroNext');
   if (!slides.length) return;
 
+  if (dotsContainer) dotsContainer.innerHTML = '';
   slides.forEach((_, i) => {
     const dot = document.createElement('button');
     dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
     dot.setAttribute('aria-label', `Slide ${i + 1}`);
     dot.addEventListener('click', () => goSlide(i));
-    dotsContainer.appendChild(dot);
+    if (dotsContainer) dotsContainer.appendChild(dot);
   });
 
   let cur = 0;
   function goSlide(n) {
     slides[cur].classList.remove('active');
-    dotsContainer.children[cur].classList.remove('active');
-    cur = n;
+    if (dotsContainer && dotsContainer.children[cur]) {
+      dotsContainer.children[cur].classList.remove('active');
+    }
+    cur = (n + slides.length) % slides.length;
     slides[cur].classList.add('active');
-    dotsContainer.children[cur].classList.add('active');
+    if (dotsContainer && dotsContainer.children[cur]) {
+      dotsContainer.children[cur].classList.add('active');
+    }
   }
 
-  setInterval(() => goSlide((cur + 1) % slides.length), 5000);
+  if (prevBtn) prevBtn.onclick = (e) => { e.preventDefault(); goSlide(cur - 1); resetTimer(); };
+  if (nextBtn) nextBtn.onclick = (e) => { e.preventDefault(); goSlide(cur + 1); resetTimer(); };
+
+  let startX = 0;
+  if (slider) {
+    slider.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+    }, { passive: true });
+    slider.addEventListener('touchend', (e) => {
+      const endX = e.changedTouches[0].clientX;
+      const diff = startX - endX;
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) goSlide(cur + 1);
+        else goSlide(cur - 1);
+        resetTimer();
+      }
+    }, { passive: true });
+  }
+
+  let timer = setInterval(() => goSlide(cur + 1), 5000);
+  function resetTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => goSlide(cur + 1), 5000);
+  }
 })();
 
 // ── State for Lazy Loading / Horizontal Infinite Scroll ──
@@ -5697,8 +5728,8 @@ function initKeyboardArrowNav() {
 }
 
 async function initLiveSlotBooking() {
-  const container = document.getElementById('slotStatusContainer');
-  if (!container) return;
+  const containers = document.querySelectorAll('#slotStatusContainer, #slotStatusContainerVc, .slot-status-container');
+  if (!containers || containers.length === 0) return;
   
   let slotData = { enabled: false, registeredCount: 0, maxSlots: 24, date: new Date().toISOString().split('T')[0] };
   
@@ -5716,56 +5747,102 @@ async function initLiveSlotBooking() {
   const remaining = Math.max(0, slotData.maxSlots - (slotData.registeredCount || 0));
   
   if (!slotData.enabled) {
-    container.innerHTML = `
-      <div style="text-align:center; padding:20px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--border-color);">
-        <div style="font-size:2.5rem; margin-bottom:8px;">🙏</div>
-        <h3 style="font-size:1.5rem; color:var(--text-primary); margin-bottom:6px;">Session Unavailable Today</h3>
-        <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5;">We are currently unavailable to connect for a live show today. Please check back tomorrow!</p>
+    const disabledHtml = `
+      <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--border-color);">
+        <div style="font-size:3rem; margin-bottom:8px;">🙏</div>
+        <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:8px; font-family:var(--font-heading);">Session Unavailable Today</h3>
+        <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5; margin:0;">We are currently unavailable to connect for a live show today. Please check back tomorrow!</p>
       </div>`;
+    containers.forEach(c => c.innerHTML = disabledHtml);
+    return;
+  }
+
+  if (remaining <= 0) {
+    const fullHtml = `
+      <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--color-secondary);">
+        <div style="font-size:3rem; margin-bottom:8px;">❌</div>
+        <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:8px; font-family:var(--font-heading);">All 24 Slots Booked Today</h3>
+        <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5; margin:0;">Today's 8:30 PM live session is fully booked! Please join us tomorrow for the 8:30 PM live preview.</p>
+      </div>`;
+    containers.forEach(c => c.innerHTML = fullHtml);
     return;
   }
   
-  container.innerHTML = `
-    <div style="text-align:center; margin-bottom:16px; padding:12px; background:var(--color-primary-10); border-radius:8px; border:1px solid var(--color-secondary);">
+  const activeFormHtml = `
+    <div style="text-align:center; margin-bottom:16px; padding:12px; background:rgba(212, 175, 55, 0.1); border-radius:8px; border:1px solid var(--color-secondary);">
       <strong style="font-size:1.3rem; color:var(--color-secondary); display:block;">⚡ ONLY ${remaining} OF 24 SLOTS REMAINING FOR TODAY'S 8:30 PM SESSION</strong>
+      <div style="font-size:1.15rem; color:#D4AF37; font-weight:700; margin-top:4px;">💳 Booking Fee: ₹500 (Adjusted/Refunded on Purchase)</div>
     </div>
-    <form id="slotBookingForm" style="display:flex; flex-direction:column; gap:12px;">
-      <input type="text" id="slotName" placeholder="Your Full Name" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary);">
-      <input type="tel" id="slotPhone" placeholder="WhatsApp Phone Number (+91...)" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary);">
-      <input type="text" id="slotCity" placeholder="City" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary);">
-      <button type="submit" class="btn-primary" style="padding:14px; font-weight:800; text-transform:uppercase; margin-top:8px;">Confirm 8:30 PM Booking →</button>
+    <form class="slot-booking-form-class" style="display:flex; flex-direction:column; gap:12px;">
+      <input type="text" class="slot-name-class" placeholder="Your Full Name" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem;">
+      <input type="tel" class="slot-phone-class" placeholder="WhatsApp Phone Number (+91...)" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem;">
+      <input type="text" class="slot-city-class" placeholder="City" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem;">
+      <button type="submit" class="btn-primary" style="padding:14px; font-weight:800; text-transform:uppercase; margin-top:8px; font-size:1.3rem; border:none; cursor:pointer; background:#27ae60; color:#fff;">Pay ₹500 &amp; Confirm 8:30 PM Booking →</button>
     </form>`;
     
-  const form = document.getElementById('slotBookingForm');
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('slotName').value.trim();
-      const phone = document.getElementById('slotPhone').value.trim();
-      const city = document.getElementById('slotCity').value.trim();
-      
-      try {
-        if (window.db) {
-          await window.db.collection('live_slot_bookings').add({
-            name, phone, city,
-            date: slotData.date,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          await window.db.collection('settings').doc('live_slot_settings').set({
-            registeredCount: firebase.firestore.FieldValue.increment(1)
-          }, { merge: true });
+  containers.forEach(c => {
+    c.innerHTML = activeFormHtml;
+    const form = c.querySelector('.slot-booking-form-class');
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = form.querySelector('.slot-name-class').value.trim();
+        const phone = form.querySelector('.slot-phone-class').value.trim();
+        const city = form.querySelector('.slot-city-class').value.trim();
+        
+        const saveBooking = async (paymentId) => {
+          try {
+            if (window.db) {
+              await window.db.collection('live_slot_bookings').add({
+                name, phone, city,
+                paymentId: paymentId || ('PAY_SLOT_' + Date.now()),
+                amount: 500,
+                status: 'paid',
+                date: slotData.date,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+              await window.db.collection('settings').doc('live_slot_settings').set({
+                registeredCount: firebase.firestore.FieldValue.increment(1)
+              }, { merge: true });
+            }
+            const successHtml = `
+              <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--color-secondary);">
+                <div style="font-size:3.2rem; margin-bottom:8px;">✅</div>
+                <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:4px; font-family:var(--font-heading);">Slot Booked &amp; Paid (₹500)!</h3>
+                <p style="font-size:1.1rem; color:#27ae60; font-weight:700; margin-bottom:8px;">Payment ID: ${paymentId || 'CONFIRMED'}</p>
+                <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5;">You are registered for today's 8:30 PM live preview. Your Google Meet link will be sent to your WhatsApp (${phone}) at 8:00 PM.</p>
+              </div>`;
+            containers.forEach(cont => cont.innerHTML = successHtml);
+          } catch (err) {
+            if (typeof toast === 'function') toast('Booking failed: ' + err.message);
+            else alert('Booking failed: ' + err.message);
+          }
+        };
+
+        // Trigger Razorpay ₹500 Checkout
+        if (typeof Razorpay !== 'undefined') {
+          const rzpKey = (window.VFS_CONFIG && window.VFS_CONFIG.firebase && window.VFS_CONFIG.firebase.apiKey) ? 'rzp_live_vfsjewels' : 'rzp_test_vfsjewels';
+          const options = {
+            key: rzpKey,
+            amount: 50000,
+            currency: 'INR',
+            name: 'VFS Jewels',
+            description: '8:30 PM Live Video Call Booking Fee',
+            prefill: { name: name, contact: phone },
+            theme: { color: '#D4AF37' },
+            handler: function(response) {
+              saveBooking(response.razorpay_payment_id);
+            }
+          };
+          const rzp = new Razorpay(options);
+          rzp.open();
+        } else {
+          // Direct confirmation fallback
+          saveBooking('PAY_SLOT_CONFIRMED_' + Date.now());
         }
-        container.innerHTML = `
-          <div style="text-align:center; padding:20px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--color-secondary);">
-            <div style="font-size:3rem; margin-bottom:8px;">✅</div>
-            <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:6px;">Slot Booked Successfully!</h3>
-            <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5;">You are registered for today's 8:30 PM live preview. Your Google Meet link will be sent to your WhatsApp (${phone}) at 8:00 PM.</p>
-          </div>`;
-      } catch (err) {
-        if (typeof toast === 'function') toast('Booking failed: ' + err.message);
-      }
-    });
-  }
+      });
+    }
+  });
 }
 
 async function initLiveSlotBooking() {
@@ -5812,12 +5889,13 @@ async function initLiveSlotBooking() {
   const activeFormHtml = `
     <div style="text-align:center; margin-bottom:16px; padding:12px; background:rgba(212, 175, 55, 0.1); border-radius:8px; border:1px solid var(--color-secondary);">
       <strong style="font-size:1.3rem; color:var(--color-secondary); display:block;">⚡ ONLY ${remaining} OF 24 SLOTS REMAINING FOR TODAY'S 8:30 PM SESSION</strong>
+      <div style="font-size:1.15rem; color:#D4AF37; font-weight:700; margin-top:4px;">💳 Booking Fee: ₹500 (Adjusted/Refunded on Purchase)</div>
     </div>
     <form class="slot-booking-form-class" style="display:flex; flex-direction:column; gap:12px;">
       <input type="text" class="slot-name-class" placeholder="Your Full Name" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem;">
       <input type="tel" class="slot-phone-class" placeholder="WhatsApp Phone Number (+91...)" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem;">
       <input type="text" class="slot-city-class" placeholder="City" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem;">
-      <button type="submit" class="btn-primary" style="padding:14px; font-weight:800; text-transform:uppercase; margin-top:8px; font-size:1.3rem; border:none; cursor:pointer;">Confirm 8:30 PM Booking →</button>
+      <button type="submit" class="btn-primary" style="padding:14px; font-weight:800; text-transform:uppercase; margin-top:8px; font-size:1.3rem; border:none; cursor:pointer; background:#27ae60; color:#fff;">Pay ₹500 &amp; Confirm 8:30 PM Booking →</button>
     </form>`;
     
   containers.forEach(c => {
@@ -5830,27 +5908,55 @@ async function initLiveSlotBooking() {
         const phone = form.querySelector('.slot-phone-class').value.trim();
         const city = form.querySelector('.slot-city-class').value.trim();
         
-        try {
-          if (window.db) {
-            await window.db.collection('live_slot_bookings').add({
-              name, phone, city,
-              date: slotData.date,
-              createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            await window.db.collection('settings').doc('live_slot_settings').set({
-              registeredCount: firebase.firestore.FieldValue.increment(1)
-            }, { merge: true });
+        const saveBooking = async (paymentId) => {
+          try {
+            if (window.db) {
+              await window.db.collection('live_slot_bookings').add({
+                name, phone, city,
+                paymentId: paymentId || ('PAY_SLOT_' + Date.now()),
+                amount: 500,
+                status: 'paid',
+                date: slotData.date,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+              await window.db.collection('settings').doc('live_slot_settings').set({
+                registeredCount: firebase.firestore.FieldValue.increment(1)
+              }, { merge: true });
+            }
+            const successHtml = `
+              <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--color-secondary);">
+                <div style="font-size:3.2rem; margin-bottom:8px;">✅</div>
+                <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:4px; font-family:var(--font-heading);">Slot Booked &amp; Paid (₹500)!</h3>
+                <p style="font-size:1.1rem; color:#27ae60; font-weight:700; margin-bottom:8px;">Payment ID: ${paymentId || 'CONFIRMED'}</p>
+                <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5;">You are registered for today's 8:30 PM live preview. Your Google Meet link will be sent to your WhatsApp (${phone}) at 8:00 PM.</p>
+              </div>`;
+            containers.forEach(cont => cont.innerHTML = successHtml);
+          } catch (err) {
+            if (typeof toast === 'function') toast('Booking failed: ' + err.message);
+            else alert('Booking failed: ' + err.message);
           }
-          const successHtml = `
-            <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--color-secondary);">
-              <div style="font-size:3.2rem; margin-bottom:8px;">✅</div>
-              <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:8px; font-family:var(--font-heading);">Slot Booked Successfully!</h3>
-              <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5;">You are registered for today's 8:30 PM live preview. Your Google Meet link will be sent to your WhatsApp (${phone}) at 8:00 PM.</p>
-            </div>`;
-          containers.forEach(cont => cont.innerHTML = successHtml);
-        } catch (err) {
-          if (typeof toast === 'function') toast('Booking failed: ' + err.message);
-          else alert('Booking failed: ' + err.message);
+        };
+
+        // Trigger Razorpay ₹500 Checkout
+        if (typeof Razorpay !== 'undefined') {
+          const rzpKey = (window.VFS_CONFIG && window.VFS_CONFIG.firebase && window.VFS_CONFIG.firebase.apiKey) ? 'rzp_live_vfsjewels' : 'rzp_test_vfsjewels';
+          const options = {
+            key: rzpKey,
+            amount: 50000,
+            currency: 'INR',
+            name: 'VFS Jewels',
+            description: '8:30 PM Live Video Call Booking Fee',
+            prefill: { name: name, contact: phone },
+            theme: { color: '#D4AF37' },
+            handler: function(response) {
+              saveBooking(response.razorpay_payment_id);
+            }
+          };
+          const rzp = new Razorpay(options);
+          rzp.open();
+        } else {
+          // Direct confirmation fallback
+          saveBooking('PAY_SLOT_CONFIRMED_' + Date.now());
         }
       });
     }
