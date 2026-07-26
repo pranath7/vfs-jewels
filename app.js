@@ -529,11 +529,10 @@ const clOpt = (url, width) => {
 };
 
 // ── Shopping Mode State (Retail/Wholesale) ──
-let shoppingMode = localStorage.getItem('vfs_user_mode') || localStorage.getItem('vfs_shopping_mode') || 'retail';
-document.documentElement.setAttribute('data-shopping-mode', shoppingMode);
-if (shoppingMode === 'wholesale') {
-  window.location.replace('/wholesale.html');
-}
+let shoppingMode = 'retail';
+localStorage.setItem('vfs_user_mode', 'retail');
+localStorage.setItem('vfs_shopping_mode', 'retail');
+document.documentElement.setAttribute('data-shopping-mode', 'retail');
 let wholesaleUser = null;
 let tempPhone = '';
 try {
@@ -4808,7 +4807,7 @@ function setupShoppingMode() {
   if (switchBtn) {
     switchBtn.addEventListener('click', () => {
       localStorage.setItem('vfs_shopping_mode', 'wholesale');
-      window.location.href = '/wholesale.html';
+      // disabled auto redirect
     });
   }
 
@@ -4824,7 +4823,7 @@ function setupShoppingMode() {
 
   $('#selectWholesaleCard').addEventListener('click', () => {
     localStorage.setItem('vfs_shopping_mode', 'wholesale');
-    window.location.href = '/wholesale.html';
+    // disabled auto redirect
   });
 
   // Wholesale T&C checkbox check
@@ -5534,33 +5533,10 @@ function switchModeSeamlessly(targetMode) {
   }
   localStorage.setItem('vfs_user_mode', targetMode);
   localStorage.setItem('vfs_shopping_mode', targetMode);
-  sessionStorage.setItem('vfs_welcome_session_shown', 'true');
   document.documentElement.setAttribute('data-shopping-mode', targetMode);
   
   const modal = document.getElementById('welcomeModeModal');
   if (modal) modal.style.display = 'none';
-  
-  // Close any active wholesale modals
-  const wholesaleTermsModal = document.getElementById('wholesaleTermsModal');
-  const wholesaleLoginModal = document.getElementById('wholesaleLoginModal');
-  const wholesaleUnlockModal = document.getElementById('wholesaleUnlockModal');
-  const modeSelectorModal = document.getElementById('modeSelectorModal');
-
-  if (wholesaleTermsModal) wholesaleTermsModal.classList.remove('active');
-  if (wholesaleLoginModal) wholesaleLoginModal.classList.remove('active');
-  if (wholesaleUnlockModal) wholesaleUnlockModal.classList.remove('active');
-  if (modeSelectorModal) modeSelectorModal.classList.remove('active');
-  
-  if (targetMode === 'wholesale') {
-    // If switching to wholesale and not unlocked, open login/terms modal
-    if (typeof wholesaleUnlocked !== 'undefined' && !wholesaleUnlocked) {
-      if (wholesaleLoginModal) {
-        // disabled modal auto-popup;
-      } else if (wholesaleTermsModal) {
-        // disabled modal auto-popup;
-      }
-    }
-  }
   
   if (typeof renderProducts === 'function') {
     try { renderProducts(null); } catch (e) {}
@@ -5575,7 +5551,42 @@ function switchModeSeamlessly(targetMode) {
   }
   
   if (typeof toast === 'function') {
-    toast(targetMode === 'wholesale' ? 'Wholesale Mode Active 📦' : 'Retail Store Active 🛍️');
+    toast(targetMode === 'wholesale' ? 'Unlocked Wholesale Reseller Rates 📦' : 'Retail Store Active 🛍️');
+  }
+}
+
+function initWelcomeModeModal() {
+  const modal = document.getElementById('welcomeModeModal');
+  const openBtn = document.getElementById('openModeModal');
+  
+  // Hide modal by default on load (Retail is default)
+  if (modal) {
+    modal.style.display = 'none';
+  }
+  
+  // Open modal ONLY when user clicks Mode button
+  if (openBtn && modal) {
+    openBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      modal.style.display = 'flex';
+    });
+  }
+  
+  const wholesaleBtn = document.getElementById('chooseWholesaleBtn');
+  const retailBtn = document.getElementById('chooseRetailBtn');
+  
+  if (wholesaleBtn) {
+    wholesaleBtn.onclick = (e) => {
+      e.preventDefault();
+      switchModeSeamlessly('wholesale');
+    };
+  }
+  
+  if (retailBtn) {
+    retailBtn.onclick = (e) => {
+      e.preventDefault();
+      switchModeSeamlessly('retail');
+    };
   }
 }
 
