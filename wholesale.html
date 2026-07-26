@@ -1428,13 +1428,7 @@
           reg.update();
         }).catch(() => {});
       });
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-          refreshing = true;
-          window.location.reload();
-        }
-      });
+// disabled auto reload on SW controllerchange
     }
   </script>
   <!-- WELCOME SHOPPING PREFERENCE MODAL -->

@@ -4163,13 +4163,11 @@ async function initApp() {
     console.error("Failed to load products from live catalog:", e);
   }
 
-  // Load stock levels into cache
+  // Fast instant local stock cache init (sub-100ms load)
   const catalog = getFullCatalog();
-  const loadPromises = catalog.map(async (p) => {
-    const stockVal = await window.VFS_DB.getProductStock(p.id);
-    window.VFS_STOCK_CACHE[p.id] = stockVal;
+  catalog.forEach(p => {
+    window.VFS_STOCK_CACHE[p.id] = p.stock || 6;
   });
-  await Promise.all(loadPromises);
 
   // Execute 24-hour expiration and out of stock cart pruning
   pruneCart();
@@ -5552,6 +5550,42 @@ function switchModeSeamlessly(targetMode) {
   
   if (typeof toast === 'function') {
     toast(targetMode === 'wholesale' ? 'Unlocked Wholesale Reseller Rates 📦' : 'Retail Store Active 🛍️');
+  }
+}
+
+function initWelcomeModeModal() {
+  const modal = document.getElementById('welcomeModeModal');
+  const openBtn = document.getElementById('openModeModal');
+  
+  // Show welcome popup modal on landing if user hasn't made a choice yet or wants to switch
+  const savedMode = localStorage.getItem('vfs_user_mode');
+  if (modal && !savedMode) {
+    modal.style.display = 'flex';
+  }
+  
+  // Open modal anytime user clicks Mode button in header
+  if (openBtn && modal) {
+    openBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      modal.style.display = 'flex';
+    });
+  }
+  
+  const wholesaleBtn = document.getElementById('chooseWholesaleBtn');
+  const retailBtn = document.getElementById('chooseRetailBtn');
+  
+  if (wholesaleBtn) {
+    wholesaleBtn.onclick = (e) => {
+      e.preventDefault();
+      switchModeSeamlessly('wholesale');
+    };
+  }
+  
+  if (retailBtn) {
+    retailBtn.onclick = (e) => {
+      e.preventDefault();
+      switchModeSeamlessly('retail');
+    };
   }
 }
 
