@@ -6042,6 +6042,89 @@ async function initLiveSlotBooking() {
   }
 }
 
+async function initLiveSlotBooking() {
+  const container = document.getElementById('slotStatusContainer');
+  if (!container) return;
+  
+  let slotData = { enabled: false, registeredCount: 0, maxSlots: 24, date: new Date().toISOString().split('T')[0] };
+  
+  try {
+    if (window.db) {
+      const doc = await window.db.collection('settings').doc('live_slot_settings').get();
+      if (doc.exists) {
+        slotData = Object.assign(slotData, doc.data());
+      }
+    }
+  } catch (e) {
+    console.warn('Slot settings fetch error:', e);
+  }
+  
+  const remaining = Math.max(0, slotData.maxSlots - (slotData.registeredCount || 0));
+  
+  if (!slotData.enabled) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--border-color);">
+        <div style="font-size:3rem; margin-bottom:8px;">🙏</div>
+        <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:8px; font-family:var(--font-heading);">Session Unavailable Today</h3>
+        <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5; margin:0;">We are currently unavailable to connect for a live show today. Please check back tomorrow!</p>
+      </div>`;
+    return;
+  }
+
+  if (remaining <= 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--color-secondary);">
+        <div style="font-size:3rem; margin-bottom:8px;">❌</div>
+        <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:8px; font-family:var(--font-heading);">All 24 Slots Booked Today</h3>
+        <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5; margin:0;">Today's 8:30 PM live session is fully booked! Please join us tomorrow for the 8:30 PM live preview.</p>
+      </div>`;
+    return;
+  }
+  
+  container.innerHTML = `
+    <div style="text-align:center; margin-bottom:16px; padding:12px; background:rgba(212, 175, 55, 0.1); border-radius:8px; border:1px solid var(--color-secondary);">
+      <strong style="font-size:1.3rem; color:var(--color-secondary); display:block;">⚡ ONLY ${remaining} OF 24 SLOTS REMAINING FOR TODAY'S 8:30 PM SESSION</strong>
+    </div>
+    <form id="slotBookingForm" style="display:flex; flex-direction:column; gap:12px;">
+      <input type="text" id="slotName" placeholder="Your Full Name" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem;">
+      <input type="tel" id="slotPhone" placeholder="WhatsApp Phone Number (+91...)" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem;">
+      <input type="text" id="slotCity" placeholder="City" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem;">
+      <button type="submit" class="btn-primary" style="padding:14px; font-weight:800; text-transform:uppercase; margin-top:8px; font-size:1.3rem; border:none; cursor:pointer;">Confirm 8:30 PM Booking →</button>
+    </form>`;
+    
+  const form = document.getElementById('slotBookingForm');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('slotName').value.trim();
+      const phone = document.getElementById('slotPhone').value.trim();
+      const city = document.getElementById('slotCity').value.trim();
+      
+      try {
+        if (window.db) {
+          await window.db.collection('live_slot_bookings').add({
+            name, phone, city,
+            date: slotData.date,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          await window.db.collection('settings').doc('live_slot_settings').set({
+            registeredCount: firebase.firestore.FieldValue.increment(1)
+          }, { merge: true });
+        }
+        container.innerHTML = `
+          <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--color-secondary);">
+            <div style="font-size:3.2rem; margin-bottom:8px;">✅</div>
+            <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:8px; font-family:var(--font-heading);">Slot Booked Successfully!</h3>
+            <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5;">You are registered for today's 8:30 PM live preview. Your Google Meet link will be sent to your WhatsApp (${phone}) at 8:00 PM.</p>
+          </div>`;
+      } catch (err) {
+        if (typeof toast === 'function') toast('Booking failed: ' + err.message);
+        else alert('Booking failed: ' + err.message);
+      }
+    });
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   initWelcomeModeModal();

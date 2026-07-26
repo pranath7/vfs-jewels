@@ -6042,10 +6042,20 @@ async function initLiveSlotBooking() {
   
   if (!slotData.enabled) {
     container.innerHTML = `
-      <div style="text-align:center; padding:20px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--border-color);">
-        <div style="font-size:2.5rem; margin-bottom:8px;">🙏</div>
-        <h3 style="font-size:1.5rem; color:var(--text-primary); margin-bottom:6px;">Session Unavailable Today</h3>
-        <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5;">We are currently unavailable to connect for a live show today. Please check back tomorrow!</p>
+      <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--border-color);">
+        <div style="font-size:3rem; margin-bottom:8px;">🙏</div>
+        <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:8px; font-family:var(--font-heading);">Session Unavailable Today</h3>
+        <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5; margin:0;">We are currently unavailable to connect for a live show today. Please check back tomorrow!</p>
+      </div>`;
+    return;
+  }
+
+  if (remaining <= 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--color-secondary);">
+        <div style="font-size:3rem; margin-bottom:8px;">❌</div>
+        <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:8px; font-family:var(--font-heading);">All 24 Slots Booked Today</h3>
+        <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5; margin:0;">Today's 8:30 PM live session is fully booked! Please join us tomorrow for the 8:30 PM live preview.</p>
       </div>`;
     return;
   }
