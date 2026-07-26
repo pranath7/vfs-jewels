@@ -5578,10 +5578,11 @@ function initThemeToggle() {
 
 function initWelcomeModeModal() {
   const savedMode = localStorage.getItem('vfs_user_mode');
+  const sessionShown = sessionStorage.getItem('vfs_welcome_session_shown');
   const modal = document.getElementById('welcomeModeModal');
   const openBtn = document.getElementById('openModeModal');
   
-  if (!savedMode && modal) {
+  if ((!savedMode || !sessionShown) && modal) {
     modal.style.display = 'flex';
   }
   
@@ -5596,7 +5597,7 @@ function initWelcomeModeModal() {
   
   if (wholesaleBtn) {
     wholesaleBtn.addEventListener('click', () => {
-      localStorage.setItem('vfs_user_mode', 'wholesale');
+      localStorage.setItem('vfs_user_mode', 'wholesale'); sessionStorage.setItem('vfs_welcome_session_shown', 'true');
       if (modal) modal.style.display = 'none';
       if (!window.location.pathname.includes('wholesale.html')) {
         window.location.href = 'wholesale.html';
@@ -5608,7 +5609,7 @@ function initWelcomeModeModal() {
   
   if (retailBtn) {
     retailBtn.addEventListener('click', () => {
-      localStorage.setItem('vfs_user_mode', 'retail');
+      localStorage.setItem('vfs_user_mode', 'retail'); sessionStorage.setItem('vfs_welcome_session_shown', 'true');
       if (modal) modal.style.display = 'none';
       if (window.location.pathname.includes('wholesale.html')) {
         window.location.href = 'index.html';

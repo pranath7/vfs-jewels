@@ -4032,3 +4032,19 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 }
 
 
+
+
+/* Highest priority modal overlay for welcome mode popup */
+#welcomeModeModal {
+  z-index: 999999 !important;
+  position: fixed !important;
+  top: 0 !important; left: 0 !important;
+  width: 100vw !important; height: 100vh !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  backdrop-filter: blur(10px) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
