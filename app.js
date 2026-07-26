@@ -5526,6 +5526,33 @@ function initThemeToggle() {
   });
 }
 
+function switchModeSeamlessly(targetMode) {
+  if (typeof shoppingMode !== 'undefined') {
+    shoppingMode = targetMode;
+  }
+  localStorage.setItem('vfs_user_mode', targetMode);
+  sessionStorage.setItem('vfs_welcome_session_shown', 'true');
+  
+  const modal = document.getElementById('welcomeModeModal');
+  if (modal) modal.style.display = 'none';
+  
+  if (typeof renderProducts === 'function') {
+    try { renderProducts(null); } catch (e) {}
+  }
+  if (typeof renderCart === 'function') {
+    try { renderCart(); } catch (e) {}
+  }
+  
+  const modeBadge = document.getElementById('activeModeLabel');
+  if (modeBadge) {
+    modeBadge.textContent = targetMode === 'wholesale' ? 'Wholesale (Reseller Rates)' : 'Retail (Personal Use)';
+  }
+  
+  if (typeof toast === 'function') {
+    toast(targetMode === 'wholesale' ? 'Unlocked Wholesale Reseller Rates 📦' : 'Switched to Retail Shopping 🛍️');
+  }
+}
+
 function initWelcomeModeModal() {
   const savedMode = localStorage.getItem('vfs_user_mode');
   const sessionShown = sessionStorage.getItem('vfs_welcome_session_shown');
@@ -5546,25 +5573,17 @@ function initWelcomeModeModal() {
   const retailBtn = document.getElementById('chooseRetailBtn');
   
   if (wholesaleBtn) {
-    wholesaleBtn.addEventListener('click', () => {
-      localStorage.setItem('vfs_user_mode', 'wholesale'); sessionStorage.setItem('vfs_welcome_session_shown', 'true');
-      if (modal) modal.style.display = 'none';
-      if (!window.location.pathname.includes('wholesale.html')) {
-        window.location.href = 'wholesale.html';
-      } else {
-        window.location.reload();
-      }
-    });
+    wholesaleBtn.onclick = (e) => {
+      e.preventDefault();
+      switchModeSeamlessly('wholesale');
+    };
   }
   
   if (retailBtn) {
-    retailBtn.addEventListener('click', () => {
-      localStorage.setItem('vfs_user_mode', 'retail'); sessionStorage.setItem('vfs_welcome_session_shown', 'true');
-      if (modal) modal.style.display = 'none';
-      if (window.location.pathname.includes('wholesale.html')) {
-        window.location.href = 'index.html';
-      }
-    });
+    retailBtn.onclick = (e) => {
+      e.preventDefault();
+      switchModeSeamlessly('retail');
+    };
   }
 }
 
