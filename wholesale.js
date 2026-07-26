@@ -5582,11 +5582,13 @@ function switchModeSeamlessly(targetMode) {
   }
   localStorage.setItem('vfs_user_mode', targetMode);
   localStorage.setItem('vfs_shopping_mode', targetMode);
-  sessionStorage.setItem('vfs_welcome_session_shown', 'true');
   document.documentElement.setAttribute('data-shopping-mode', targetMode);
   
-  const modal = document.getElementById('welcomeModeModal');
-  if (modal) modal.style.display = 'none';
+  const welcomeModal = document.getElementById('welcomeModeModal');
+  if (welcomeModal) welcomeModal.style.display = 'none';
+  
+  const wholesaleTermsModal = document.getElementById('wholesaleTermsModal');
+  if (wholesaleTermsModal) wholesaleTermsModal.classList.remove('active');
   
   if (typeof renderProducts === 'function') {
     try { renderProducts(null); } catch (e) {}
@@ -5602,6 +5604,88 @@ function switchModeSeamlessly(targetMode) {
   
   if (typeof toast === 'function') {
     toast(targetMode === 'wholesale' ? 'Unlocked Wholesale Reseller Rates 📦' : 'Retail Store Active 🛍️');
+  }
+}
+
+function openWholesaleTermsModal() {
+  const welcomeModal = document.getElementById('welcomeModeModal');
+  if (welcomeModal) welcomeModal.style.display = 'none';
+  
+  const termsModal = document.getElementById('wholesaleTermsModal');
+  if (termsModal) {
+    termsModal.classList.add('active');
+  } else {
+    switchModeSeamlessly('wholesale');
+  }
+}
+
+function initWelcomeModeModal() {
+  const modal = document.getElementById('welcomeModeModal');
+  const openBtn = document.getElementById('openModeModal');
+  const sessionShown = sessionStorage.getItem('vfs_welcome_session_shown');
+  
+  // Show welcome popup modal automatically on landing for new sessions
+  if (modal && !sessionShown) {
+    modal.style.display = 'flex';
+  }
+  
+  // Open modal anytime user clicks Mode button in header
+  if (openBtn && modal) {
+    openBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      modal.style.display = 'flex';
+    });
+  }
+  
+  const wholesaleBtn = document.getElementById('chooseWholesaleBtn');
+  const retailBtn = document.getElementById('chooseRetailBtn');
+  
+  if (wholesaleBtn) {
+    wholesaleBtn.onclick = (e) => {
+      e.preventDefault();
+      openWholesaleTermsModal();
+    };
+  }
+  
+  if (retailBtn) {
+    retailBtn.onclick = (e) => {
+      e.preventDefault();
+      switchModeSeamlessly('retail');
+    };
+  }
+
+  // Bind Wholesale T&C Checkbox & Accept Button
+  const termsCheckbox = document.getElementById('agreeWholesaleTerms');
+  const acceptTermsBtn = document.getElementById('btnAcceptTerms');
+  const cancelTermsBtn = document.getElementById('btnCancelTerms');
+
+  if (termsCheckbox && acceptTermsBtn) {
+    termsCheckbox.onchange = () => {
+      if (termsCheckbox.checked) {
+        acceptTermsBtn.disabled = false;
+        acceptTermsBtn.style.opacity = '1';
+        acceptTermsBtn.style.cursor = 'pointer';
+      } else {
+        acceptTermsBtn.disabled = true;
+        acceptTermsBtn.style.opacity = '0.6';
+        acceptTermsBtn.style.cursor = 'not-allowed';
+      }
+    };
+
+    acceptTermsBtn.onclick = (e) => {
+      e.preventDefault();
+      if (!termsCheckbox.checked) return;
+      switchModeSeamlessly('wholesale');
+    };
+  }
+
+  if (cancelTermsBtn) {
+    cancelTermsBtn.onclick = (e) => {
+      e.preventDefault();
+      const termsModal = document.getElementById('wholesaleTermsModal');
+      if (termsModal) termsModal.classList.remove('active');
+      switchModeSeamlessly('retail');
+    };
   }
 }
 
