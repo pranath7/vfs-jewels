@@ -4048,3 +4048,16 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   padding: 16px;
 }
 
+
+
+/* Guarantee Wholesale Modals are hidden 100% when in Retail mode */
+html[data-shopping-mode="retail"] #wholesaleTermsModal,
+html[data-shopping-mode="retail"] #wholesaleLoginModal,
+html[data-shopping-mode="retail"] #wholesaleUnlockModal,
+html[data-shopping-mode="retail"] #modeSelectorModal {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+

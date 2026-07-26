@@ -530,6 +530,7 @@ const clOpt = (url, width) => {
 
 // ── Shopping Mode State (Retail/Wholesale) ──
 let shoppingMode = localStorage.getItem('vfs_user_mode') || localStorage.getItem('vfs_shopping_mode') || 'retail';
+document.documentElement.setAttribute('data-shopping-mode', shoppingMode);
 if (shoppingMode === 'wholesale') {
   window.location.replace('/wholesale.html');
 }
@@ -5534,21 +5535,31 @@ function switchModeSeamlessly(targetMode) {
   localStorage.setItem('vfs_user_mode', targetMode);
   localStorage.setItem('vfs_shopping_mode', targetMode);
   sessionStorage.setItem('vfs_welcome_session_shown', 'true');
+  document.documentElement.setAttribute('data-shopping-mode', targetMode);
   
   const modal = document.getElementById('welcomeModeModal');
   if (modal) modal.style.display = 'none';
   
-  // Close any wholesale modals if switching to retail
-  if (targetMode === 'retail') {
-    const wholesaleTermsModal = document.getElementById('wholesaleTermsModal');
-    const wholesaleLoginModal = document.getElementById('wholesaleLoginModal');
-    const wholesaleUnlockModal = document.getElementById('wholesaleUnlockModal');
-    const modeSelectorModal = document.getElementById('modeSelectorModal');
+  // Close any active wholesale modals
+  const wholesaleTermsModal = document.getElementById('wholesaleTermsModal');
+  const wholesaleLoginModal = document.getElementById('wholesaleLoginModal');
+  const wholesaleUnlockModal = document.getElementById('wholesaleUnlockModal');
+  const modeSelectorModal = document.getElementById('modeSelectorModal');
 
-    if (wholesaleTermsModal) wholesaleTermsModal.classList.remove('active');
-    if (wholesaleLoginModal) wholesaleLoginModal.classList.remove('active');
-    if (wholesaleUnlockModal) wholesaleUnlockModal.classList.remove('active');
-    if (modeSelectorModal) modeSelectorModal.classList.remove('active');
+  if (wholesaleTermsModal) wholesaleTermsModal.classList.remove('active');
+  if (wholesaleLoginModal) wholesaleLoginModal.classList.remove('active');
+  if (wholesaleUnlockModal) wholesaleUnlockModal.classList.remove('active');
+  if (modeSelectorModal) modeSelectorModal.classList.remove('active');
+  
+  if (targetMode === 'wholesale') {
+    // If switching to wholesale and not unlocked, open login/terms modal
+    if (typeof wholesaleUnlocked !== 'undefined' && !wholesaleUnlocked) {
+      if (wholesaleLoginModal) {
+        wholesaleLoginModal.classList.add('active');
+      } else if (wholesaleTermsModal) {
+        wholesaleTermsModal.classList.add('active');
+      }
+    }
   }
   
   if (typeof renderProducts === 'function') {
