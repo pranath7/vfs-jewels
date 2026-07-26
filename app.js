@@ -4800,7 +4800,7 @@ function setupShoppingMode() {
   if (startBtn) {
     startBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      modeSelectorModal.classList.add('active');
+      // disabled modal auto-popup;
     });
   }
 
@@ -4849,7 +4849,7 @@ function setupShoppingMode() {
   if (btnCancelTerms && wholesaleTermsModal && modeSelectorModal) {
     btnCancelTerms.addEventListener('click', () => {
       wholesaleTermsModal.classList.remove('active');
-      modeSelectorModal.classList.add('active');
+      // disabled modal auto-popup;
     });
   }
 
@@ -4862,7 +4862,7 @@ function setupShoppingMode() {
       if ($('#loginStepRegister')) $('#loginStepRegister').style.display = 'none';
       if ($('#wholesalePhoneInput')) $('#wholesalePhoneInput').value = '';
       if ($('#wholesaleOtpInput')) $('#wholesaleOtpInput').value = '';
-      wholesaleLoginModal.classList.add('active');
+      // disabled modal auto-popup;
     });
   }
 
@@ -4870,7 +4870,7 @@ function setupShoppingMode() {
   if (btnCancelLogin && wholesaleLoginModal && modeSelectorModal) {
     btnCancelLogin.addEventListener('click', () => {
       wholesaleLoginModal.classList.remove('active');
-      modeSelectorModal.classList.add('active');
+      // disabled modal auto-popup;
     });
   }
 
@@ -4925,7 +4925,7 @@ function setupShoppingMode() {
         renderProducts(null);
         
         if (!wholesaleUnlocked) {
-          openWholesaleUnlockModal();
+          // disabled modal auto-popup;
         } else {
           toast(`Welcome back, ${wholesaleUser.name}!`);
         }
@@ -4988,7 +4988,7 @@ function setupShoppingMode() {
         updateModeUI();
         renderProducts(null);
         if (!wholesaleUnlocked) {
-          openWholesaleUnlockModal();
+          // disabled modal auto-popup;
         } else {
           toast(`Welcome back, ${wholesaleUser.name}!`);
         }
@@ -5053,12 +5053,12 @@ function setupShoppingMode() {
     updateModeUI();
     renderProducts(null);
     
-    openWholesaleUnlockModal();
+    // disabled modal auto-popup;
     toast('Registration completed!');
   });
 
   // Unlock Modal helper
-  function openWholesaleUnlockModal() {
+  function // disabled modal auto-popup {
     const unlockAmountLabel = $('#unlockAmountLabel');
     const unlockPriceText = $('#unlockPriceText');
     
@@ -5070,7 +5070,7 @@ function setupShoppingMode() {
       ? 'Pay ₹1,000 first order advance to unlock wholesale prices.'
       : 'Pay ₹500 advance to unlock wholesale prices for your next order.';
       
-    wholesaleUnlockModal.classList.add('active');
+    // disabled modal auto-popup;
   }
 
   const btnCancelUnlock = $('#btnCancelUnlock');
@@ -5555,9 +5555,9 @@ function switchModeSeamlessly(targetMode) {
     // If switching to wholesale and not unlocked, open login/terms modal
     if (typeof wholesaleUnlocked !== 'undefined' && !wholesaleUnlocked) {
       if (wholesaleLoginModal) {
-        wholesaleLoginModal.classList.add('active');
+        // disabled modal auto-popup;
       } else if (wholesaleTermsModal) {
-        wholesaleTermsModal.classList.add('active');
+        // disabled modal auto-popup;
       }
     }
   }

@@ -4061,3 +4061,16 @@ html[data-shopping-mode="retail"] #modeSelectorModal {
   pointer-events: none !important;
 }
 
+
+
+/* Permanently disable legacy wholesale T&C, login, and unlock popups */
+#wholesaleTermsModal,
+#wholesaleLoginModal,
+#wholesaleUnlockModal,
+#modeSelectorModal {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+

@@ -5605,9 +5605,9 @@ function switchModeSeamlessly(targetMode) {
     // If switching to wholesale and not unlocked, open login/terms modal
     if (typeof wholesaleUnlocked !== 'undefined' && !wholesaleUnlocked) {
       if (wholesaleLoginModal) {
-        wholesaleLoginModal.classList.add('active');
+        // disabled modal auto-popup;
       } else if (wholesaleTermsModal) {
-        wholesaleTermsModal.classList.add('active');
+        // disabled modal auto-popup;
       }
     }
   }
