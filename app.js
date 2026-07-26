@@ -5055,7 +5055,7 @@ function setupShoppingMode() {
   });
 
   // Unlock Modal helper
-  function // disabled modal auto-popup {
+  function openWholesaleUnlockModal() {
     const unlockAmountLabel = $('#unlockAmountLabel');
     const unlockPriceText = $('#unlockPriceText');
     
