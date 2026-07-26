@@ -4803,9 +4803,9 @@ function setupShoppingMode() {
 
   // Bind switch button in header status bar
   if (switchBtn) {
-    switchBtn.addEventListener('click', () => {
-      localStorage.setItem('vfs_shopping_mode', 'wholesale');
-      // disabled auto redirect
+    switchBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openWholesaleFunnel();
     });
   }
 
@@ -6105,3 +6105,20 @@ document.addEventListener('DOMContentLoaded', () => {
   renderGoogleReviews();
 });
 
+
+
+// Global Mode Button Attacher
+function bindAllModeButtons() {
+  document.querySelectorAll('#openModeModal, .mode-btn, [data-action="switch-mode"], #switchModeBtn, #headerModeBtn').forEach(btn => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      const modal = document.getElementById('welcomeModeModal');
+      if (modal) modal.style.display = 'flex';
+    };
+  });
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bindAllModeButtons);
+} else {
+  bindAllModeButtons();
+}

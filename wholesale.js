@@ -6156,3 +6156,20 @@ document.addEventListener('DOMContentLoaded', () => {
   renderGoogleReviews();
 });
 
+
+
+// Global Mode Button Attacher
+function bindAllModeButtons() {
+  document.querySelectorAll('#openModeModal, .mode-btn, [data-action="switch-mode"], #switchModeBtn, #headerModeBtn').forEach(btn => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      const modal = document.getElementById('welcomeModeModal');
+      if (modal) modal.style.display = 'flex';
+    };
+  });
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bindAllModeButtons);
+} else {
+  bindAllModeButtons();
+}
