@@ -529,7 +529,7 @@ const clOpt = (url, width) => {
 };
 
 // ── Shopping Mode State (Retail/Wholesale) ──
-let shoppingMode = localStorage.getItem('vfs_shopping_mode') || 'retail';
+let shoppingMode = localStorage.getItem('vfs_user_mode') || localStorage.getItem('vfs_shopping_mode') || 'retail';
 if (shoppingMode === 'wholesale') {
   window.location.replace('/wholesale.html');
 }
@@ -622,6 +622,7 @@ function handleGoogleRedirectResult() {
 function saveState() {
   localStorage.setItem('vfs_cart', JSON.stringify(cart));
   localStorage.setItem('vfs_wl', JSON.stringify(wishlist));
+  localStorage.setItem('vfs_user_mode', shoppingMode);
   localStorage.setItem('vfs_shopping_mode', shoppingMode);
   if (wholesaleUser) {
     localStorage.setItem('vfs_wholesale_user', JSON.stringify(wholesaleUser));
@@ -5531,10 +5532,24 @@ function switchModeSeamlessly(targetMode) {
     shoppingMode = targetMode;
   }
   localStorage.setItem('vfs_user_mode', targetMode);
+  localStorage.setItem('vfs_shopping_mode', targetMode);
   sessionStorage.setItem('vfs_welcome_session_shown', 'true');
   
   const modal = document.getElementById('welcomeModeModal');
   if (modal) modal.style.display = 'none';
+  
+  // Close any wholesale modals if switching to retail
+  if (targetMode === 'retail') {
+    const wholesaleTermsModal = document.getElementById('wholesaleTermsModal');
+    const wholesaleLoginModal = document.getElementById('wholesaleLoginModal');
+    const wholesaleUnlockModal = document.getElementById('wholesaleUnlockModal');
+    const modeSelectorModal = document.getElementById('modeSelectorModal');
+
+    if (wholesaleTermsModal) wholesaleTermsModal.classList.remove('active');
+    if (wholesaleLoginModal) wholesaleLoginModal.classList.remove('active');
+    if (wholesaleUnlockModal) wholesaleUnlockModal.classList.remove('active');
+    if (modeSelectorModal) modeSelectorModal.classList.remove('active');
+  }
   
   if (typeof renderProducts === 'function') {
     try { renderProducts(null); } catch (e) {}
@@ -5549,7 +5564,7 @@ function switchModeSeamlessly(targetMode) {
   }
   
   if (typeof toast === 'function') {
-    toast(targetMode === 'wholesale' ? 'Unlocked Wholesale Reseller Rates 📦' : 'Switched to Retail Shopping 🛍️');
+    toast(targetMode === 'wholesale' ? 'Wholesale Mode Active 📦' : 'Retail Store Active 🛍️');
   }
 }
 
