@@ -4017,7 +4017,7 @@ window.downloadCustomerInvoicePDF = async function(orderId) {
     <div style="border: 1px solid #dddddd; padding: 30px; background: #ffffff; color: #000000;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #D4AF37; padding-bottom: 20px; margin-bottom: 20px;">
         <div>
-          <div style="font-size: 26px; font-weight: 900; letter-spacing: 2px; color: #000000;">VFS<span style="color:#D4AF37;">.</span></div>
+          <div style="font-size: 24px; font-weight: 900; letter-spacing: 2px; color: #000000;">VFS JEWELS<span style="color:#D4AF37;">.</span></div>
           <p style="font-size: 8.5pt; color: #666666; margin: 4px 0 0 0;">Handcrafted Premium Imitation Jewellery</p>
         </div>
         <div style="text-align: right; font-size: 9.5pt; line-height: 1.4; color: #000000;">
@@ -4025,8 +4025,7 @@ window.downloadCustomerInvoicePDF = async function(orderId) {
           <p style="margin: 2px 0;"><strong>Invoice ID:</strong> INV-${order.id.replace('#', '')}</p>
           <p style="margin: 2px 0;"><strong>Order ID:</strong> ${order.id}</p>
           <p style="margin: 2px 0;"><strong>Date:</strong> ${order.date}</p>
-          <p style="margin: 2px 0;"><strong>Status:</strong> <span style="color:#27AE60;font-weight:700;text-transform:uppercase;">${order.status}</span></p>
-        </div>
+          </div>
       </div>
       
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 35px; font-size: 9.5pt; line-height: 1.5; color: #000000;">
@@ -5461,7 +5460,7 @@ window.downloadInvoicePDF = async function(order) {
     <div style="border: 1px solid #dddddd; padding: 30px; background: #ffffff; color: #000000;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #D4AF37; padding-bottom: 20px; margin-bottom: 20px;">
         <div>
-          <div style="font-size: 26px; font-weight: 900; letter-spacing: 2px; color: #000000;">VFS<span style="color:#D4AF37;">.</span></div>
+          <div style="font-size: 24px; font-weight: 900; letter-spacing: 2px; color: #000000;">VFS JEWELS<span style="color:#D4AF37;">.</span></div>
           <p style="font-size: 8.5pt; color: #666666; margin: 4px 0 0 0;">Handcrafted Premium Imitation Jewellery</p>
         </div>
         <div style="text-align: right; font-size: 9.5pt; line-height: 1.4; color: #000000;">
@@ -5469,8 +5468,7 @@ window.downloadInvoicePDF = async function(order) {
           <p style="margin: 2px 0;"><strong>Invoice ID:</strong> INV-${order.id.replace('#', '')}</p>
           <p style="margin: 2px 0;"><strong>Order ID:</strong> ${order.id}</p>
           <p style="margin: 2px 0;"><strong>Date:</strong> ${order.date || new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
-          <p style="margin: 2px 0;"><strong>Status:</strong> <span style="color:#27AE60;font-weight:700;text-transform:uppercase;">${order.status}</span></p>
-        </div>
+          </div>
       </div>
       
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 35px; font-size: 9.5pt; line-height: 1.5; color: #000000;">

@@ -54,8 +54,8 @@ function createPDF(order) {
 
   // ── 1. Top Header & Branding (Matching Website) ──
   // Logo: "VFS." with Gold Dot
-  addText('VFS.', 50, 755, 26, 'F2', '0 0 0');
-  addText('.', 105, 755, 26, 'F2', '0.83 0.68 0.21'); // Gold #D4AF37
+  addText('VFS JEWELS.', 50, 755, 24, 'F2', '0 0 0');
+  addText('.', 210, 755, 24, 'F2', '0.83 0.68 0.21'); // Gold #D4AF37
   addText('Handcrafted Premium Imitation Jewellery', 50, 742, 8.5, 'F1', '0.4 0.4 0.4');
 
   // Header Right: "INVOICE" (No "Tax Invoice")
@@ -63,8 +63,7 @@ function createPDF(order) {
   addText(`Invoice ID: INV-${id.replace('#', '')}`, 400, 750, 9, 'F1', '0.2 0.2 0.2');
   addText(`Order ID: ${id}`, 400, 738, 9, 'F2', '0 0 0');
   addText(`Date: ${date}`, 400, 726, 9, 'F1', '0.2 0.2 0.2');
-  addText(`Status: ${status}`, 400, 714, 9, 'F2', '0.15 0.68 0.37');
-
+  
   // Gold Divider Line (#D4AF37)
   addLine(50, 702, 545, 702, '0.83 0.68 0.21', 2);
 
