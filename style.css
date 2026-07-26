@@ -40,6 +40,98 @@
   --page-width: 1400px;
   --header-height: 80px;
   --transition: 0.25s ease;
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #FCFBF7;
+  --bg-card: #FFFFFF;
+  --bg-neutral: #F4F3EF;
+  --text-primary: #1A1A1A;
+  --text-secondary: #555555;
+  --text-muted: #888888;
+  --border-color: #E5E2DA;
+}
+
+[data-theme="dark"] {
+  --color-primary: #FFFFFF;
+  --color-neutral: #1E2330;
+  --color-surface: #161922;
+  --color-on-surface: #F5F6F8;
+  --color-primary-60: #B0B5C4;
+  --color-primary-70: #D0D5E4;
+  --color-primary-10: #262112;
+  --color-bg: #0F1117;
+  
+  --bg-primary: #0F1117;
+  --bg-secondary: #161922;
+  --bg-card: #1C202C;
+  --bg-neutral: #232836;
+  --text-primary: #F5F6F8;
+  --text-secondary: #C5C9D6;
+  --text-muted: #949BAE;
+  --border-color: #2E3547;
+}
+
+/* === Theme Toggle Switch === */
+.theme-toggle-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-neutral);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 2px 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.theme-pill-option {
+  padding: 2px 8px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+:root:not([data-theme="dark"]) .theme-pill-option.light-opt {
+  background: #ffffff;
+  color: #121212;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+[data-theme="dark"] .theme-pill-option.dark-opt {
+  background: var(--color-secondary);
+  color: #121212;
+  box-shadow: 0 2px 6px rgba(212,175,55,0.3);
+}
+
+/* Dark mode body & header adaptations */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .site-header,
+[data-theme="dark"] .announcement-bar,
+[data-theme="dark"] .cat-item,
+[data-theme="dark"] .banner-card,
+[data-theme="dark"] .footer,
+[data-theme="dark"] .cart-drawer,
+[data-theme="dark"] .search-overlay-content {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] a,
+[data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, [data-theme="dark"] h4,
+[data-theme="dark"] p, [data-theme="dark"] span, [data-theme="dark"] div {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .p-card {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
 }
 
 /* === Reset & Scroll Enhancements === */
@@ -647,16 +739,22 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .p-wish svg { width: 16px; height: 16px; }
 
 .p-img {
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
-  background: var(--color-neutral);
+  background: var(--bg-neutral);
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
 }
 
 .p-img img {
-  width: 100%; height: 100%;
-  object-fit: contain;
-  background: #fff;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain !important;
   transition: transform 0.4s ease;
 }
 .p-card:hover .p-img img { transform: scale(1.05); }

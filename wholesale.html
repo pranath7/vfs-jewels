@@ -99,21 +99,9 @@
   <div class="announcement-bar">
     <div class="announcement-slider" id="annSlider">
       <div class="announcement-slide active"><a href="#products">Express Shipping — Flat ₹90 on All Orders! 🚚</a></div>
-      <div class="announcement-slide"><a href="#products">Premium Handcrafted Imitation Fashion Jewellery ✨</a></div>
+      <div class="announcement-slide"><a href="#products">Premium Anti-Tarnish Fine Imitation Fashion Imitation Jewels ✨</a></div>
       <div class="announcement-slide"><a href="#trust">Anti-Tarnish Protective Shield on Every Piece 🛡️</a></div>
     </div>
-  </div>
-
-  <!-- SHOPPING MODE STATUS BAR -->
-  <div class="mode-status-bar" id="modeStatusBar">
-    <div class="page-width mode-status-inner">
-      <div class="mode-badge">
-        <span class="mode-dot"></span> Active Mode: <strong id="activeModeLabel">Retail (Personal Use)</strong>
-      </div>
-      <button class="switch-mode-btn" id="switchModeBtn">Switch Mode</button>
-    </div>
-  </div>
-
   <!-- HEADER -->
   <header class="site-header" id="siteHeader">
     <div class="page-width">
@@ -121,34 +109,24 @@
         <nav class="header-nav">
           <ul class="header-nav-list">
             <li class="header-nav-item">
-              <button>Shop by Category <svg class="caret" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <button>Categories <svg class="caret" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
               <div class="mega-menu">
-                <div class="mega-heading">Shop by Category</div>
+                <div class="mega-heading">Shop Categories</div>
                 <a href="#" data-filter="kadas">Kadas Collection</a>
                 <a href="#" data-filter="chains">Chains Collection</a>
+                <a href="#" data-filter="bracelets">Bracelets Collection</a>
                 <a href="#" data-filter="earrings">Ear Rings Collection</a>
+                <a href="#" data-filter="necklaces">Necklaces Collection</a>
+                <a href="#" data-filter="offer_stock">Offer Stock (Special)</a>
 
                 <div class="mega-heading">Shop by Price</div>
                 <a href="#">Under ₹999</a>
                 <a href="#">₹999 – ₹1999</a>
                 <a href="#">Above ₹1999</a>
-                <div class="mega-heading">Shop by Finish</div>
-                <a href="#">Gold Plated</a>
-                <a href="#">Rose Gold</a>
-                <a href="#">Oxidised Silver</a>
               </div>
             </li>
-            <li class="header-nav-item"><a href="#products">Most Gifted</a></li>
-            <li class="header-nav-item">
-              <button>Gifting <svg class="caret" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-              <div class="mega-menu" style="min-width:260px;grid-template-columns:1fr">
-                <div class="mega-heading">Gifts</div>
-                <a href="#">Gifts for Her</a>
-                <a href="#">Gifts for Him</a>
-                <a href="#">Couple Jewellery</a>
-                <a href="#">Gift Cards</a>
-              </div>
-            </li>
+            <li class="header-nav-item"><a href="#products" data-filter="bestsellers">Bestsellers</a></li>
+            <li class="header-nav-item"><a href="#products" data-filter="offer_stock" class="offer-stock-nav-link">🔥 Offer Stock (3% Extra Discount)</a></li>
           </ul>
         </nav>
         <button class="mobile-menu-toggle" id="openMobileNav" aria-label="Menu">
@@ -158,10 +136,18 @@
             <line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
         </button>
-        <div class="header-logo"><a href="#"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_150/v1783183759/el5a6iatxalzqaqr50dp.png" alt="VFS Jewels" class="logo-img"></a></div>
+        <div class="header-logo-container" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;">
+          <!-- Theme Toggle Switch directly above Logo -->
+          <button id="themeToggleBtn" class="theme-toggle-pill" aria-label="Toggle Theme" title="Toggle Dark/Light Mode">
+            <span class="theme-pill-option light-opt">☀️ Light</span>
+            <span class="theme-pill-option dark-opt">🌙 Dark</span>
+          </button>
+          <div class="header-logo"><a href="#"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_150/v1783183759/el5a6iatxalzqaqr50dp.png" alt="VFS Jewels" class="logo-img"></a></div>
+        </div>
         <div class="header-icons">
           <button class="icon-btn" id="openSearch" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button>
           <button class="icon-btn" id="openTracking" aria-label="Track Order" title="Track Order"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2" ry="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></button>
+          <button class="icon-btn" id="openModeModal" aria-label="Change Mode" title="Wholesale / Retail Preference" style="font-size:1.1rem; padding:4px 8px; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-secondary);">🔄 Mode</button>
           <button class="icon-btn" id="openWL" aria-label="Wishlist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg><span class="badge" id="wlCount">0</span></button>
           <button class="icon-btn" id="openCart" aria-label="Cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="badge" id="cartCount">0</span></button>
         </div>
@@ -225,9 +211,9 @@
       <div class="hero-slide active">
         <img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1783178917/whbmflasdurxiag7au7t.jpg" alt="VFS Kadas Collection">
         <div class="hero-overlay"><div class="hero-text">
-          <span class="tag">Handcrafted Luxury</span>
+          <span class="tag">Anti-Tarnish Fine Luxury</span>
           <h2>Kadas Collection — Premium Artistry</h2>
-          <p>Premium handcrafted daily-wear gold plated Kadas. Skin-safe, nickel-free &amp; anti-tarnish.</p>
+          <p>Premium Anti-Tarnish Fine daily-wear gold plated Kadas. Skin-safe, nickel-free &amp; anti-tarnish.</p>
           <a href="#products" data-filter="kadas" class="btn-primary">Shop Kadas →</a>
         </div></div>
       </div>
@@ -266,7 +252,7 @@
 
   <!-- CATEGORIES -->
   <section class="categories-section" id="categories">
-    <div class="section-head"><h2>Shop by Category</h2><p>Discover our handcrafted collections</p><div class="line"></div></div>
+    <div class="section-head"><h2>Shop by Category</h2><p>Discover our Anti-Tarnish Fine collections</p><div class="line"></div></div>
     <div class="cat-scroll" id="catScroll">
       <div class="cat-item" data-cat="bracelets"><div class="cat-circle"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_100/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg" alt="Bracelets"></div><span class="cat-label">Bracelets</span></div>
       <div class="cat-item" data-cat="necklaces"><div class="cat-circle"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_100/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg" alt="Necklaces"></div><span class="cat-label">Necklaces</span></div>
@@ -282,11 +268,11 @@
   <section class="banners-section">
     <div class="page-width">
       <div class="banners-grid">
-        <div class="banner-card"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg" alt="Bracelets Collection" style="object-fit:cover;"><div class="banner-overlay"><h3>Bracelets Collection</h3><p>Elegant handcrafted anti-tarnish gold &amp; CZ bracelets</p><a href="#products" data-filter="bracelets" class="shop-link">Explore Collection &rarr;</a></div></div>
-        <div class="banner-card"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg" alt="Necklaces Collection" style="object-fit:cover;"><div class="banner-overlay"><h3>Necklaces Collection</h3><p>Exquisite handcrafted gold &amp; CZ necklace sets</p><a href="#products" data-filter="necklaces" class="shop-link">Explore Collection &rarr;</a></div></div>
-        <div class="banner-card"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1783178917/whbmflasdurxiag7au7t.jpg" alt="Kadas Collection" style="object-fit:cover;"><div class="banner-overlay"><h3>Kadas Collection</h3><p>Premium handcrafted daily-wear gold plated Kadas</p><a href="#products" data-filter="kadas" class="shop-link">Explore Collection &rarr;</a></div></div>
+        <div class="banner-card"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg" alt="Bracelets Collection" style="object-fit:cover;"><div class="banner-overlay"><h3>Bracelets Collection</h3><p>Elegant Anti-Tarnish Fine anti-tarnish gold &amp; CZ bracelets</p><a href="#products" data-filter="bracelets" class="shop-link">Explore Collection &rarr;</a></div></div>
+        <div class="banner-card"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg" alt="Necklaces Collection" style="object-fit:cover;"><div class="banner-overlay"><h3>Necklaces Collection</h3><p>Exquisite Anti-Tarnish Fine gold &amp; CZ necklace sets</p><a href="#products" data-filter="necklaces" class="shop-link">Explore Collection &rarr;</a></div></div>
+        <div class="banner-card"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1783178917/whbmflasdurxiag7au7t.jpg" alt="Kadas Collection" style="object-fit:cover;"><div class="banner-overlay"><h3>Kadas Collection</h3><p>Premium Anti-Tarnish Fine daily-wear gold plated Kadas</p><a href="#products" data-filter="kadas" class="shop-link">Explore Collection &rarr;</a></div></div>
         <div class="banner-card"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1783178938/vza7byllycs7nmz8bwdq.jpg" alt="Chains Collection" style="object-fit:cover;"><div class="banner-overlay"><h3>Chains Collection</h3><p>Classic and luxury gold-plated chains and necklaces</p><a href="#products" data-filter="chains" class="shop-link">Explore Collection &rarr;</a></div></div>
-        <div class="banner-card"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_500/v1783694425/kuk50yyh9yzosthcsxkk.png" alt="Ear Rings Collection" style="object-fit:cover;"><div class="banner-overlay"><h3>Ear Rings Collection</h3><p>Dazzling handcrafted ear rings for every occasion</p><a href="#products" data-filter="earrings" class="shop-link">Explore Collection &rarr;</a></div></div>
+        <div class="banner-card"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_500/v1783694425/kuk50yyh9yzosthcsxkk.png" alt="Ear Rings Collection" style="object-fit:cover;"><div class="banner-overlay"><h3>Ear Rings Collection</h3><p>Dazzling Anti-Tarnish Fine ear rings for every occasion</p><a href="#products" data-filter="earrings" class="shop-link">Explore Collection &rarr;</a></div></div>
       </div>
     </div>
   </section>
@@ -301,9 +287,9 @@
       </div>
       <div class="brand-story-grid">
         <div class="brand-story-text">
-          <p class="brand-lead">VFS Jewels was born in the heart of Sowcarpet, Chennai's oldest and most trusted jewellery district — where craftsmen have shaped gold and gems for centuries.</p>
-          <p>Founded by a family with deep roots in the jewellery trade, VFS started as a small wholesale supplier serving local boutiques and resellers. Over the years, driven by customer love and a passion for accessible luxury, we grew into one of Chennai's most trusted names in premium imitation jewellery.</p>
-          <p>Every piece we craft carries our promise: the brilliance of real jewellery, at a price that doesn't compromise your budget.</p>
+          <p class="brand-lead">VFS Jewels was born in the heart of Sowcarpet, Chennai's oldest and most trusted Imitation Jewels district — where craftsmen have shaped gold and gems for centuries.</p>
+          <p>Founded by a family with deep roots in the Imitation Jewels trade, VFS started as a small wholesale supplier serving local boutiques and resellers. Over the years, driven by customer love and a passion for accessible luxury, we grew into one of Chennai's most trusted names in premium imitation Imitation Jewels.</p>
+          <p>Every piece we craft carries our promise: the brilliance of real Imitation Jewels, at a price that doesn't compromise your budget.</p>
           <div class="brand-story-quote">
             <span>"Luxury is not about price. It's about craft, care, and confidence."</span>
             <small>— VFS Jewels Founders</small>
@@ -323,7 +309,7 @@
             <div class="timeline-content">
               <span class="timeline-year">2020</span>
               <h4>Anti-Tarnish Innovation</h4>
-              <p>Launched our signature protective coating — making our jewellery last 10x longer than competitors.</p>
+              <p>Launched our signature protective coating — making our Imitation Jewels last 10x longer than competitors.</p>
             </div>
           </div>
           <div class="timeline-item">
@@ -397,7 +383,7 @@
         <div class="category-banner" style="background-image: url('https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg')">
           <div class="category-banner-overlay">
             <h2>Kadas Collection</h2>
-            <p>Premium handcrafted daily-wear gold plated Kadas.</p>
+            <p>Premium Anti-Tarnish Fine daily-wear gold plated Kadas.</p>
           </div>
         </div>
         <div class="product-row-scroll">
@@ -433,7 +419,7 @@
   <!-- TRUST -->
   <section class="trust-section" id="trust">
     <div class="page-width">
-      <div class="section-head"><h2>The VFS Promise</h2><p>Why thousands choose VFS jewellery</p><div class="line"></div></div>
+      <div class="section-head"><h2>The VFS Promise</h2><p>Why thousands choose VFS Imitation Jewels</p><div class="line"></div></div>
       <div class="trust-grid">
         <div class="trust-item"><div class="trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></div><h3>Anti-Tarnish Shield</h3><p>Every piece coated with protective glaze to resist sweat &amp; moisture for long-lasting shine.</p></div>
         <div class="trust-item"><div class="trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg></div><h3>A++ CZ Crystals</h3><p>Hand-cut Austrian cubic zirconia stones that capture light like real diamonds.</p></div>
@@ -498,15 +484,15 @@
   <!-- SEO RICH TEXT / ABOUT SECTION -->
   <section class="seo-about-section" style="padding: var(--space-lg) 0; background: #fafafa; border-top: 1px solid var(--color-neutral);">
     <div class="page-width" style="max-width: 800px; margin: 0 auto; text-align: center; line-height: 1.8; color: #444;">
-      <h2 style="font-family: var(--font-heading); font-size: 2.4rem; color: var(--color-on-surface); margin-bottom: 16px;">VFS Jewels — Premium Imitation Jewellery Sowcarpet</h2>
+      <h2 style="font-family: var(--font-heading); font-size: 2.4rem; color: var(--color-on-surface); margin-bottom: 16px;">VFS Jewels — Premium Imitation Imitation Jewels Sowcarpet</h2>
       <p style="margin-bottom: 16px; font-size: 1.4rem;">
-        Welcome to <strong>VFS Jewels</strong>, your premier destination for handcrafted, premium imitation fashion jewellery in Sowcarpet, Chennai. We specialize in offering a curated collection of gold-plated rings, designer earrings, elegant necklaces, and bracelets that mimic the brilliant sparkle and luxury of real diamond jewellery at wholesale-friendly prices.
+        Welcome to <strong>VFS Jewels</strong>, your premier destination for Anti-Tarnish Fine, premium imitation fashion Imitation Jewels in Sowcarpet, Chennai. We specialize in offering a curated collection of gold-plated rings, designer earrings, elegant necklaces, and bracelets that mimic the brilliant sparkle and luxury of real diamond Imitation Jewels at wholesale-friendly prices.
       </p>
       <p style="margin-bottom: 16px; font-size: 1.4rem;">
-        Every piece in our catalog is meticulously processed with our signature <strong>anti-tarnish protective shield</strong>, defending your accessories from moisture, sweat, and tarnishing for a long-lasting brilliant shine. Using high-clarity A++ Austrian CZ crystals and skin-safe, nickel-free brass alloy, we ensure our jewellery is safe for sensitive skin and comfortable for all-day wear.
+        Every piece in our catalog is meticulously processed with our signature <strong>anti-tarnish protective shield</strong>, defending your accessories from moisture, sweat, and tarnishing for a long-lasting brilliant shine. Using high-clarity A++ Austrian CZ crystals and skin-safe, nickel-free brass alloy, we ensure our Imitation Jewels is safe for sensitive skin and comfortable for all-day wear.
       </p>
       <p style="font-size: 1.4rem;">
-        Whether you are searching for the perfect bridal gift, daily wear accessories, or bulk custom items, <strong>VFS Jewellery Sowcarpet</strong> delivers exceptional quality and pan-India express shipping. Explore our new arrivals today and elevate your styling affordably!
+        Whether you are searching for the perfect bridal gift, daily wear accessories, or bulk custom items, <strong>VFS Imitation Jewels Sowcarpet</strong> delivers exceptional quality and pan-India express shipping. Explore our new arrivals today and elevate your styling affordably!
       </p>
     </div>
   </section>
@@ -517,7 +503,7 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <img src="https://res.cloudinary.com/cwx4zame/image/upload/v1783183760/ze9xek1cled8puy6vfex.png" alt="VFS Jewels" class="logo-img" style="height: 52px; margin-bottom: 12px;">
-          <p>Premium handcrafted fashion jewellery designed to make luxury accessible. Skin-safe, nickel-free anti-tarnish gold plated Kadas and Chains.</p>
+          <p>Premium Anti-Tarnish Fine fashion Imitation Jewels designed to make luxury accessible. Skin-safe, nickel-free anti-tarnish gold plated Kadas and Chains.</p>
           <div class="footer-socials">
             <a href="https://instagram.com/vfsjewels" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="20" x="2" y="2" rx="5"/><circle cx="12" cy="12" r="5"/><path d="M17.5 6.5h.01"/></svg></a>
           </div>
@@ -543,10 +529,10 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <span>&copy; 2026 VFS Jewellery. All rights reserved.</span>
+        <span>&copy; 2026 VFS Imitation Jewels. All rights reserved.</span>
         <span style="display:flex;align-items:center;gap:12px;">
           <span style="font-weight:700;color:var(--color-secondary);">UPI / GPay</span> • 
-          <span style="font-weight:700;color:var(--color-secondary);">Cash on Delivery</span> • 
+          <span style="font-weight:700;color:var(--color-secondary);">Prepaid Online Payment (UPI / Cards / QR)</span> • 
           <span>Made in India 🇮🇳</span>
         </span>
       </div>
@@ -1202,7 +1188,7 @@
     <div class="pin-modal guide-pin-modal" style="max-width:550px;padding:35px;">
       <button class="modal-x" id="closeGuideModal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
       <h3 style="font-size:2.2rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:400;text-transform:uppercase;text-align:center;">How to Order Guide 🎥</h3>
-      <p style="font-size:1.3rem;color:#666;margin-bottom:24px;text-align:center;">Ordering premium handcrafted VFS jewellery is quick and easy. Follow these 4 simple steps!</p>
+      <p style="font-size:1.3rem;color:#666;margin-bottom:24px;text-align:center;">Ordering premium Anti-Tarnish Fine VFS Imitation Jewels is quick and easy. Follow these 4 simple steps!</p>
       
       <div class="guide-steps-container" style="display:flex;flex-direction:column;gap:16px;">
         <div class="guide-step-card">
@@ -1453,6 +1439,43 @@
       });
     }
   </script>
+  <!-- WELCOME SHOPPING PREFERENCE MODAL -->
+  <div class="vfs-modal-overlay" id="welcomeModeModal" style="display:none;">
+    <div class="vfs-modal-content welcome-modal-card" style="max-width:520px; padding:32px; border-radius:16px; text-align:center; position:relative; background:var(--bg-card); border:1px solid var(--border-color); box-shadow:0 20px 50px rgba(0,0,0,0.4);">
+      <div class="welcome-crown" style="font-size:3rem; margin-bottom:12px;">👑</div>
+      <h2 style="font-size:2.2rem; margin-bottom:8px; text-transform:uppercase; font-family:var(--font-heading);">Welcome to VFS Jewels</h2>
+      <p style="font-size:1.3rem; color:var(--text-muted); margin-bottom:24px;">Select your shopping preference to view customized catalog rates:</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <button id="chooseWholesaleBtn" class="mode-choice-btn" style="padding:24px 16px; border-radius:12px; border:2px solid var(--color-secondary); background:var(--bg-secondary); cursor:pointer; text-align:center; transition:all 0.2s ease;">
+          <div style="font-size:2.8rem; margin-bottom:8px;">📦</div>
+          <strong style="display:block; font-size:1.5rem; color:var(--text-primary); margin-bottom:4px;">Wholesale Portal</strong>
+          <span style="font-size:1.1rem; color:var(--text-muted); line-height:1.4; display:block;">Reseller Wholesale Rates • B2B Direct</span>
+        </button>
+        <button id="chooseRetailBtn" class="mode-choice-btn" style="padding:24px 16px; border-radius:12px; border:2px solid var(--border-color); background:var(--bg-secondary); cursor:pointer; text-align:center; transition:all 0.2s ease;">
+          <div style="font-size:2.8rem; margin-bottom:8px;">🛍️</div>
+          <strong style="display:block; font-size:1.5rem; color:var(--text-primary); margin-bottom:4px;">Retail Store</strong>
+          <span style="font-size:1.1rem; color:var(--text-muted); line-height:1.4; display:block;">Personal Shopping • Express Delivery</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOOK LIVE 8:30 PM SLOT MODAL -->
+  <div class="vfs-modal-overlay" id="slotBookingModal" style="display:none;">
+    <div class="vfs-modal-content" style="max-width:480px; padding:28px; border-radius:16px; position:relative; background:var(--bg-card); border:1px solid var(--border-color);">
+      <button class="modal-close-btn" id="closeSlotModalBtn" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:2rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+      <div style="text-align:center; margin-bottom:20px;">
+        <span style="background:var(--color-secondary); color:#121212; font-size:1rem; font-weight:800; padding:4px 10px; border-radius:4px; text-transform:uppercase;">📹 Live Video Session</span>
+        <h2 style="font-size:2rem; margin-top:10px; margin-bottom:6px; font-family:var(--font-heading);">Book a Slot (8:30 PM Today)</h2>
+        <p style="font-size:1.2rem; color:var(--text-muted);">Personalized live video preview session with our Imitation Jewels experts</p>
+      </div>
+      
+      <div id="slotStatusContainer">
+        <!-- Loaded dynamically in wholesale.js -->
+      </div>
+    </div>
+  </div>
+
   <!-- html2pdf loaded last — only needed when user downloads invoice -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
     integrity="sha384-Yv5O+t3uE3hunW8uyrbpPW3iw6/5/Y7HitWJBLgqfMoA36NogMmy+8wWZMpn3HWc"
