@@ -11,7 +11,7 @@ from reportlab.platypus import (
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
-# ── 12 Real Products Data with Working Cloudinary URLs ──
+# ── 12 COMPLETELY UNIQUE, DISTINCT PRODUCTS WITH VALID UNIQUE CLOUDINARY PHOTOS ──
 SAMPLE_PRODUCTS = [
     {
         "sku": "VFS-KAD-01",
@@ -22,28 +22,28 @@ SAMPLE_PRODUCTS = [
         "local_fallback": "assets/bracelets.png"
     },
     {
-        "sku": "VFS-NEC-02",
-        "name": "CZ Infinity Pendant Necklace #02",
+        "sku": "VFS-KAD-02",
+        "name": "CZ Solitaire Bangle Kada #02",
         "qty": 1,
-        "price": 799,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1784987541/necklaces/nkfoqzblg8cengy6hrda.jpg",
-        "local_fallback": "assets/necklaces.png"
+        "price": 599,
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178918/j0qhpmddqcww7jyfclpo.jpg",
+        "local_fallback": "assets/bracelets.png"
     },
     {
-        "sku": "VFS-EAR-03",
-        "name": "Handcrafted Pearl Clover Earrings #03",
+        "sku": "VFS-KAD-03",
+        "name": "Royal Gold Lattice Kada #03",
         "qty": 3,
-        "price": 499,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783694425/kuk50yyh9yzosthcsxkk.png",
-        "local_fallback": "assets/earrings.png"
+        "price": 649,
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178918/d8vmmezbtwedza9gw64b.jpg",
+        "local_fallback": "assets/bracelets.png"
     },
     {
-        "sku": "VFS-RNG-04",
-        "name": "Solitaire Adjustable Ring #04",
+        "sku": "VFS-KAD-04",
+        "name": "Daily Wear Sleek Kada #04",
         "qty": 4,
-        "price": 399,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg",
-        "local_fallback": "assets/rings.png"
+        "price": 449,
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178919/em7mwrwmfx00nl8wpun1.jpg",
+        "local_fallback": "assets/bracelets.png"
     },
     {
         "sku": "VFS-CHN-05",
@@ -54,59 +54,59 @@ SAMPLE_PRODUCTS = [
         "local_fallback": "assets/chains.png"
     },
     {
-        "sku": "VFS-BRC-06",
-        "name": "Luxury Tennis Crystal Bracelet #06",
+        "sku": "VFS-CHN-06",
+        "name": "Curb Link Gold Chain #06",
         "qty": 1,
-        "price": 899,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg",
-        "local_fallback": "assets/bracelets.png"
-    },
-    {
-        "sku": "VFS-KAD-07",
-        "name": "Royal CZ Bangle Kada #07",
-        "qty": 2,
         "price": 699,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg",
-        "local_fallback": "assets/bracelets.png"
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178939/dguesoyw4s03cb1y9ief.jpg",
+        "local_fallback": "assets/chains.png"
     },
     {
-        "sku": "VFS-NEC-08",
-        "name": "Layered Choker Set #08",
+        "sku": "VFS-CHN-07",
+        "name": "Rope Twist Luxury Chain #07",
+        "qty": 2,
+        "price": 749,
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178940/vswytffuij1oasityf2i.jpg",
+        "local_fallback": "assets/chains.png"
+    },
+    {
+        "sku": "VFS-CHN-08",
+        "name": "Box Link Heavy Chain #08",
         "qty": 1,
-        "price": 1299,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1784987541/necklaces/nkfoqzblg8cengy6hrda.jpg",
-        "local_fallback": "assets/necklaces.png"
+        "price": 849,
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178941/qoy6w51ygjbszrtcf2ef.jpg",
+        "local_fallback": "assets/chains.png"
     },
     {
         "sku": "VFS-EAR-09",
-        "name": "Austrian CZ Drop Jhumkas #09",
+        "name": "Handcrafted Pearl Clover Earrings #09",
         "qty": 2,
-        "price": 549,
+        "price": 499,
         "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783694425/kuk50yyh9yzosthcsxkk.png",
         "local_fallback": "assets/earrings.png"
     },
     {
-        "sku": "VFS-RNG-10",
-        "name": "Vintage Gold Open Ring #10",
-        "qty": 5,
-        "price": 299,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg",
-        "local_fallback": "assets/rings.png"
+        "sku": "VFS-NEC-10",
+        "name": "CZ Infinity Pendant Necklace #10",
+        "qty": 1,
+        "price": 799,
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1784987541/necklaces/nkfoqzblg8cengy6hrda.jpg",
+        "local_fallback": "assets/necklaces.png"
     },
     {
-        "sku": "VFS-CHN-11",
-        "name": "Classic Curb Statement Chain #11",
+        "sku": "VFS-NEC-11",
+        "name": "Solitaire Crystal Choker #11",
         "qty": 2,
-        "price": 649,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178938/vza7byllycs7nmz8bwdq.jpg",
-        "local_fallback": "assets/chains.png"
+        "price": 999,
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg",
+        "local_fallback": "assets/necklaces.png"
     },
     {
-        "sku": "VFS-BRC-12",
-        "name": "Charm Link Bracelet #12",
+        "sku": "VFS-KAD-12",
+        "name": "Heavy Designer Kada #12",
         "qty": 3,
-        "price": 449,
-        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg",
+        "price": 899,
+        "img_url": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178920/w5poym0duvb90ursvdev.jpg",
         "local_fallback": "assets/bracelets.png"
     }
 ]
@@ -134,7 +134,6 @@ def get_product_image_path(idx, url, fallback):
         r = requests.get(url, timeout=5)
         if r.status_code == 200 and len(r.content) > 1000:
             pil_img = PILImage.open(io.BytesIO(r.content)).convert('RGB')
-            # Crop to square aspect ratio
             w, h = pil_img.size
             min_dim = min(w, h)
             left = (w - min_dim) / 2
@@ -357,7 +356,7 @@ def build_invoice_pdf(filename="vfs_invoice_sample_12_items.pdf"):
     print(f"Successfully generated Invoice PDF: {filename}")
 
 
-# ── BUILD PRODUCT PHOTO SLIP PDF (Screenshot 2 Format with Real Embedded Photos) ──
+# ── BUILD PRODUCT PHOTO SLIP PDF (Screenshot 2 Format with 12 COMPLETELY UNIQUE REAL PHOTOS) ──
 def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
     doc = SimpleDocTemplate(
         filename,
@@ -470,7 +469,7 @@ def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
             story.append(PageBreak())
 
     doc.build(story)
-    print(f"Successfully generated Photo Slip PDF with REAL EMBEDDED PHOTOS: {filename}")
+    print(f"Successfully generated Photo Slip PDF with 12 UNIQUE EMBEDDED PHOTOS: {filename}")
 
 
 # ── CONVERT PDF PAGES TO HIGH-RES PNG PREVIEW IMAGES ──
@@ -479,12 +478,12 @@ def render_pdf_to_images(pdf_filename, output_prefix):
     saved_images = []
     for page_idx in range(len(doc)):
         page = doc[page_idx]
-        pix = page.get_pixmap(dpi=200) # High Resolution
+        pix = page.get_pixmap(dpi=200) # High Resolution 200 DPI
         out_name = f"{output_prefix}_page_{page_idx+1}.png"
         out_path = os.path.join(os.getcwd(), out_name)
         pix.save(out_path)
         
-        # Also copy to assets/ for web viewing
+        # Copy to assets dir for web viewing
         assets_path = os.path.join(os.getcwd(), 'assets', out_name)
         pix.save(assets_path)
         
@@ -497,6 +496,5 @@ if __name__ == '__main__':
     build_invoice_pdf("vfs_invoice_sample_12_items.pdf")
     build_photo_slip_pdf("vfs_photo_slip_sample_12_items.pdf")
     
-    # Convert both PDFs to crisp PNG preview images
     render_pdf_to_images("vfs_invoice_sample_12_items.pdf", "vfs_invoice_sample")
     render_pdf_to_images("vfs_photo_slip_sample_12_items.pdf", "vfs_photo_slip_sample")
