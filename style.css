@@ -2820,7 +2820,7 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  z-index: 99;
+  z-index: 99999 !important;
   box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
   transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, color 0.3s ease;
   font-family: var(--font-body);
