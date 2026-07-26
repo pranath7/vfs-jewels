@@ -4859,7 +4859,7 @@ function setupShoppingMode() {
       if ($('#loginStepRegister')) $('#loginStepRegister').style.display = 'none';
       if ($('#wholesalePhoneInput')) $('#wholesalePhoneInput').value = '';
       if ($('#wholesaleOtpInput')) $('#wholesaleOtpInput').value = '';
-      // disabled modal auto-popup;
+      wholesaleLoginModal.classList.add('active');
     });
   }
 
@@ -4922,7 +4922,7 @@ function setupShoppingMode() {
         renderProducts(null);
         
         if (!wholesaleUnlocked) {
-          // disabled modal auto-popup;
+          openWholesaleUnlockModal();
         } else {
           toast(`Welcome back, ${wholesaleUser.name}!`);
         }
@@ -4985,7 +4985,7 @@ function setupShoppingMode() {
         updateModeUI();
         renderProducts(null);
         if (!wholesaleUnlocked) {
-          // disabled modal auto-popup;
+          openWholesaleUnlockModal();
         } else {
           toast(`Welcome back, ${wholesaleUser.name}!`);
         }
@@ -5050,7 +5050,7 @@ function setupShoppingMode() {
     updateModeUI();
     renderProducts(null);
     
-    // disabled modal auto-popup;
+    openWholesaleUnlockModal();
     toast('Registration completed!');
   });
 
@@ -5067,7 +5067,7 @@ function setupShoppingMode() {
       ? 'Pay ₹1,000 first order advance to unlock wholesale prices.'
       : 'Pay ₹500 advance to unlock wholesale prices for your next order.';
       
-    // disabled modal auto-popup;
+    wholesaleUnlockModal.classList.add('active');
   }
 
   const btnCancelUnlock = $('#btnCancelUnlock');
