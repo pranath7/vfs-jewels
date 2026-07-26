@@ -1988,27 +1988,75 @@ window.printPhotoSlip = async function(orderId) {
   const order = ordersList.find(o => o.id === orderId);
   if (!order) return;
 
-  adminToast('Generating photo slip image...');
+  adminToast("Generating Product Photo Slip PDF...");
+
+  const items = order.items || [];
+  const wrapper = document.createElement('div');
+  wrapper.style.position = 'absolute';
+  wrapper.style.top = '0';
+  wrapper.style.left = '-9999px';
+  wrapper.style.width = '750px';
+
+  const tempDiv = document.createElement('div');
+  tempDiv.style.width = '750px';
+  tempDiv.style.background = '#ffffff';
+  tempDiv.style.color = '#000000';
+  tempDiv.style.padding = '24px';
+  tempDiv.style.fontFamily = "'Lato', sans-serif";
+
+  const productCardsHtml = items.map(item => `
+    <div style="border: 1px solid #cccccc; padding: 12px; background: #fafafa; border-radius: 4px; display: flex; flex-direction: column; align-items: center; text-align: left;">
+      <div style="width: 160px; height: 160px; background: #ffffff; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; overflow: hidden;">
+        <img src="${(item.img || '').replace(/\/upload\/[^/]+\//, '/upload/f_auto,q_auto,w_200/')}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+      </div>
+      <div style="width: 100%; font-size: 9.5pt; line-height: 1.6; color: #222222;">
+        <div><strong>qty orderd :</strong> ${item.qty || 1}</div>
+        <div><strong>price :</strong> ${fmt(item.price)}</div>
+        <div><strong>product :</strong> ${item.name}</div>
+        <div><strong>product code :</strong> ${item.sku || item.id || 'VFS-SKU'}</div>
+      </div>
+    </div>
+  `).join('');
+
+  tempDiv.innerHTML = `
+    <div style="border: 1px solid #9ca3af; padding: 20px; background: #ffffff;">
+      <h2 style="font-size: 16pt; font-weight: 900; margin: 0 0 10px 0; color: #111111; text-transform: uppercase;">VIKRAM FANCY STORE (VFS) PRODUCT PHOTO SLIP</h2>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border-bottom: 2px solid #D4AF37; padding-bottom: 10px; margin-bottom: 15px; font-size: 9.5pt; font-weight: 700; color: #333333;">
+        <div>
+          <div>BILLED FROM : Vikram Fancy Store (VFS) / VFS Jewels (Sowcarpet, Chennai)</div>
+          <div style="margin-top: 4px;">INV . NO : INV-${order.id.replace('#', '')}</div>
+        </div>
+        <div>
+          <div>BILLED TO : ${order.name} (${order.phone})</div>
+          <div style="margin-top: 4px;">ORDER NO : ${order.id}</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        ${productCardsHtml}
+      </div>
+    </div>
+  `;
+
+  wrapper.appendChild(tempDiv);
+  document.body.appendChild(wrapper);
+
+  const opt = {
+    margin:       0.2,
+    filename:     `VFS_PhotoSlip_${order.id.replace('#', '')}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
 
   try {
-    for (let i = 0; i < order.items.length; i++) {
-      const dataUrl = await generatePhotoSlipCanvas(order, order.items[i]);
-
-      // Auto download attempt
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = `VFS_Slip_${order.id}_Item${i + 1}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-
-      // Open mobile preview modal for easy save/share
-      openSlipPreviewModal(dataUrl, order.id, i + 1);
-    }
-    adminToast('✅ Dispatch slip generated!');
-  } catch (err) {
-    console.error('Photo slip error:', err);
-    adminToast('❌ Failed to generate slip.', 'error');
+    await html2pdf().set(opt).from(tempDiv).save();
+    adminToast("Product Photo Slip PDF downloaded!");
+  } catch(err) {
+    console.error("Photo slip pdf error:", err);
+  } finally {
+    document.body.removeChild(wrapper);
   }
 };
 

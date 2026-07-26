@@ -4046,7 +4046,7 @@ window.downloadCustomerInvoicePDF = async function(orderId) {
           <p style="font-size: 8.5pt; color: #666666; margin: 4px 0 0 0;">Handcrafted Premium Imitation Jewellery</p>
         </div>
         <div style="text-align: right; font-size: 9.5pt; line-height: 1.4; color: #000000;">
-          <h2 style="color: #D4AF37; text-transform: uppercase; font-size: 16px; margin: 0 0 6px 0;">Retail Tax Invoice</h2>
+          <h2 style="color: #D4AF37; text-transform: uppercase; font-size: 16px; margin: 0 0 6px 0;">INVOICE</h2>
           <p style="margin: 2px 0;"><strong>Invoice ID:</strong> INV-${order.id.replace('#', '')}</p>
           <p style="margin: 2px 0;"><strong>Order ID:</strong> ${order.id}</p>
           <p style="margin: 2px 0;"><strong>Date:</strong> ${order.date}</p>
@@ -5444,7 +5444,7 @@ window.downloadInvoicePDF = async function(order) {
           <p style="font-size: 8.5pt; color: #666666; margin: 4px 0 0 0;">Handcrafted Premium Imitation Jewellery</p>
         </div>
         <div style="text-align: right; font-size: 9.5pt; line-height: 1.4; color: #000000;">
-          <h2 style="color: #D4AF37; text-transform: uppercase; font-size: 16px; margin: 0 0 6px 0;">Retail Tax Invoice</h2>
+          <h2 style="color: #D4AF37; text-transform: uppercase; font-size: 16px; margin: 0 0 6px 0;">INVOICE</h2>
           <p style="margin: 2px 0;"><strong>Invoice ID:</strong> INV-${order.id.replace('#', '')}</p>
           <p style="margin: 2px 0;"><strong>Order ID:</strong> ${order.id}</p>
           <p style="margin: 2px 0;"><strong>Date:</strong> ${order.date || new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
