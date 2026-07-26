@@ -561,10 +561,11 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 
 .hero-slide.active { display: block; }
 
+.hero-slide picture,
 .hero-slide img {
   width: 100%;
   display: block;
-  aspect-ratio: 16 / 5.5;
+  aspect-ratio: 16 / 8;
   object-fit: cover;
 }
 
