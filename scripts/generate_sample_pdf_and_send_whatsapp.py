@@ -36,7 +36,8 @@ ORDER_META = {
         "address": "42 Narayana Mudali Street, Sowcarpet",
         "city_zip": "Chennai, TN 600001",
         "phone": "+91 98407 57363",
-        "email": "client@vfsjewels.store"
+        "email": "client@vfsjewels.store",
+        "gstin": "33AAACV1234F1Z9"
     }
 }
 
@@ -93,7 +94,7 @@ def build_invoice_pdf(filename="vfs_invoice_sample_12_items.pdf"):
         Paragraph("VIKRAM FANCY STORE (VFS)", title_style),
         Paragraph("VFS JEWELS", brand_sub),
         Paragraph("42, 2nd Floor, Natwar Kurpa Complex, Sowcarpet, Chennai - 600001", store_info),
-        Paragraph("Phone: +91 98407 57363 | Email: vfsjewels@gmail.com", store_info)
+        Paragraph("Phone: +91 98407 57363 | Email: vfsjewels@gmail.com | <b>GSTIN: 33AAFVC8491A1ZX</b>", store_info)
     ]
 
     meta_table_data = [
@@ -130,6 +131,7 @@ def build_invoice_pdf(filename="vfs_invoice_sample_12_items.pdf"):
         Paragraph("<b>City:</b> " + c["city_zip"], store_info),
         Paragraph("<b>Phone:</b> " + c["phone"], store_info),
         Paragraph("<b>Email:</b> " + c["email"], store_info),
+        Paragraph("<b>GSTIN:</b> " + c.get("gstin", "33AAACV1234F1Z9"), store_info),
     ]
     ship_to_content = [
         Paragraph("<b>Name:</b> " + c["name"], store_info),
@@ -278,8 +280,8 @@ def build_photo_slip_pdf(filename="vfs_photo_slip_sample_12_items.pdf"):
     c = ORDER_META["customer"]
     billed_info = [
         [
-            Paragraph(f"<b>BILLED FROM :</b> Vikram Fancy Store (VFS) / VFS Jewels (Sowcarpet, Chennai)", meta_info_style),
-            Paragraph(f"<b>BILLED TO :</b> {c['name']} ({c['phone']})", meta_info_style)
+            Paragraph(f"<b>BILLED FROM :</b> Vikram Fancy Store (VFS) / VFS Jewels | <b>GSTIN: 33AAFVC8491A1ZX</b>", meta_info_style),
+            Paragraph(f"<b>BILLED TO :</b> {c['name']} ({c['phone']}) | <b>GSTIN: {c.get('gstin', '33AAACV1234F1Z9')}</b>", meta_info_style)
         ],
         [
             Paragraph(f"<b>INV . NO :</b> {ORDER_META['inv_no']}", meta_info_style),

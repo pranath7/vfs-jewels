@@ -2041,11 +2041,11 @@ window.printPhotoSlip = async function(orderId) {
       
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border-bottom: 2px solid #D4AF37; padding-bottom: 10px; margin-bottom: 15px; font-size: 9.5pt; font-weight: 700; color: #333333;">
         <div>
-          <div>BILLED FROM : Vikram Fancy Store (VFS) / VFS Jewels (Sowcarpet, Chennai)</div>
+          <div>BILLED FROM : Vikram Fancy Store (VFS) / VFS Jewels | <strong>GSTIN: 33AAFVC8491A1ZX</strong></div>
           <div style="margin-top: 4px;">INV . NO : INV-${(order.id || '2034').replace('#', '')}</div>
         </div>
         <div>
-          <div>BILLED TO : ${escapeHtml(order.name || 'Valued Customer')} (${escapeHtml(order.phone || 'N/A')})</div>
+          <div>BILLED TO : ${escapeHtml(order.name || 'Valued Customer')} (${escapeHtml(order.phone || 'N/A')}) ${order.gstNumber || order.gstin ? `| <strong>GSTIN: ${escapeHtml(order.gstNumber || order.gstin)}</strong>` : ''}</div>
           <div style="margin-top: 4px;">ORDER NO : ${escapeHtml(order.id || '#VFS-98407')}</div>
         </div>
       </div>
