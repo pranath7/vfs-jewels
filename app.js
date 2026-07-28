@@ -6127,8 +6127,12 @@ if (document.readyState === 'loading') {
 // ── Global Customer Wallet Modal Triggers ──
 window.openWalletModalFunc = async function() {
   const modal = document.getElementById('walletModal');
-  if (!modal) return;
-  modal.style.display = 'flex';
+  if (!modal) {
+    console.error("Wallet modal element not found!");
+    return;
+  }
+  modal.style.setProperty('display', 'flex', 'important');
+  document.body.style.overflow = 'hidden';
   
   const loggedOutView = document.getElementById('walletViewLoggedOut');
   const loggedInView = document.getElementById('walletViewLoggedIn');
