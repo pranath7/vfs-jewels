@@ -2678,17 +2678,15 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 }
 
 .category-banner-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 100%);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 30px;
-    color: #fff;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(10, 12, 18, 0.88) 0%, rgba(10, 12, 18, 0.6) 45%, rgba(10, 12, 18, 0.1) 80%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 28px 36px;
+  color: #ffffff;
+  z-index: 2;
 }
 
 .category-banner-overlay h2 {
@@ -4552,7 +4550,7 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 16px;
-  min-height: 180px;
+  min-height: 220px;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -4567,11 +4565,11 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .category-banner-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(14,16,23,0.92) 0%, rgba(14,16,23,0.75) 50%, rgba(14,16,23,0.2) 100%);
+  background: linear-gradient(90deg, rgba(10, 12, 18, 0.88) 0%, rgba(10, 12, 18, 0.6) 45%, rgba(10, 12, 18, 0.1) 80%, transparent 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 24px 32px;
+  padding: 28px 36px;
   color: #ffffff;
   z-index: 2;
 }
