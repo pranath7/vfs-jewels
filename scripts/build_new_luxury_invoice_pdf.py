@@ -1,4 +1,8 @@
-// ============================================================
+import os
+
+api_invoice_path = os.path.join('api', 'invoice.js')
+
+new_invoice_js_code = '''// ============================================================
 //  VFS Jewels — Ultra-Luxury PDF Tax Invoice Generator API
 //  Exposed at https://www.vfsjewels.store/api/invoice
 //  Matches official VFS Jewels GSTIN: 33AAFVC8491A1ZX tax format
@@ -38,7 +42,7 @@ function createPDF(order) {
   const content = [];
 
   function addText(text, x, y, size = 10, font = 'F1', color = '0 0 0', align = 'left', width = 0) {
-    const escaped = String(text).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+    const escaped = String(text).replace(/\\\\/g, '\\\\\\\\').replace(/\\(/g, '\\\\(').replace(/\\)/g, '\\\\)');
     if (align === 'right' && width > 0) {
       const approxCharWidth = size * 0.5;
       const textWidth = escaped.length * approxCharWidth;
@@ -197,7 +201,7 @@ function createPDF(order) {
   addText('• This is a computer-generated tax invoice and requires no physical signature.', 50, 42, 7.5, 'F1', '0.4 0.4 0.4');
   addText('Thank you for shopping with VFS Jewels Sowcarpet! 🌸', 170, 24, 9, 'F2', '0.83 0.68 0.21');
 
-  const streamBody = content.join('\n');
+  const streamBody = content.join('\\n');
 
   const pdfString = 
 `%PDF-1.4
@@ -299,3 +303,8 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Failed to generate PDF tax invoice', details: err.message });
   }
 };
+'''
+
+with open(api_invoice_path, 'w', encoding='utf-8') as f:
+    f.write(new_invoice_js_code)
+print("Updated api/invoice.js with luxury tax invoice template")
