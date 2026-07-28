@@ -905,12 +905,13 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .p-img {
   aspect-ratio: 1 / 1;
   overflow: hidden;
-  background: var(--bg-neutral);
+  background: #ffffff;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+  padding: 6px;
+  border-radius: var(--rounded-md);
 }
 
 .p-img img {
