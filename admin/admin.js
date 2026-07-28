@@ -745,6 +745,20 @@ window.renderSearchCatalog = async function() {
                       <select id="editCat_${p.id}">
                         <option value="kadas" ${p.cat === 'kadas' ? 'selected' : ''}>Kadas</option>
                         <option value="chains" ${p.cat === 'chains' ? 'selected' : ''}>Chains</option>
+                        <option value="necklaces" ${p.cat === 'necklaces' ? 'selected' : ''}>Necklaces</option>
+                        <option value="bracelets" ${p.cat === 'bracelets' ? 'selected' : ''}>Bracelets</option>
+                        <option value="earrings" ${p.cat === 'earrings' ? 'selected' : ''}>Ear Rings</option>
+                        <option value="rings" ${p.cat === 'rings' ? 'selected' : ''}>Rings</option>
+                      </select>
+                    </div>
+                    <div class="edit-group">
+                      <label>Featured Tag / Section</label>
+                      <select id="editBadge_${p.id}">
+                        <option value="" ${!p.badge ? 'selected' : ''}>None (Standard)</option>
+                        <option value="Best Seller" ${p.badge === 'Best Seller' ? 'selected' : ''}>🔥 Best Seller</option>
+                        <option value="New Arrival" ${p.badge === 'New Arrival' ? 'selected' : ''}>✨ New Arrival</option>
+                        <option value="Offer Stock" ${p.badge === 'Offer Stock' || p.badge === 'Sale' ? 'selected' : ''}>🏷️ Offer Stock / Sale</option>
+                        <option value="Featured" ${p.badge === 'Featured' ? 'selected' : ''}>⭐ Featured</option>
                       </select>
                     </div>
                   </div>
@@ -783,38 +797,70 @@ window.cancelEditInline = function(id) {
 };
 
 window.saveProductInline = async function(id) {
-  const newName = document.getElementById(`editTitle_${id}`).value.trim();
-  const newPrice = parseFloat(document.getElementById(`editPrice_${id}`).value);
-  const newWsPrice = parseFloat(document.getElementById(`editWsPrice_${id}`).value);
-  const newMoq = parseInt(document.getElementById(`editMoq_${id}`).value) || 1;
-  const newStock = parseInt(document.getElementById(`editStock_${id}`).value) || 0;
-  const newCat = document.getElementById(`editCat_${id}`).value;
-  
-  if (!newName || isNaN(newPrice) || isNaN(newWsPrice)) {
-    adminToast('Please fill out all fields correctly!', 'error');
-    return;
+  const editContainer = document.getElementById(`editMode_${id}`);
+  const saveBtn = editContainer ? editContainer.querySelector('.btn-card-primary') : null;
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
   }
-  
-  const products = getAdminCatalog();
-  const index = products.findIndex(p => String(p.id) === String(id));
-  if (index !== -1) {
-    products[index].name = newName;
-    products[index].price = newPrice;
-    products[index].mrp = newPrice;
-    products[index].wholesalePrice = newWsPrice;
-    products[index].moq = newMoq;
-    products[index].cat = newCat;
-    
-    // Save Product Details
-    await window.VFS_DB.saveProductsList(products);
-    window.VFS_PRODUCTS_CACHE = products;
 
-    // Save Stock details directly to Firestore
-    await window.VFS_DB.saveProductStock(id, newStock);
-    window.VFS_STOCK_CACHE[id] = newStock;
+  try {
+    const newName = document.getElementById(`editTitle_${id}`).value.trim();
+    const newPrice = parseFloat(document.getElementById(`editPrice_${id}`).value);
+    const newWsPrice = parseFloat(document.getElementById(`editWsPrice_${id}`).value);
+    const newMoq = parseInt(document.getElementById(`editMoq_${id}`).value) || 1;
+    const newStock = parseInt(document.getElementById(`editStock_${id}`).value) || 0;
+    const newCat = document.getElementById(`editCat_${id}`).value;
+    const newBadge = document.getElementById(`editBadge_${id}`) ? document.getElementById(`editBadge_${id}`).value : '';
     
-    adminToast('Product updated successfully! 🌸');
-    await renderSearchCatalog();
+    if (!newName || isNaN(newPrice) || isNaN(newWsPrice)) {
+      adminToast('Please fill out all fields correctly!', 'error');
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save'; }
+      return;
+    }
+    
+    let products = (window.VFS_PRODUCTS_CACHE && window.VFS_PRODUCTS_CACHE.length > 0)
+      ? window.VFS_PRODUCTS_CACHE
+      : getAdminCatalog();
+
+    let index = products.findIndex(p => String(p.id) === String(id) || String(p.sku) === String(id));
+
+    if (index === -1) {
+      // Fallback search in DEFAULT_PRODUCTS
+      products = [...getAdminCatalog()];
+      index = products.findIndex(p => String(p.id) === String(id) || String(p.sku) === String(id));
+    }
+    
+    if (index !== -1) {
+      products[index].name = newName;
+      products[index].price = newPrice;
+      products[index].mrp = newPrice;
+      products[index].wholesalePrice = newWsPrice;
+      products[index].moq = newMoq;
+      products[index].cat = newCat;
+      products[index].badge = newBadge;
+      
+      // Save Product Details to Firestore & LocalStorage
+      await window.VFS_DB.saveProductsList(products);
+      window.VFS_PRODUCTS_CACHE = products;
+
+      // Save Stock details directly to Firestore
+      await window.VFS_DB.saveProductStock(id, newStock);
+      window.VFS_STOCK_CACHE[id] = newStock;
+      
+      adminToast('Product updated successfully! 🌸');
+      await renderSearchCatalog();
+    } else {
+      adminToast('Product not found in catalog cache!', 'error');
+    }
+  } catch (err) {
+    console.error("Error saving product inline:", err);
+    adminToast("Failed to save product: " + err.message, "error");
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save';
+    }
   }
 };
 
@@ -2080,17 +2126,6 @@ window.printPhotoSlip = async function(orderId) {
 
 
 
-  try {
-    await html2pdf().set(opt).from(tempDiv).save();
-    adminToast("Product Photo Slip PDF downloaded!");
-  } catch(err) {
-    console.error("Photo slip pdf error:", err);
-  } finally {
-    document.body.removeChild(wrapper);
-  }
-};
-
-
 // ── Reload Action ──
 $('#btnReload').addEventListener('click', () => {
   loadDashboard();
@@ -2246,7 +2281,21 @@ function renderSingleProductForm() {
           <select id="singCategory" onchange="toggleCustomCategoryInput('sing', this)" required>
             <option value="kadas">Kadas</option>
             <option value="chains">Chains</option>
+            <option value="necklaces">Necklaces</option>
+            <option value="bracelets">Bracelets</option>
+            <option value="earrings">Ear Rings</option>
+            <option value="rings">Rings</option>
             <option value="__new__">+ Add New Category</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Featured Section / Tag</label>
+          <select id="singBadge">
+            <option value="">None (Standard Catalog)</option>
+            <option value="Best Seller">🔥 Best Seller</option>
+            <option value="New Arrival">✨ New Arrival</option>
+            <option value="Offer Stock">🏷️ Offer Stock / Sale</option>
+            <option value="Featured">⭐ Featured</option>
           </select>
           <input type="text" id="singCustomCategory" placeholder="Enter Category Name" style="display:none; margin-top:8px;">
         </div>
