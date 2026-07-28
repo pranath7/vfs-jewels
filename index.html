@@ -171,6 +171,7 @@
           <button class="icon-btn" id="openSearch" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button>
           <button class="icon-btn" id="openTracking" aria-label="Track Order" title="Track Order"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2" ry="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></button>
           <button class="icon-btn" id="openModeModal" aria-label="Change Mode" title="Wholesale / Retail Preference" style="font-size:1.1rem; padding:4px 8px; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-secondary);">🔄 Mode</button>
+          <button class="icon-btn" id="openWalletModal" aria-label="Wallet" title="VFS Customer Wallet & Refund Balance" style="font-size:1.1rem; padding:4px 8px; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--color-secondary); font-weight:700; display:inline-flex; align-items:center; gap:4px;">👛 Wallet</button>
           <button class="icon-btn" id="openWL" aria-label="Wishlist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg><span class="badge" id="wlCount">0</span></button>
           <button class="icon-btn" id="openCart" aria-label="Cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="badge" id="cartCount">0</span></button>
         </div>
@@ -1366,5 +1367,36 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
     integrity="sha384-Yv5O+t3uE3hunW8uyrbpPW3iw6/5/Y7HitWJBLgqfMoA36NogMmy+8wWZMpn3HWc"
     crossorigin="anonymous" defer></script>
+
+  <!-- CUSTOMER VFS WALLET MODAL -->
+  <div class="modal-backdrop" id="walletModal" style="display:none; z-index:100000;">
+    <div class="modal-card" style="max-width: 480px; width: 92%; padding: 24px; border-radius: 12px; background: var(--color-surface); border: 1px solid var(--color-border); box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--color-border); padding-bottom:12px;">
+        <h3 style="margin:0; font-size:1.5rem; color:var(--color-on-surface); font-weight:700; display:flex; align-items:center; gap:8px;">
+          <span>👛</span> <span>VFS Wallet &amp; Store Credit</span>
+        </h3>
+        <button class="close-modal" id="closeWalletModal" style="position:static; margin:0; background:none; border:none; color:var(--color-muted); font-size:2rem; cursor:pointer;">&times;</button>
+      </div>
+      
+      <div id="walletViewLoggedOut">
+        <p style="font-size:1.2rem; color:var(--color-muted); margin-bottom:16px; line-height:1.5;">Enter your 10-digit mobile number to access your VFS Wallet balance and refund credits saved in cloud.</p>
+        <form id="walletLoginForm" style="display:flex; flex-direction:column; gap:12px;">
+          <input type="tel" id="walletLoginPhone" placeholder="Enter 10-digit Mobile Number" maxlength="10" required style="padding:12px; font-size:1.3rem; border:1px solid var(--color-border); border-radius:var(--rounded-md); outline:none; background:var(--color-surface-card); color:var(--color-on-surface);">
+          <button type="submit" class="btn-primary" style="padding:12px; font-size:1.3rem; font-weight:800; background:var(--color-secondary); color:#121212; border:none; cursor:pointer;">Access Wallet Balance →</button>
+        </form>
+      </div>
+
+      <div id="walletViewLoggedIn" style="display:none;">
+        <div style="background:linear-gradient(135deg, #1c202c 0%, #2a2f42 100%); border:1px solid var(--color-secondary); border-radius:10px; padding:20px; color:#fff; text-align:center; margin-bottom:20px;">
+          <div style="font-size:1.1rem; color:var(--color-secondary); text-transform:uppercase; letter-spacing:0.08em; font-weight:700; margin-bottom:6px;">Available Wallet Balance</div>
+          <div id="walletBalanceDisplay" style="font-size:2.8rem; font-weight:900; color:#D4AF37;">₹0.00</div>
+          <div id="walletUserPhoneDisplay" style="font-size:1.15rem; color:#aaa; margin-top:6px;">Phone: +91 ----------</div>
+        </div>
+        <p style="font-size:1.15rem; color:var(--color-muted); line-height:1.5; margin-bottom:16px;">✨ Your wallet balance is automatically available at checkout to pay for future orders.</p>
+        <button id="walletSwitchUserBtn" style="background:none; border:none; color:var(--color-secondary); font-size:1.15rem; font-weight:700; cursor:pointer; text-decoration:underline;">Switch Mobile Number</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

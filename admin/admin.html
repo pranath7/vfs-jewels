@@ -323,6 +323,50 @@
         </div>
       </section>
 
+      
+      <!-- TAB: CUSTOMER WALLETS & REFUNDS -->
+      <section class="tab-panel" id="panelWallets">
+        <div class="orders-panel-container">
+          <div class="panel-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h2 style="color:var(--color-secondary);">👛 Customer Wallets &amp; Store Credit Refunds</h2>
+            <button class="btn-secondary-dark" id="btnRefreshWallets" onclick="loadAdminWallets()" style="padding:8px 16px; font-size:1.2rem; cursor:pointer;">🔄 Refresh Wallets</button>
+          </div>
+          <p style="font-size:1.25rem; color:#8e8e93; margin-bottom:20px;">Manage customer wallet balances and credit refund amounts directly to customer mobile numbers. 100% saved in Cloud Firestore (<code>wallet_credits</code> collection).</p>
+          
+          <!-- Credit Refund Form -->
+          <div style="background:var(--color-surface-dark, #1e2330); border:1px solid var(--color-border, #333); padding:24px; border-radius:var(--rounded-md, 8px); margin-bottom:30px; max-width:650px;">
+            <h3 style="color:#fff; margin-bottom:14px; font-size:1.4rem;">➕ Credit Refund / Add Store Credit</h3>
+            <form id="adminCreditWalletForm" style="display:flex; flex-direction:column; gap:14px;">
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <input type="text" id="adminWalletPhone" placeholder="Customer Mobile (e.g. 9840757363)" required style="flex:1; min-width:200px; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
+                <input type="number" id="adminWalletAmount" placeholder="Amount (₹) e.g. 500" min="1" required style="width:160px; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
+              </div>
+              <input type="text" id="adminWalletNote" placeholder="Reason / Note (e.g. Refund for Order #VFS-98407)" style="width:100%; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
+              <button type="submit" class="btn-primary" style="padding:12px 24px; font-size:1.25rem; font-weight:800; background:#D4AF37; color:#121212; border:none; cursor:pointer; align-self:flex-start;">Credit Refund to Wallet ✓</button>
+            </form>
+          </div>
+
+          <!-- Active Wallets List -->
+          <div class="customer-table-wrap">
+            <table class="customer-table" style="width:100%;">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Customer Phone</th>
+                  <th>Wallet Balance</th>
+                  <th>Last Note / Reason</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="walletTableBody">
+                <tr><td colspan="5" style="text-align:center; padding:30px; color:#aaa;">Loading customer wallet accounts from Cloud...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+
       <!-- TAB: REPORTS & ANALYTICS -->
       <section class="tab-panel" id="panelReports">
         <div class="sales-dashboard-container">
@@ -569,6 +613,10 @@
     <button class="bottom-nav-btn" data-tab="banners">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
       <span>Banners</span>
+    </button>
+    <button class="bottom-nav-btn" data-tab="wallets">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"/></svg>
+      <span>Wallets</span>
     </button>
     <button class="bottom-nav-btn" data-tab="slots">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>

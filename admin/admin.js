@@ -4148,3 +4148,79 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+
+
+// ── Customer Wallet & Cloud Refund Management ──
+window.loadAdminWallets = async function() {
+  const tbody = document.getElementById('walletTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#aaa;">Fetching wallet accounts...</td></tr>';
+  
+  try {
+    const creditsMap = await window.VFS_DB.getWalletCredits();
+    const phones = Object.keys(creditsMap);
+    
+    if (phones.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#aaa;">No wallet credits found in database.</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = phones.map((phone, idx) => {
+      const bal = creditsMap[phone] || 0;
+      return `
+        <tr>
+          <td>${idx + 1}</td>
+          <td><strong>+91 ${phone}</strong></td>
+          <td><span style="font-weight:900; color:#D4AF37; font-size:1.3rem;">${fmt(bal)}</span></td>
+          <td>Store Credit / Refund</td>
+          <td>
+            <button class="btn-card-primary" onclick="quickCreditWalletPrompt('${phone}')" style="padding:6px 12px; font-size:1.1rem;">+ Credit Refund</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch(e) {
+    console.error("Error loading wallets:", e);
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#ff3b30;">Error loading wallets.</td></tr>';
+  }
+};
+
+window.quickCreditWalletPrompt = function(phone) {
+  document.getElementById('adminWalletPhone').value = phone;
+  document.getElementById('adminWalletAmount').focus();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('adminCreditWalletForm');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      let phone = document.getElementById('adminWalletPhone').value.trim().replace(/\D/g, '');
+      if (phone.length === 10) phone = phone;
+      else if (phone.length === 12 && phone.startsWith('91')) phone = phone.slice(2);
+      
+      const amt = parseFloat(document.getElementById('adminWalletAmount').value) || 0;
+      const note = document.getElementById('adminWalletNote').value.trim() || 'Store Credit Refund';
+      
+      if (!phone || phone.length !== 10 || amt <= 0) {
+        adminToast('Please enter a valid 10-digit phone and credit amount!', 'error');
+        return;
+      }
+      
+      try {
+        const currentBal = await window.VFS_DB.getCustomerWalletBalance(phone);
+        const newBal = currentBal + amt;
+        await window.VFS_DB.saveWalletBalance(phone, newBal);
+        
+        adminToast(`Credited ${fmt(amt)} to +91 ${phone}! New Balance: ${fmt(newBal)} 👛`);
+        document.getElementById('adminWalletAmount').value = '';
+        document.getElementById('adminWalletNote').value = '';
+        await window.loadAdminWallets();
+      } catch(err) {
+        console.error("Error crediting wallet:", err);
+        adminToast("Failed to credit wallet: " + err.message, "error");
+      }
+    });
+  }
+});
