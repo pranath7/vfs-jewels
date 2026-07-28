@@ -6125,12 +6125,18 @@ if (document.readyState === 'loading') {
 
 
 // ── Global Customer Wallet Modal Triggers ──
+
+// ── Global Customer Wallet Modal Close & Scroll Restore ──
+window.closeWalletModalFunc = function() {
+  const modal = document.getElementById('walletModal');
+  if (modal) modal.style.display = 'none';
+  document.body.style.overflow = '';
+  document.body.style.overflowY = 'auto';
+};
+
 window.openWalletModalFunc = async function() {
   const modal = document.getElementById('walletModal');
-  if (!modal) {
-    console.error("Wallet modal element not found!");
-    return;
-  }
+  if (!modal) return;
   modal.style.setProperty('display', 'flex', 'important');
   document.body.style.overflow = 'hidden';
   
@@ -6166,19 +6172,27 @@ function initWalletModalListeners() {
   const phoneInput = document.getElementById('walletLoginPhone');
   const switchUserBtn = document.getElementById('walletSwitchUserBtn');
 
-  if (openBtn) {
-    openBtn.onclick = window.openWalletModalFunc;
-  }
-  if (closeBtn) {
-    closeBtn.onclick = () => { if (modal) modal.style.display = 'none'; };
-  }
+  if (openBtn) openBtn.onclick = window.openWalletModalFunc;
+  if (closeBtn) closeBtn.onclick = window.closeWalletModalFunc;
+
   if (modal) {
-    modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+    modal.onclick = (e) => {
+      if (e.target === modal) window.closeWalletModalFunc();
+    };
   }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') window.closeWalletModalFunc();
+  });
+
+  window.addEventListener('popstate', () => {
+    window.closeWalletModalFunc();
+  });
+
   if (loginForm) {
     loginForm.onsubmit = async (e) => {
       e.preventDefault();
-      let phone = phoneInput.value.trim().replace(/\D/g, '');
+      let phone = phoneInput.value.trim().replace(/[^0-9]/g, '');
       if (phone.length === 10) {
         localStorage.setItem('vfs_customer_phone', phone);
         await window.openWalletModalFunc();
@@ -6187,6 +6201,7 @@ function initWalletModalListeners() {
       }
     };
   }
+
   if (switchUserBtn) {
     switchUserBtn.onclick = () => {
       localStorage.removeItem('vfs_customer_phone');
@@ -6202,7 +6217,6 @@ function initWalletModalListeners() {
   }
 }
 
-// Execute immediately upon script load & DOM ready
 initWalletModalListeners();
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initWalletModalListeners);
