@@ -4151,39 +4151,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+
 // ── Customer Wallet & Cloud Refund Management ──
 window.loadAdminWallets = async function() {
   const tbody = document.getElementById('walletTableBody');
   if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#aaa;">Fetching wallet accounts...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#aaa;">Fetching wallet accounts from Cloud...</td></tr>';
   
   try {
     const creditsMap = await window.VFS_DB.getWalletCredits();
     const phones = Object.keys(creditsMap);
     
+    let grandTotal = 0;
+    phones.forEach(p => grandTotal += (creditsMap[p] || 0));
+
+    const countEl = document.getElementById('adminKpiWalletCount');
+    const totalEl = document.getElementById('adminKpiWalletTotal');
+    if (countEl) countEl.textContent = phones.length;
+    if (totalEl) totalEl.textContent = typeof fmt === 'function' ? fmt(grandTotal) : '₹' + grandTotal.toFixed(2);
+    
     if (phones.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#aaa;">No wallet credits found in database.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#aaa;">No wallet accounts found in Cloud.</td></tr>';
       return;
     }
     
     tbody.innerHTML = phones.map((phone, idx) => {
       const bal = creditsMap[phone] || 0;
       return `
-        <tr>
+        <tr class="wallet-row" data-phone="${phone}">
           <td>${idx + 1}</td>
           <td><strong>+91 ${phone}</strong></td>
-          <td><span style="font-weight:900; color:#D4AF37; font-size:1.3rem;">${fmt(bal)}</span></td>
-          <td>Store Credit / Refund</td>
+          <td><span style="font-weight:900; color:#D4AF37; font-size:1.35rem;">${typeof fmt === 'function' ? fmt(bal) : '₹' + bal.toFixed(2)}</span></td>
           <td>
-            <button class="btn-card-primary" onclick="quickCreditWalletPrompt('${phone}')" style="padding:6px 12px; font-size:1.1rem;">+ Credit Refund</button>
+            <button class="btn-card-primary" onclick="quickCreditWalletPrompt('${phone}')" style="padding:6px 14px; font-size:1.1rem; background:#D4AF37; color:#121212; border:none; border-radius:4px; font-weight:700; cursor:pointer;">+ Credit Refund</button>
           </td>
         </tr>
       `;
     }).join('');
   } catch(e) {
     console.error("Error loading wallets:", e);
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#ff3b30;">Error loading wallets.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#ff3b30;">Error loading wallets from Cloud.</td></tr>';
   }
+};
+
+window.filterAdminWalletTable = function() {
+  const query = (document.getElementById('adminWalletSearchInput')?.value || '').trim().toLowerCase();
+  const rows = document.querySelectorAll('#walletTableBody .wallet-row');
+  rows.forEach(row => {
+    const phone = row.dataset.phone || '';
+    if (!query || phone.includes(query)) {
+      row.style.display = '';
+    } else {
+      row.style.display = 'none';
+    }
+  });
 };
 
 window.quickCreditWalletPrompt = function(phone) {
@@ -4196,15 +4217,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      let phone = document.getElementById('adminWalletPhone').value.trim().replace(/\D/g, '');
-      if (phone.length === 10) phone = phone;
-      else if (phone.length === 12 && phone.startsWith('91')) phone = phone.slice(2);
+      let phone = document.getElementById('adminWalletPhone').value.trim().replace(/[^0-9]/g, '');
+      if (phone.length === 12 && phone.startsWith('91')) phone = phone.slice(2);
       
       const amt = parseFloat(document.getElementById('adminWalletAmount').value) || 0;
       const note = document.getElementById('adminWalletNote').value.trim() || 'Store Credit Refund';
       
       if (!phone || phone.length !== 10 || amt <= 0) {
-        adminToast('Please enter a valid 10-digit phone and credit amount!', 'error');
+        adminToast('Please enter a valid 10-digit phone number and amount!', 'error');
         return;
       }
       
@@ -4213,7 +4233,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const newBal = currentBal + amt;
         await window.VFS_DB.saveWalletBalance(phone, newBal);
         
-        adminToast(`Credited ${fmt(amt)} to +91 ${phone}! New Balance: ${fmt(newBal)} 👛`);
+        adminToast(`Credited ₹${amt} to +91 ${phone}! New Balance: ₹${newBal} 👛`);
         document.getElementById('adminWalletAmount').value = '';
         document.getElementById('adminWalletNote').value = '';
         await window.loadAdminWallets();
@@ -4227,45 +4247,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+// Handle top header Wallets button & bottom nav wallets button click
 document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('adminAddGoogleReviewForm');
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('adminRevName').value.trim();
-      const rating = parseInt(document.getElementById('adminRevRating').value) || 5;
-      const text = document.getElementById('adminRevText').value.trim();
-      const photoUrl = document.getElementById('adminRevPhoto').value.trim();
-      
-      if (!name || !text) {
-        adminToast('Please fill out reviewer name and review text!', 'error');
-        return;
+  document.querySelectorAll('[data-tab="wallets"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => {
+        p.classList.remove('active');
+        p.style.display = '';
+      });
+      const navBtn = document.querySelector('.bottom-nav-btn[data-tab="wallets"]');
+      if (navBtn) navBtn.classList.add('active');
+      const panel = document.getElementById('panelWallets');
+      if (panel) {
+        panel.classList.add('active');
+        panel.style.display = 'block';
       }
-      
-      const newRev = {
-        id: 'rev-' + Date.now(),
-        name: name,
-        rating: rating,
-        text: text,
-        fileUrl: photoUrl || '',
-        fileType: photoUrl.includes('.mp4') ? 'video' : 'image',
-        status: 'approved',
-        createdAt: new Date().toISOString()
-      };
-      
-      try {
-        const list = await window.VFS_DB.getReviews();
-        list.unshift(newRev);
-        await window.VFS_DB.saveReviews(list);
-        adminToast(`Posted Google Review by ${name} (${rating}★) to storefront! 🌟`);
-        document.getElementById('adminRevName').value = '';
-        document.getElementById('adminRevText').value = '';
-        document.getElementById('adminRevPhoto').value = '';
-        if (typeof loadModerationList === 'function') loadModerationList();
-      } catch(err) {
-        console.error("Error posting review:", err);
-        adminToast("Failed to post review: " + err.message, "error");
+      const title = document.getElementById('tabTitle');
+      const sub = document.getElementById('tabSubtitle');
+      if (title) title.textContent = "👛 Customer Wallets & Store Credit Refunds";
+      if (sub) sub.textContent = "View customer wallet balances, search by phone number, and credit store refunds.";
+      if (typeof window.loadAdminWallets === 'function') {
+        window.loadAdminWallets();
       }
     });
-  }
+  });
 });
