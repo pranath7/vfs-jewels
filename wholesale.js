@@ -459,12 +459,16 @@ const CATEGORY_BANNERS = {
 };
 
 const TESTIMONIALS = [
-  { name: 'Priya M.', text: 'The quality is amazing for this price! My friends thought it was real gold. The anti-tarnish coating really works — been wearing it daily for 3 months.', stars: 5 },
-  { name: 'Ananya S.', text: 'Ordered the pendant set as a gift for my mom. The packaging was so premium, she was thrilled! The CZ stones genuinely sparkle.', stars: 5 },
-  { name: 'Riya K.', text: 'Best imitation jewellery brand I\'ve found. No skin irritation, gorgeous designs, and delivery was super fast. Already ordered my 4th piece!', stars: 5 },
-  { name: 'Sneha P.', text: 'The halo ring looks exactly like the ones I saw at Tanishq but at a fraction of the cost. VFS has earned a loyal customer.', stars: 4 },
-  { name: 'Kavya D.', text: 'I was skeptical about online jewellery but VFS exceeded expectations. The gold plating is thick and the weight feels premium.', stars: 5 },
-  { name: 'Meera R.', text: 'Bought couple rings for our anniversary. Perfect fit, beautiful finish, and the gift box made it extra special. Highly recommend!', stars: 5 },
+  { name: 'Priya M.', text: 'The quality is amazing for this price! My friends thought it was real gold. The anti-tarnish coating really works — been wearing it daily for 3 months.', rating: 5 },
+  { name: 'Karthik N.', text: 'Good quality Kada, anti-tarnish coating is solid. Delivery took 4 days to Bangalore instead of 2, but the product is genuine.', rating: 4 },
+  { name: 'Ananya S.', text: 'Ordered the pendant set as a gift for my mom. The packaging was so premium, she was thrilled! The CZ stones genuinely sparkle.', rating: 5 },
+  { name: 'Pooja Sharma', text: 'Ring design is very pretty and stones are bright. Sizing was slightly snug on my finger so needed exchange, but support team resolved it quickly.', rating: 3 },
+  { name: 'Riya K.', text: 'Best imitation jewellery brand I\'ve found. No skin irritation, gorgeous designs, and delivery was super fast. Already ordered my 4th piece!', rating: 5 },
+  { name: 'Vikram Raj', text: 'Wholesale price and gold finish are top notch. Outer box packaging was slightly pressed during transit, but jewellery inside was in perfect condition.', rating: 4 },
+  { name: 'Sneha P.', text: 'The halo ring looks exactly like the ones I saw at Tanishq but at a fraction of the cost. VFS has earned a loyal customer.', rating: 4 },
+  { name: 'Sanjana Reddy', text: 'Heavy chain feels premium. Slightly darker shade than expected under low room light, but looks super rich in daylight!', rating: 4 },
+  { name: 'Kavya D.', text: 'I was skeptical about online jewellery but VFS exceeded expectations. The gold plating is thick and the weight feels premium.', rating: 5 },
+  { name: 'Meera R.', text: 'Bought couple rings for our anniversary. Perfect fit, beautiful finish, and the gift box made it extra special. Highly recommend!', rating: 5 }
 ];
 
 // ── State ──

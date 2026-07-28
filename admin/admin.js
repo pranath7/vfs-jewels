@@ -4224,3 +4224,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('adminAddGoogleReviewForm');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('adminRevName').value.trim();
+      const rating = parseInt(document.getElementById('adminRevRating').value) || 5;
+      const text = document.getElementById('adminRevText').value.trim();
+      const photoUrl = document.getElementById('adminRevPhoto').value.trim();
+      
+      if (!name || !text) {
+        adminToast('Please fill out reviewer name and review text!', 'error');
+        return;
+      }
+      
+      const newRev = {
+        id: 'rev-' + Date.now(),
+        name: name,
+        rating: rating,
+        text: text,
+        fileUrl: photoUrl || '',
+        fileType: photoUrl.includes('.mp4') ? 'video' : 'image',
+        status: 'approved',
+        createdAt: new Date().toISOString()
+      };
+      
+      try {
+        const list = await window.VFS_DB.getReviews();
+        list.unshift(newRev);
+        await window.VFS_DB.saveReviews(list);
+        adminToast(`Posted Google Review by ${name} (${rating}★) to storefront! 🌟`);
+        document.getElementById('adminRevName').value = '';
+        document.getElementById('adminRevText').value = '';
+        document.getElementById('adminRevPhoto').value = '';
+        if (typeof loadModerationList === 'function') loadModerationList();
+      } catch(err) {
+        console.error("Error posting review:", err);
+        adminToast("Failed to post review: " + err.message, "error");
+      }
+    });
+  }
+});

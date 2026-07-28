@@ -244,6 +244,7 @@
         </div>
       </section>
 
+
       <!-- TAB: REVIEWS MODERATION -->
       <section class="tab-panel" id="panelModeration">
         <div class="orders-panel-container">
@@ -251,11 +252,33 @@
             <h2>Reviews &amp; Reels Moderation</h2>
             <span class="col-count count-moderation" id="countModeration">0</span>
           </div>
+
+          <!-- Add Google Business Review Form -->
+          <div style="background:var(--color-surface-dark, #1e2330); border:1px solid var(--color-border, #333); padding:24px; border-radius:8px; margin-bottom:30px; max-width:680px;">
+            <h3 style="color:#fff; margin-bottom:14px; font-size:1.4rem;">➕ Add Real Google Business Review to Storefront</h3>
+            <form id="adminAddGoogleReviewForm" style="display:flex; flex-direction:column; gap:14px;">
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <input type="text" id="adminRevName" placeholder="Reviewer Name (e.g. Karthik N.)" required style="flex:1; min-width:200px; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
+                <select id="adminRevRating" style="width:160px; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
+                  <option value="5">⭐⭐⭐⭐⭐ (5 Stars)</option>
+                  <option value="4">⭐⭐⭐⭐ (4 Stars)</option>
+                  <option value="3">⭐⭐⭐ (3 Stars)</option>
+                  <option value="2">⭐⭐ (2 Stars)</option>
+                  <option value="1">⭐ (1 Star)</option>
+                </select>
+              </div>
+              <textarea id="adminRevText" rows="3" placeholder="Write review text here..." required style="width:100%; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none; font-family:var(--font-body);"></textarea>
+              <input type="url" id="adminRevPhoto" placeholder="Optional Photo / Video URL..." style="width:100%; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
+              <button type="submit" class="btn-primary" style="padding:12px 24px; font-size:1.25rem; font-weight:800; background:#D4AF37; color:#121212; border:none; cursor:pointer; align-self:flex-start;">Post Google Review to Storefront ✓</button>
+            </form>
+          </div>
+
           <div class="orders-grid-flow" id="listModeration">
             <!-- Pending customer reviews go here -->
           </div>
         </div>
       </section>
+
 
       <!-- TAB 4: ADD PRODUCTS -->
       <section class="tab-panel" id="panelCatalog">
