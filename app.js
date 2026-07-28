@@ -6221,3 +6221,41 @@ initWalletModalListeners();
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initWalletModalListeners);
 }
+
+
+
+// ── Single-Icon Theme Toggle & Big Logo Support ──
+function initThemeToggle() {
+  const themeBtn = document.getElementById('themeToggleBtn');
+  const sun = document.querySelector('.theme-icon-sun');
+  const moon = document.querySelector('.theme-icon-moon');
+
+  function applyTheme(isDark) {
+    if (isDark) {
+      document.body.classList.add('dark-theme');
+      if (sun) sun.style.display = 'inline-block';
+      if (moon) moon.style.display = 'none';
+    } else {
+      document.body.classList.remove('dark-theme');
+      if (sun) sun.style.display = 'none';
+      if (moon) moon.style.display = 'inline-block';
+    }
+  }
+
+  const savedTheme = localStorage.getItem('vfs_theme');
+  const isDark = savedTheme === 'dark';
+  applyTheme(isDark);
+
+  if (themeBtn) {
+    themeBtn.onclick = () => {
+      const darkNow = document.body.classList.toggle('dark-theme');
+      localStorage.setItem('vfs_theme', darkNow ? 'dark' : 'light');
+      applyTheme(darkNow);
+    };
+  }
+}
+
+initThemeToggle();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initThemeToggle);
+}
