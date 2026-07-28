@@ -6054,78 +6054,85 @@ if (document.readyState === 'loading') {
 
 
 
-// ── VFS Customer Wallet & Cloud Refund Modal System ──
-function initWalletModalLogic() {
+
+
+
+// ── Global Customer Wallet Modal Triggers ──
+window.openWalletModalFunc = async function() {
+  const modal = document.getElementById('walletModal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  
+  const loggedOutView = document.getElementById('walletViewLoggedOut');
+  const loggedInView = document.getElementById('walletViewLoggedIn');
+  const balDisplay = document.getElementById('walletBalanceDisplay');
+  const userPhoneDisplay = document.getElementById('walletUserPhoneDisplay');
+
+  const savedPhone = localStorage.getItem('vfs_customer_phone');
+  if (savedPhone && savedPhone.length === 10) {
+    if (loggedOutView) loggedOutView.style.display = 'none';
+    if (loggedInView) loggedInView.style.display = 'block';
+    if (userPhoneDisplay) userPhoneDisplay.textContent = `Phone: +91 ${savedPhone}`;
+    if (balDisplay) balDisplay.textContent = 'Checking Cloud...';
+    
+    try {
+      const bal = await window.VFS_DB.getCustomerWalletBalance(savedPhone);
+      if (balDisplay) balDisplay.textContent = typeof fmt === 'function' ? fmt(bal) : '₹' + bal.toFixed(2);
+    } catch(e) {
+      if (balDisplay) balDisplay.textContent = '₹0.00';
+    }
+  } else {
+    if (loggedOutView) loggedOutView.style.display = 'block';
+    if (loggedInView) loggedInView.style.display = 'none';
+  }
+};
+
+function initWalletModalListeners() {
   const modal = document.getElementById('walletModal');
   const openBtn = document.getElementById('openWalletModal');
   const closeBtn = document.getElementById('closeWalletModal');
   const loginForm = document.getElementById('walletLoginForm');
   const phoneInput = document.getElementById('walletLoginPhone');
-  const loggedOutView = document.getElementById('walletViewLoggedOut');
-  const loggedInView = document.getElementById('walletViewLoggedIn');
-  const balDisplay = document.getElementById('walletBalanceDisplay');
-  const userPhoneDisplay = document.getElementById('walletUserPhoneDisplay');
   const switchUserBtn = document.getElementById('walletSwitchUserBtn');
 
-  if (!modal) return;
-
-  async function checkUserWallet() {
-    const savedPhone = localStorage.getItem('vfs_customer_phone');
-    if (savedPhone && savedPhone.length === 10) {
-      loggedOutView.style.display = 'none';
-      loggedInView.style.display = 'block';
-      userPhoneDisplay.textContent = `Phone: +91 ${savedPhone}`;
-      balDisplay.textContent = 'Checking Cloud...';
-      
-      const bal = await window.VFS_DB.getCustomerWalletBalance(savedPhone);
-      balDisplay.textContent = fmt(bal);
-    } else {
-      loggedOutView.style.display = 'block';
-      loggedInView.style.display = 'none';
-    }
-  }
-
   if (openBtn) {
-    openBtn.addEventListener('click', async () => {
-      modal.style.display = 'flex';
-      await checkUserWallet();
-    });
+    openBtn.onclick = window.openWalletModalFunc;
   }
-
   if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-      modal.style.display = 'none';
-    });
+    closeBtn.onclick = () => { if (modal) modal.style.display = 'none'; };
   }
-
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) modal.style.display = 'none';
-  });
-
+  if (modal) {
+    modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+  }
   if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
+    loginForm.onsubmit = async (e) => {
       e.preventDefault();
       let phone = phoneInput.value.trim().replace(/\D/g, '');
       if (phone.length === 10) {
         localStorage.setItem('vfs_customer_phone', phone);
-        await checkUserWallet();
+        await window.openWalletModalFunc();
       } else {
         alert('Please enter a valid 10-digit mobile number.');
       }
-    });
+    };
   }
-
   if (switchUserBtn) {
-    switchUserBtn.addEventListener('click', () => {
+    switchUserBtn.onclick = () => {
       localStorage.removeItem('vfs_customer_phone');
-      loggedOutView.style.display = 'block';
-      loggedInView.style.display = 'none';
-      phoneInput.value = '';
-      phoneInput.focus();
-    });
+      const loggedOutView = document.getElementById('walletViewLoggedOut');
+      const loggedInView = document.getElementById('walletViewLoggedIn');
+      if (loggedOutView) loggedOutView.style.display = 'block';
+      if (loggedInView) loggedInView.style.display = 'none';
+      if (phoneInput) {
+        phoneInput.value = '';
+        phoneInput.focus();
+      }
+    };
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  initWalletModalLogic();
-});
+// Execute immediately upon script load & DOM ready
+initWalletModalListeners();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initWalletModalListeners);
+}
