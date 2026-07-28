@@ -6224,38 +6224,36 @@ if (document.readyState === 'loading') {
 
 
 
-// ── Single-Icon Theme Toggle & Big Logo Support ──
-function initThemeToggle() {
-  const themeBtn = document.getElementById('themeToggleBtn');
-  const sun = document.querySelector('.theme-icon-sun');
-  const moon = document.querySelector('.theme-icon-moon');
 
-  function applyTheme(isDark) {
-    if (isDark) {
-      document.body.classList.add('dark-theme');
-      if (sun) sun.style.display = 'inline-block';
-      if (moon) moon.style.display = 'none';
-    } else {
-      document.body.classList.remove('dark-theme');
-      if (sun) sun.style.display = 'none';
-      if (moon) moon.style.display = 'inline-block';
-    }
-  }
 
+
+// ── Global Theme Toggle (Light / Dark Mode) ──
+window.toggleTheme = function() {
+  const isDark = document.body.classList.toggle('dark-theme');
+  localStorage.setItem('vfs_theme', isDark ? 'dark' : 'light');
+  window.updateThemeIcons(isDark);
+};
+
+window.updateThemeIcons = function(isDark) {
+  const suns = document.querySelectorAll('.theme-icon-sun');
+  const moons = document.querySelectorAll('.theme-icon-moon');
+  
+  suns.forEach(s => s.style.display = isDark ? 'inline-block' : 'none');
+  moons.forEach(m => m.style.display = isDark ? 'none' : 'inline-block');
+};
+
+// Initial Theme Check on Load
+(function initThemeOnLoad() {
   const savedTheme = localStorage.getItem('vfs_theme');
   const isDark = savedTheme === 'dark';
-  applyTheme(isDark);
-
-  if (themeBtn) {
-    themeBtn.onclick = () => {
-      const darkNow = document.body.classList.toggle('dark-theme');
-      localStorage.setItem('vfs_theme', darkNow ? 'dark' : 'light');
-      applyTheme(darkNow);
-    };
+  if (isDark) {
+    document.body.classList.add('dark-theme');
+  } else {
+    document.body.classList.remove('dark-theme');
   }
-}
-
-initThemeToggle();
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initThemeToggle);
-}
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => window.updateThemeIcons(isDark));
+  } else {
+    window.updateThemeIcons(isDark);
+  }
+})();
