@@ -454,32 +454,32 @@ const CATEGORY_BANNERS = {
   bracelets: { 
     title: "Bracelets Collection", 
     desc: "Elegant handcrafted anti-tarnish gold & CZ bracelets.", 
-    img: "assets/cleaned_bracelets/bracelet_cleaned_595.png" 
+    img: "assets/banners/bracelets_banner.png" 
   },
   necklaces: { 
     title: "Necklaces Collection", 
     desc: "Exquisite handcrafted gold & CZ necklace sets.", 
-    img: "https://res.cloudinary.com/cwx4zame/image/upload/v1784987541/necklaces/nkfoqzblg8cengy6hrda.jpg" 
+    img: "assets/banners/necklaces_banner.png" 
   },
   kadas: { 
     title: "Kadas Collection", 
     desc: "Premium handcrafted daily-wear gold plated Kadas.", 
-    img: "assets/cleaned_bracelets/bracelet_cleaned_600.png" 
+    img: "assets/banners/kadas_banner.png" 
   },
   chains: { 
     title: "Chains Collection", 
     desc: "Classic and luxury gold-plated chains and necklaces.", 
-    img: "assets/cleaned_bracelets/bracelet_cleaned_608.png" 
+    img: "assets/banners/chains_banner.png" 
   },
   earrings: { 
     title: "Ear Rings Collection", 
     desc: "Dazzling handcrafted ear rings for every occasion.", 
-    img: "https://res.cloudinary.com/cwx4zame/image/upload/v1783694425/kuk50yyh9yzosthcsxkk.png" 
+    img: "assets/banners/earrings_banner.png" 
   },
   rings: {
     title: "Rings Collection",
     desc: "Stunning anti-tarnish gold & CZ designer rings.",
-    img: "assets/cleaned_bracelets/bracelet_cleaned_615.png"
+    img: "assets/banners/bracelets_banner.png"
   }
 };
 
