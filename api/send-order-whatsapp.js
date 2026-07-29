@@ -1,8 +1,7 @@
 // ============================================================
 //  VFS Jewels — WhatsApp Order Confirmation API (Vercel Serverless)
 //  Exposed at https://www.vfsjewels.store/api/send-order-whatsapp
-//  Sends automated WhatsApp text summary + PDF Tax Invoice Document
-//  Logs all outbound notifications to Firestore 'whatsapp_logs'
+//  Sends automated WhatsApp text summary + PDF Tax Invoice + PDF Photo Slip
 // ============================================================
 
 const https = require('https');
@@ -22,7 +21,7 @@ function sendWhatsAppPayload(payloadData) {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
-        'Content-Type': 'application/json',
+        'Content-Type': `application/json`,
         'Content-Length': Buffer.byteLength(data)
       }
     };
@@ -126,7 +125,7 @@ Your order has been received and confirmed.
 🧾 *Order ID:* ${order.id}
 📅 *Date:* ${order.date || new Date().toLocaleDateString('en-IN')}
 ━━━━━━━━━━━━━━━━━━━━━━━
-📦 *Items Ordered:*
+📦 *Items Ordered (${order.items ? order.items.length : 1} Products):*
 ${itemsList || '1. Jewellery Order\n'}
 ━━━━━━━━━━━━━━━━━━━━━━━
 💰 *Subtotal:* ₹${order.subtotal || order.total}
@@ -138,9 +137,9 @@ ${itemsList || '1. Jewellery Order\n'}
 
 📍 *Delivery Address:*
 ${order.address || ''}, ${order.city || ''} - ${order.pincode || ''}
-🚛 *Carrier:* ${order.carrier || 'DTDC'}
+🚛 *Carrier:* ${order.carrier || 'DTDC Express'}
 
-📄 _Your official PDF Tax Invoice is attached below!_
+📄 _Your official PDF Tax Invoice & Photo Slip are attached below!_
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 _Thank you for shopping with VFS Jewels!_
@@ -166,15 +165,15 @@ _Thank you for shopping with VFS Jewels!_
       preview: `Order ${order.id} confirmed for ${order.name} (Total: ₹${order.total})`
     });
 
-    // 2. Build Direct PDF Invoice Link
     const cleanId = order.id.replace('#', '');
+
+    // 2. Build PDF Invoice Link & Send PDF Tax Invoice Document
     const invoiceUrl = `https://www.vfsjewels.store/api/invoice?id=${encodeURIComponent(order.id)}&name=${encodeURIComponent(order.name || '')}&phone=${customerPhone}&total=${order.total}&subtotal=${order.subtotal || order.total}&gstAmount=${order.gstAmount || 0}&shipping=${order.shipping || 90}&address=${encodeURIComponent(order.address || '')}&city=${encodeURIComponent(order.city || '')}&pincode=${order.pincode || ''}&carrier=${encodeURIComponent(order.carrier || '')}`;
 
-    // 3. Send PDF Document Attachment directly via Meta API
-    console.log(`📄 Sending WhatsApp PDF Document to +${customerPhone}`);
-    let docResult = null;
+    console.log(`📄 Sending WhatsApp PDF Tax Invoice to +${customerPhone}`);
+    let invoiceResult = null;
     try {
-      docResult = await sendWhatsAppPayload({
+      invoiceResult = await sendWhatsAppPayload({
         messaging_product: 'whatsapp',
         to: customerPhone,
         type: 'document',
@@ -185,7 +184,7 @@ _Thank you for shopping with VFS Jewels!_
         }
       });
       
-      const docMsgId = docResult?.messages?.[0]?.id || '';
+      const docMsgId = invoiceResult?.messages?.[0]?.id || '';
       await logToFirestore({
         recipient: order.name || 'Customer',
         phone: customerPhone,
@@ -196,16 +195,49 @@ _Thank you for shopping with VFS Jewels!_
         preview: `Attached PDF Invoice VFS_Jewels_Invoice_${cleanId}.pdf`
       });
     } catch (docErr) {
-      console.warn('⚠️ PDF Document sending warning:', docErr.message || docErr);
+      console.warn('⚠️ PDF Invoice sending warning:', docErr.message || docErr);
+    }
+
+    // 3. Build Photo Slip PDF Link & Send PDF Photo Slip Document
+    const photoSlipUrl = `https://www.vfsjewels.store/api/photo-slip?id=${encodeURIComponent(order.id)}&name=${encodeURIComponent(order.name || '')}&phone=${customerPhone}&total=${order.total}&subtotal=${order.subtotal || order.total}&shipping=${order.shipping || 90}&address=${encodeURIComponent(order.address || '')}&city=${encodeURIComponent(order.city || '')}&pincode=${order.pincode || ''}&carrier=${encodeURIComponent(order.carrier || '')}`;
+
+    console.log(`🖼️ Sending WhatsApp PDF Photo Slip to +${customerPhone}`);
+    let photoSlipResult = null;
+    try {
+      photoSlipResult = await sendWhatsAppPayload({
+        messaging_product: 'whatsapp',
+        to: customerPhone,
+        type: 'document',
+        document: {
+          link: photoSlipUrl,
+          filename: `VFS_Jewels_PhotoSlip_${cleanId}.pdf`,
+          caption: `🖼️ Photo Slip & Fulfillment Manifest for Order ${order.id} - VFS Jewels`
+        }
+      });
+
+      const psMsgId = photoSlipResult?.messages?.[0]?.id || '';
+      await logToFirestore({
+        recipient: order.name || 'Customer',
+        phone: customerPhone,
+        type: 'PDF Photo Slip Attachment',
+        orderId: order.id,
+        status: 'SENT',
+        messageId: psMsgId,
+        preview: `Attached PDF Photo Slip VFS_Jewels_PhotoSlip_${cleanId}.pdf`
+      });
+    } catch (psErr) {
+      console.warn('⚠️ PDF Photo Slip sending warning:', psErr.message || psErr);
     }
 
     return res.status(200).json({
       success: true,
       orderId: order.id,
       textMessageId: textMsgId,
-      pdfMessageId: docResult?.messages?.[0]?.id || null,
+      invoicePdfMessageId: invoiceResult?.messages?.[0]?.id || null,
+      photoSlipPdfMessageId: photoSlipResult?.messages?.[0]?.id || null,
       invoiceUrl: invoiceUrl,
-      message: `Order confirmation & PDF Invoice sent to +${customerPhone}`
+      photoSlipUrl: photoSlipUrl,
+      message: `Order confirmation, PDF Invoice, and PDF Photo Slip sent to +${customerPhone}`
     });
 
   } catch (err) {
