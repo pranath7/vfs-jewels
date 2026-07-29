@@ -1110,53 +1110,49 @@
     </div>
   </div>
 
-  <!-- WHOLESALE UNLOCK MODAL -->
+    <!-- WHOLESALE UNLOCK MODAL (RAZORPAY INTEGRATED) -->
   <div class="modal-bg" id="wholesaleUnlockModal">
-    <div class="pin-modal" style="max-width:500px;padding:30px;">
+    <div class="pin-modal" style="max-width:500px;padding:30px;border-radius:12px;background:#fff;color:#121212;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
       <h3 style="font-size:2.2rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;text-align:center;color:#121212;">Unlock Prices 🔐</h3>
-      <p style="font-size:1.3rem;color:#666;margin-bottom:20px;text-align:center;" id="unlockPriceText">Please pay advance to activate wholesale view.</p>
+      <p style="font-size:1.3rem;color:#666;margin-bottom:20px;text-align:center;" id="unlockPriceText">Pay ₹1 portal fee to unlock wholesale prices.</p>
       
       <div style="border:1px dashed #D4AF37;background:#FFFDF0;padding:15px;border-radius:6px;font-size:1.2rem;line-height:1.4;color:#6d5a15;margin-bottom:20px;">
         <strong>Advance Payment System Rules:</strong><br>
-        Wholesale customers pay a small ₹1 portal fee to unlock prices and place orders. The advance is adjusted in the final bill.
+        Wholesale customers pay a small ₹1 portal fee to unlock prices and place orders. The advance is automatically adjusted in your final bill.
       </div>
       
       <div style="text-align:center;margin-bottom:20px;">
         <div style="font-size:1.4rem;color:#121212;font-weight:700;margin-bottom:6px;">Payable Advance Amount</div>
-        <div style="font-size:3rem;font-weight:700;color:#D4AF37;" id="unlockAmountLabel">₹1</div>
+        <div style="font-size:3.6rem;font-weight:900;color:#D4AF37;" id="unlockAmountLabel">₹1</div>
       </div>
       
-      <!-- UPI Simulation UI -->
-      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-        <div style="font-size:1.2rem;font-weight:700;color:#121212;margin-bottom:4px;">Select payment option:</div>
-        <button class="btn-primary upi-pay-btn" data-method="gpay" style="padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.3rem;background:#4285F4;color:#fff;border:none;">
+      <!-- Primary Action: Official Razorpay Payment Gateway Button -->
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
+        <button class="btn-primary" id="btnUnlockRazorpayPay" onclick="window.triggerRazorpayUnlock(100)" style="width:100%; padding:16px; background:#D4AF37 !important; color:#121212 !important; font-weight:900; font-size:1.35rem; border:none; border-radius:8px; cursor:pointer; box-shadow:0 6px 20px rgba(212,175,55,0.4); text-transform:uppercase; letter-spacing:0.04em;">
+          💳 PAY ₹1 SECURELY VIA RAZORPAY
+        </button>
+
+        <div style="display:flex;align-items:center;justify-content:center;margin:6px 0;font-size:1.1rem;color:#888;">— OR DIRECT UPI —</div>
+
+        <!-- Instant UPI Options -->
+        <button class="btn-primary upi-pay-btn" onclick="window.triggerRazorpayUnlock(100)" style="padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.3rem;background:#4285F4;color:#fff;border:none;border-radius:6px;cursor:pointer;">
           <span>Pay with Google Pay</span>
         </button>
-        <button class="btn-primary upi-pay-btn" data-method="phonepe" style="padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.3rem;background:#5f259f;color:#fff;border:none;">
+        <button class="btn-primary upi-pay-btn" onclick="window.triggerRazorpayUnlock(100)" style="padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.3rem;background:#5f259f;color:#fff;border:none;border-radius:6px;cursor:pointer;">
           <span>Pay with PhonePe</span>
         </button>
-        <button class="btn-primary upi-pay-btn" data-method="paytm" style="padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.3rem;background:#00baf2;color:#fff;border:none;">
+        <button class="btn-primary upi-pay-btn" onclick="window.triggerRazorpayUnlock(100)" style="padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.3rem;background:#00baf2;color:#fff;border:none;border-radius:6px;cursor:pointer;">
           <span>Pay with Paytm</span>
         </button>
-        
-        <div style="display:flex;align-items:center;justify-content:center;margin:8px 0;font-size:1.1rem;color:#888;">— OR SCAN QR CODE —</div>
-        
-        <!-- Mock QR Code visual -->
-        <div style="display:flex;justify-content:center;align-items:center;margin-bottom:10px;">
-          <div style="width:140px;height:140px;border:1px solid #ddd;border-radius:4px;padding:8px;background:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;">
-            <!-- Simple simulated QR Grid -->
-            <div style="width:100%;height:100%;background-image:linear-gradient(45deg, #121212 25%, transparent 25%), linear-gradient(-45deg, #121212 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #121212 75%), linear-gradient(-45deg, transparent 75%, #121212 75%);background-size:20px 20px;opacity:0.8;"></div>
-          </div>
-        </div>
-        
-        <button class="btn-primary" id="btnSimulateSuccess" style="padding:12px;font-size:1.3rem;background:#25D366;color:#fff;border:none;font-weight:700;">Simulate Payment Success (UPI)</button>
+
+        <button class="btn-primary" id="btnSimulateSuccess" onclick="window.completeWholesaleUnlock()" style="padding:10px;font-size:1.1rem;background:#25D366;color:#fff;border:none;font-weight:700;border-radius:6px;cursor:pointer;margin-top:6px;">Bypass / Demo Unlock (Testing)</button>
       </div>
       
-      <button class="btn-primary" id="btnCancelUnlock" style="width:100%;font-size:1.2rem;padding:8px;background:#eee;color:#333;border:none;">Close</button>
+      <button class="btn-primary" id="btnCancelUnlock" onclick="window.closeWholesaleLoginModal()" style="width:100%;font-size:1.2rem;padding:10px;background:#eee;color:#333;border:none;border-radius:6px;cursor:pointer;">Close</button>
     </div>
   </div>
 
-  <!-- TOASTS -->
+<!-- TOASTS -->
   <div class="toast-box" id="toastBox"></div>
 
   <!-- MOBILE FIXED BOTTOM BAR -->

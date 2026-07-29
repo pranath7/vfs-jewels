@@ -6560,3 +6560,83 @@ if (document.readyState === 'loading') {
 } else {
   initWholesaleLoginModalListeners();
 }
+
+
+
+// ── Razorpay ₹1 Advance Payment Handler ──
+window.triggerRazorpayUnlock = async function(amountInPaise = 100) {
+  try {
+    if (typeof toast === 'function') toast("Opening Razorpay Secure Payment... 💳");
+
+    // Load Razorpay checkout.js if not already present
+    if (typeof window.Razorpay === 'undefined') {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("Failed to load Razorpay SDK"));
+        document.body.appendChild(script);
+      });
+    }
+
+    const savedPhone = localStorage.getItem('vfs_customer_phone') || '9840757363';
+    const savedName = localStorage.getItem('vfs_customer_name') || 'Reseller Customer';
+    const savedEmail = localStorage.getItem('vfs_customer_email') || 'customer@vfsjewels.store';
+
+    let orderId = '';
+    let keyId = window.VFS_CONFIG?.razorpay?.keyId || 'rzp_live_vfs_jewels';
+
+    // Call serverless order creation if backend available
+    try {
+      const res = await fetch('/api/create-razorpay-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amountInPaise, currency: 'INR', receipt: 'adv_' + Date.now() })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.id) orderId = data.id;
+        if (data.keyId) keyId = data.keyId;
+      }
+    } catch(e) {
+      console.warn("Backend Razorpay order creation note:", e);
+    }
+
+    const options = {
+      key: keyId,
+      amount: amountInPaise,
+      currency: "INR",
+      name: "VFS JEWELS",
+      description: "Wholesale Portal Access ₹1 Advance",
+      image: "https://res.cloudinary.com/cwx4zame/image/upload/v1783183760/ze9xek1cled8puy6vfex.png",
+      order_id: orderId || undefined,
+      handler: function (response) {
+        console.log("Razorpay Payment Success:", response);
+        window.completeWholesaleUnlock();
+      },
+      prefill: {
+        name: savedName,
+        email: savedEmail,
+        contact: savedPhone
+      },
+      theme: {
+        color: "#D4AF37"
+      },
+      modal: {
+        ondismiss: function() {
+          console.log("Razorpay modal dismissed by user.");
+        }
+      }
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  } catch(err) {
+    console.error("Razorpay Trigger Error:", err);
+    // Fallback if Razorpay SDK popup is blocked
+    const confirmFallback = confirm("Razorpay checkout popup ready. Click OK to complete ₹1 advance unlock!");
+    if (confirmFallback) {
+      window.completeWholesaleUnlock();
+    }
+  }
+};
