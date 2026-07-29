@@ -5662,6 +5662,40 @@ function initThemeToggle() {
   });
 }
 
+// ── Wholesale Phone Entry (skip Google auth → go directly to phone+payment) ──
+window._showWholesalePhoneEntry = function() {
+  // Close any open modals first
+  const termsModal = document.getElementById('wholesaleTermsModal');
+  const welcomeModal = document.getElementById('welcomeModeModal');
+  if (termsModal) termsModal.classList.remove('active');
+  if (welcomeModal) { welcomeModal.style.display = 'none'; welcomeModal.classList.remove('active'); }
+
+  // Show login modal with ONLY the registration/phone form (skip Google)
+  const loginModal = document.getElementById('wholesaleLoginModal');
+  const loginStepPhone = document.getElementById('loginStepPhone');
+  const loginStepRegister = document.getElementById('loginStepRegister');
+
+  if (loginModal) {
+    // Hide Google sign-in button step, show registration form directly
+    if (loginStepPhone) loginStepPhone.style.display = 'none';
+    if (loginStepRegister) loginStepRegister.style.display = 'block';
+    loginModal.style.display = 'flex';
+    loginModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Pre-fill name if stored
+    const savedName = localStorage.getItem('vfs_customer_name') || '';
+    const savedPhone = localStorage.getItem('vfs_customer_phone') || '';
+    const nameInp = document.getElementById('regNameInput');
+    const phoneInp = document.getElementById('regPhoneInput');
+    if (nameInp && savedName) nameInp.value = savedName;
+    if (phoneInp && savedPhone) phoneInp.value = savedPhone;
+  } else {
+    // Fallback: go directly to unlock modal
+    window.openWholesaleUnlockModal();
+  }
+};
+
 // ── Complete 3-Step Wholesale Membership Funnel ──
 
 function openWholesaleFunnel() {
@@ -6040,6 +6074,59 @@ function initAllMasterModalListeners() {
     }, 150);
   }
 
+  // A2. Wire the OLD modeSelectorModal wholesale/retail cards (backup modal)
+  const selectWholesaleCard = document.getElementById('selectWholesaleCard');
+  const selectRetailCard = document.getElementById('selectRetailCard');
+  if (selectWholesaleCard) {
+    selectWholesaleCard.onclick = function(e) {
+      e.preventDefault();
+      const oldModal = document.getElementById('modeSelectorModal');
+      if (oldModal) oldModal.classList.remove('active');
+      openWholesaleFunnel();
+    };
+  }
+  if (selectRetailCard) {
+    selectRetailCard.onclick = function(e) {
+      e.preventDefault();
+      const oldModal = document.getElementById('modeSelectorModal');
+      if (oldModal) oldModal.classList.remove('active');
+      if (typeof switchModeSeamlessly === 'function') switchModeSeamlessly('retail');
+    };
+  }
+
+  // A3. Wire Wholesale Terms Modal checkbox + Accept button
+  const agreeTermsCb = document.getElementById('agreeWholesaleTerms');
+  const btnAcceptTerms = document.getElementById('btnAcceptTerms');
+  const btnCancelTerms = document.getElementById('btnCancelTerms');
+  if (agreeTermsCb && btnAcceptTerms) {
+    agreeTermsCb.addEventListener('change', function() {
+      if (this.checked) {
+        btnAcceptTerms.removeAttribute('disabled');
+        btnAcceptTerms.style.opacity = '1';
+        btnAcceptTerms.style.cursor = 'pointer';
+      } else {
+        btnAcceptTerms.setAttribute('disabled', 'true');
+        btnAcceptTerms.style.opacity = '0.6';
+        btnAcceptTerms.style.cursor = 'not-allowed';
+      }
+    });
+    btnAcceptTerms.onclick = function(e) {
+      e.preventDefault();
+      const termsModal = document.getElementById('wholesaleTermsModal');
+      if (termsModal) termsModal.classList.remove('active');
+      // Skip Google login — go straight to phone entry + payment
+      window._showWholesalePhoneEntry();
+    };
+  }
+  if (btnCancelTerms) {
+    btnCancelTerms.onclick = function(e) {
+      e.preventDefault();
+      const termsModal = document.getElementById('wholesaleTermsModal');
+      if (termsModal) termsModal.classList.remove('active');
+      window.openWelcomeModeModal();
+    };
+  }
+
   // B. Theme Toggle Buttons
   const themeBtns = document.querySelectorAll('#themeToggleBtn, #themeToggle, .theme-toggle-btn, [aria-label="Toggle Theme"]');
   themeBtns.forEach(btn => {
@@ -6118,11 +6205,7 @@ function initAllMasterModalListeners() {
     wholesaleChoiceBtn.onclick = (e) => {
       e.preventDefault();
       window.closeWelcomeModeModal();
-      if (typeof openWholesaleFunnel === 'function') {
-        openWholesaleFunnel();
-      } else {
-        window.openWholesaleUnlockModal();
-      }
+      openWholesaleFunnel();
     };
   }
 
@@ -6136,14 +6219,17 @@ function initAllMasterModalListeners() {
     };
   }
 
-  // F. Google Sign-In Buttons
+  // F. Sign-In Buttons — Skip Google auth, use phone+payment directly
   const gBtns = [
     document.getElementById('btnGoogleSignIn'),
     document.getElementById('royalBtnGoogleSignIn'),
     document.getElementById('googleSignInBtn')
   ];
   gBtns.forEach(btn => {
-    if (btn) btn.onclick = window.handleUniversalGoogleSignIn;
+    if (btn) btn.onclick = function(e) {
+      e.preventDefault();
+      window._showWholesalePhoneEntry();
+    };
   });
 
   // G. Cancel Buttons
@@ -6172,13 +6258,19 @@ function initAllMasterModalListeners() {
   if (regBtn) {
     regBtn.onclick = function(e) {
       if (e) e.preventDefault();
+      const nameInp = document.getElementById('regNameInput');
+      const bizInp = document.getElementById('regBusinessInput');
       const phoneInp = document.getElementById('regPhoneInput');
       const phone = phoneInp ? phoneInp.value.trim().replace(/\D/g, '') : '';
-      if (phone && phone.length === 10) {
-        localStorage.setItem('vfs_customer_phone', phone);
+      if (!phone || phone.length !== 10) {
+        alert('Please enter a valid 10-digit WhatsApp number.');
+        return;
       }
+      localStorage.setItem('vfs_customer_phone', phone);
+      if (nameInp) localStorage.setItem('vfs_customer_name', nameInp.value.trim());
+      if (bizInp) localStorage.setItem('vfs_business_name', bizInp.value.trim());
       window.openWholesaleUnlockModal();
-      if (typeof toast === 'function') toast("Registration saved! Proceeding to ₹1 Advance Payment 💳");
+      if (typeof toast === 'function') toast('Details saved! Proceeding to ₹1 Advance Payment 💳');
     };
   }
 
