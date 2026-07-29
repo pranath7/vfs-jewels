@@ -6282,3 +6282,78 @@ window.updateThemeIcons = function(isDark) {
     window.updateThemeIcons(isDark);
   }
 })();
+
+
+
+// ── Google Sign In Handler ──
+window.handleGoogleSignIn = async function() {
+  try {
+    if (window.VFS_CLOUD_ACTIVE && window.firebase && firebase.auth) {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const result = await firebase.auth().signInWithPopup(provider);
+      const user = result.user;
+      
+      const userPhone = user.phoneNumber ? user.phoneNumber.replace(/\D/g, '').replace(/^91/, '') : '';
+      const userName = user.displayName || 'Reseller Customer';
+      
+      if (userPhone && userPhone.length === 10) {
+        localStorage.setItem('vfs_customer_phone', userPhone);
+      }
+      
+      const authScreen = document.getElementById('royalScreenAuth');
+      const regScreen = document.getElementById('royalScreenRegister');
+      const unlockScreen = document.getElementById('royalScreenUnlock');
+      
+      if (authScreen) authScreen.style.display = 'none';
+      if (regScreen) {
+        const nameInput = document.getElementById('royalRegName');
+        if (nameInput) nameInput.value = userName;
+        regScreen.style.display = 'block';
+      } else if (unlockScreen) {
+        unlockScreen.style.display = 'block';
+      }
+      
+      if (typeof toast === 'function') toast(`Signed in as ${userName} ✓`);
+    } else {
+      const phonePrompt = prompt("Enter your 10-digit mobile number to complete Reseller Google Sign In:");
+      if (phonePrompt && phonePrompt.trim().replace(/\D/g, '').length === 10) {
+        const cleanPhone = phonePrompt.trim().replace(/\D/g, '');
+        localStorage.setItem('vfs_customer_phone', cleanPhone);
+        const authScreen = document.getElementById('royalScreenAuth');
+        const regScreen = document.getElementById('royalScreenRegister');
+        if (authScreen) authScreen.style.display = 'none';
+        if (regScreen) regScreen.style.display = 'block';
+        if (typeof toast === 'function') toast("Signed in successfully!");
+      }
+    }
+  } catch(err) {
+    console.error("Google Sign-In Error:", err);
+    if (err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
+      const phonePrompt = prompt("Google Popup was blocked. Enter your 10-digit mobile number to sign in:");
+      if (phonePrompt && phonePrompt.trim().replace(/\D/g, '').length === 10) {
+        const cleanPhone = phonePrompt.trim().replace(/\D/g, '');
+        localStorage.setItem('vfs_customer_phone', cleanPhone);
+        const authScreen = document.getElementById('royalScreenAuth');
+        const regScreen = document.getElementById('royalScreenRegister');
+        if (authScreen) authScreen.style.display = 'none';
+        if (regScreen) regScreen.style.display = 'block';
+      }
+    } else {
+      alert("Google Sign-In Note: " + (err.message || "Please sign in using mobile number."));
+    }
+  }
+};
+
+function initGoogleSignInListeners() {
+  const gBtn1 = document.getElementById('royalBtnGoogleSignIn');
+  if (gBtn1) gBtn1.onclick = window.handleGoogleSignIn;
+  
+  const gBtn2 = document.getElementById('googleSignInBtn');
+  if (gBtn2) gBtn2.onclick = window.handleGoogleSignIn;
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initGoogleSignInListeners);
+} else {
+  initGoogleSignInListeners();
+}
