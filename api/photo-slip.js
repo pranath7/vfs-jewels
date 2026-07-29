@@ -4,8 +4,59 @@
 //  Includes Item Photos, SKUs, Quantities, Unit Prices, and Packing Checklist
 // ============================================================
 
+const https = require('https');
+
 function fmt(val) {
   return 'Rs. ' + Number(val || 0).toLocaleString('en-IN');
+}
+
+function fetchOrderFromFirestore(orderId) {
+  const cleanId = String(orderId).replace('#', '');
+  return new Promise((resolve) => {
+    const options = {
+      hostname: 'firestore.googleapis.com',
+      path: `/v1/projects/vfs-jewellery/databases/(default)/documents/orders/${cleanId}`,
+      method: 'GET'
+    };
+
+    const req = https.get(options, (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          const doc = JSON.parse(body);
+          if (doc && doc.fields) {
+            const parsedOrder = {};
+            for (let k in doc.fields) {
+              const f = doc.fields[k];
+              if (f.stringValue !== undefined) parsedOrder[k] = f.stringValue;
+              else if (f.doubleValue !== undefined) parsedOrder[k] = f.doubleValue;
+              else if (f.integerValue !== undefined) parsedOrder[k] = Number(f.integerValue);
+              else if (f.arrayValue && f.arrayValue.values) {
+                parsedOrder[k] = f.arrayValue.values.map(v => {
+                  const itemMap = {};
+                  if (v.mapValue && v.mapValue.fields) {
+                    for (let ik in v.mapValue.fields) {
+                      const tf = v.mapValue.fields[ik];
+                      if (tf.stringValue !== undefined) itemMap[ik] = tf.stringValue;
+                      else if (tf.doubleValue !== undefined) itemMap[ik] = tf.doubleValue;
+                      else if (tf.integerValue !== undefined) itemMap[ik] = Number(tf.integerValue);
+                    }
+                  }
+                  return itemMap;
+                });
+              }
+            }
+            return resolve(parsedOrder);
+          }
+          resolve(null);
+        } catch(e) {
+          resolve(null);
+        }
+      });
+    });
+    req.on('error', () => resolve(null));
+  });
 }
 
 function createPhotoSlipPDF(order) {
@@ -190,34 +241,40 @@ module.exports = async (req, res) => {
 
   try {
     const query = req.method === 'POST' ? req.body : req.query;
+    const rawId = query.id || query.order || 'J7001';
 
-    let items = [];
-    if (query.items) {
-      try {
-        items = typeof query.items === 'string' ? JSON.parse(query.items) : query.items;
-      } catch(e) {
-        items = [];
+    let fsOrder = await fetchOrderFromFirestore(rawId);
+    let orderPayload = fsOrder || {};
+
+    let items = orderPayload.items || [];
+    if (!items || items.length === 0) {
+      if (query.items) {
+        try {
+          items = typeof query.items === 'string' ? JSON.parse(query.items) : query.items;
+        } catch(e) {
+          items = [];
+        }
       }
     }
 
     const pdfBuffer = createPhotoSlipPDF({
-      id: query.id || '#J7001',
-      name: query.name || 'Valued Customer',
-      phone: query.phone || '',
-      address: query.address || 'Chennai, Tamil Nadu',
-      city: query.city || 'Chennai',
-      pincode: query.pincode || '',
-      date: query.date || new Date().toLocaleDateString('en-IN'),
-      carrier: query.carrier || 'DTDC Express',
-      trackingId: query.trackingId || '',
-      total: query.total || 91,
-      subtotal: query.subtotal || 1,
-      shipping: query.shipping || 90,
+      id: orderPayload.id || (rawId.startsWith('#') ? rawId : '#' + rawId),
+      name: orderPayload.name || query.name || 'Valued Customer',
+      phone: orderPayload.phone || query.phone || '',
+      address: orderPayload.address || query.address || 'Chennai, Tamil Nadu',
+      city: orderPayload.city || query.city || 'Chennai',
+      pincode: orderPayload.pincode || query.pincode || '',
+      date: orderPayload.date || query.date || new Date().toLocaleDateString('en-IN'),
+      carrier: orderPayload.carrier || query.carrier || 'DTDC Express',
+      trackingId: orderPayload.trackingId || query.trackingId || '',
+      total: orderPayload.total || query.total || 91,
+      subtotal: orderPayload.subtotal || query.subtotal || 1,
+      shipping: orderPayload.shipping || query.shipping || 90,
       items: items
     });
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="VFS_Photo_Slip_${(query.id || 'J7001').replace('#', '')}.pdf"`);
+    res.setHeader('Content-Disposition', `inline; filename="VFS_Photo_Slip_${(rawId).replace('#', '')}.pdf"`);
     return res.status(200).send(pdfBuffer);
   } catch (err) {
     console.error('Error generating photo slip PDF:', err);

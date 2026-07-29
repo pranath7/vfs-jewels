@@ -4,19 +4,70 @@
 //  Matches official VFS Jewels GSTIN: 33AAFVC8491A1ZX tax format
 // ============================================================
 
+const https = require('https');
+
 function fmt(val) {
   return 'Rs. ' + Number(val || 0).toLocaleString('en-IN');
+}
+
+function fetchOrderFromFirestore(orderId) {
+  const cleanId = String(orderId).replace('#', '');
+  return new Promise((resolve) => {
+    const options = {
+      hostname: 'firestore.googleapis.com',
+      path: `/v1/projects/vfs-jewellery/databases/(default)/documents/orders/${cleanId}`,
+      method: 'GET'
+    };
+
+    const req = https.get(options, (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          const doc = JSON.parse(body);
+          if (doc && doc.fields) {
+            const parsedOrder = {};
+            for (let k in doc.fields) {
+              const f = doc.fields[k];
+              if (f.stringValue !== undefined) parsedOrder[k] = f.stringValue;
+              else if (f.doubleValue !== undefined) parsedOrder[k] = f.doubleValue;
+              else if (f.integerValue !== undefined) parsedOrder[k] = Number(f.integerValue);
+              else if (f.arrayValue && f.arrayValue.values) {
+                parsedOrder[k] = f.arrayValue.values.map(v => {
+                  const itemMap = {};
+                  if (v.mapValue && v.mapValue.fields) {
+                    for (let ik in v.mapValue.fields) {
+                      const tf = v.mapValue.fields[ik];
+                      if (tf.stringValue !== undefined) itemMap[ik] = tf.stringValue;
+                      else if (tf.doubleValue !== undefined) itemMap[ik] = tf.doubleValue;
+                      else if (tf.integerValue !== undefined) itemMap[ik] = Number(tf.integerValue);
+                    }
+                  }
+                  return itemMap;
+                });
+              }
+            }
+            return resolve(parsedOrder);
+          }
+          resolve(null);
+        } catch(e) {
+          resolve(null);
+        }
+      });
+    });
+    req.on('error', () => resolve(null));
+  });
 }
 
 function createPDF(order) {
   const id = order.id || '#J7001';
   const name = order.name || 'Valued Customer';
   const phone = order.phone || '';
-  const address = order.address || '';
+  const address = order.address || 'Chennai, Tamil Nadu';
   const city = order.city || 'Chennai';
   const pincode = order.pincode || '';
   const date = order.date || new Date().toLocaleDateString('en-IN');
-  const carrier = order.carrier || 'DTDC';
+  const carrier = order.carrier || 'DTDC Express';
   const trackingId = order.trackingId || `TRK${id.replace('#', '')}VFS`;
   const paymentMethod = order.paymentMethod || 'Razorpay Online';
 
@@ -24,8 +75,6 @@ function createPDF(order) {
 
   const subtotal = Number(order.subtotal || order.total || 0);
   const shipping = Number(order.shipping || 90);
-  
-  // Calculate 3% GST (1.5% CGST + 1.5% SGST)
   const gstTotal = order.gstAmount ? Number(order.gstAmount) : Math.round(subtotal * 0.03);
   const cgst = Math.round(gstTotal / 2);
   const sgst = gstTotal - cgst;
@@ -58,15 +107,12 @@ function createPDF(order) {
   }
 
   // ── 1. Top Luxury Header & Branding ──
-  // Gold Banner Accent Top Strip
   addRect(0, 832, 595, 10, '0.83 0.68 0.21');
 
-  // Brand Name & Subtitle
   addText('VFS JEWELS', 50, 785, 26, 'F2', '0.1 0.1 0.1');
-  addText('.', 212, 785, 26, 'F2', '0.83 0.68 0.21'); // Gold Accent Dot
+  addText('.', 212, 785, 26, 'F2', '0.83 0.68 0.21');
   addText('Handcrafted Premium Anti-Tarnish Imitation Jewellery', 50, 770, 8.5, 'F1', '0.4 0.4 0.4');
 
-  // Header Right: "TAX INVOICE" Badge
   addRect(380, 765, 165, 30, '0.96 0.94 0.88');
   addLine(380, 765, 545, 765, '0.83 0.68 0.21', 1);
   addText('TAX INVOICE', 390, 775, 14, 'F2', '0.83 0.68 0.21');
@@ -76,32 +122,23 @@ function createPDF(order) {
   addText(`Date: ${date}`, 390, 726, 8.5, 'F1', '0.2 0.2 0.2');
   addText(`Payment: ${paymentMethod}`, 390, 714, 8.5, 'F2', '0.15 0.5 0.15');
   
-  // Gold Divider Line (#D4AF37)
   addLine(50, 700, 545, 700, '0.83 0.68 0.21', 2);
 
   // ── 2. Sold By & Ship To Grid ──
   let y = 680;
-  // Left Column: Sold By with GSTIN
   addText('SOLD BY (SUPPLIER):', 50, y, 8.5, 'F2', '0.33 0.33 0.33');
   addText('VFS Jewels Main Store', 50, y - 13, 9.5, 'F2', '0 0 0');
   addText('42, 2nd Floor, Natwar Kurpa Complex,', 50, y - 25, 8.5, 'F1', '0.2 0.2 0.2');
   addText('Narayana Mudali Street, Sowcarpet,', 50, y - 37, 8.5, 'F1', '0.2 0.2 0.2');
   addText('Chennai, Tamil Nadu - 600001', 50, y - 49, 8.5, 'F1', '0.2 0.2 0.2');
   addText('Email: accounts@vfsjewels.store | Web: vfsjewels.store', 50, y - 61, 8, 'F1', '0.2 0.2 0.2');
-  addText('GSTIN: 33AAFVC8491A1ZX', 50, y - 73, 9, 'F2', '0.83 0.68 0.21'); // Gold GSTIN
+  addText('GSTIN: 33AAFVC8491A1ZX', 50, y - 73, 9, 'F2', '0.83 0.68 0.21');
 
-  // Right Column: Ship To
   addText('SHIP TO (CUSTOMER):', 330, y, 8.5, 'F2', '0.33 0.33 0.33');
   addText(name, 330, y - 13, 9.5, 'F2', '0 0 0');
   addText(`Address: ${address.substring(0, 42)}`, 330, y - 25, 8.5, 'F1', '0.2 0.2 0.2');
-  if (address.length > 42) {
-    addText(address.substring(42, 85), 330, y - 37, 8.5, 'F1', '0.2 0.2 0.2');
-    addText(`City: ${city} - ${pincode}`, 330, y - 49, 8.5, 'F1', '0.2 0.2 0.2');
-    addText(`Phone: +91 ${phone.replace(/^91/, '')} | Carrier: ${carrier}`, 330, y - 61, 8.5, 'F1', '0.2 0.2 0.2');
-  } else {
-    addText(`City: ${city} - ${pincode}`, 330, y - 37, 8.5, 'F1', '0.2 0.2 0.2');
-    addText(`Phone: +91 ${phone.replace(/^91/, '')} | Carrier: ${carrier}`, 330, y - 49, 8.5, 'F1', '0.2 0.2 0.2');
-  }
+  addText(`City: ${city} - ${pincode}`, 330, y - 37, 8.5, 'F1', '0.2 0.2 0.2');
+  addText(`Phone: +91 ${phone.replace(/^91/, '')} | Carrier: ${carrier}`, 330, y - 49, 8.5, 'F1', '0.2 0.2 0.2');
 
   // ── 3. Table Headers ──
   y = 585;
@@ -124,7 +161,7 @@ function createPDF(order) {
     const itemSku = item.sku || `ZU1-${(item.id || idx + 1)}`;
 
     addText(`${idx + 1}`, 55, y, 9, 'F1', '0 0 0');
-    addText(`${(item.name || 'Anti-Tarnish Jewellery Item').substring(0, 40)}`, 100, y, 9, 'F2', '0 0 0');
+    addText(`${(item.name || 'Anti-Tarnish Jewellery Item').substring(0, 36)}`, 100, y, 9, 'F2', '0 0 0');
     addText(`SKU: ${itemSku} | HSN: 7117 (Imitation Jewellery)`, 100, y - 10, 7.5, 'F1', '0.4 0.4 0.4');
     addText(fmt(rate), 350, y, 9, 'F1', '0 0 0');
     addText(`${qty}`, 425, y, 9, 'F1', '0 0 0');
@@ -178,65 +215,52 @@ function createPDF(order) {
   addText('GRAND TOTAL (INCL. TAXES):', 325, y, 9.5, 'F2', '0 0 0');
   addText(fmt(total), 470, y, 10.5, 'F2', '0.83 0.68 0.21');
 
-  // ── 5. Tracking Barcode Box & Compliance ──
-  y -= 45;
-  addRect(50, y, 240, 45, '0.98 0.98 0.98');
-  addLine(50, y, 290, y, '0.85 0.85 0.85', 1);
-  addLine(50, y + 45, 290, y + 45, '0.85 0.85 0.85', 1);
-  addText('SHIPPING TRACKING BARCODE', 60, y + 32, 7.5, 'F2', '0.3 0.3 0.3');
-  
-  // Render Barcode vector lines
+  // ── 5. Footer & Barcode ──
+  addText('SHIPPING TRACKING BARCODE', 50, 110, 8, 'F2', '0.3 0.3 0.3');
+  let barcodeX = 50;
   for (let b = 0; b < 32; b++) {
-    const bw = (b % 3 === 0) ? 2 : 1;
-    addLine(60 + (b * 6.5), y + 10, 60 + (b * 6.5), y + 26, '0.1 0.1 0.1', bw);
+    const w = (b % 3 === 0) ? 2 : 1;
+    content.push(`${w} w 0 0 0 RG ${barcodeX} 68 m ${barcodeX} 98 l S`);
+    barcodeX += (b % 2 === 0) ? 3 : 4;
   }
-  addText(trackingId, 60, y + 2, 7.5, 'F1', '0.2 0.2 0.2');
+  addText(trackingId, 50, 56, 8, 'F1', '0.2 0.2 0.2');
 
-  // Footer Terms & GST Compliance
-  addText('• Official Store GSTIN: 33AAFVC8491A1ZX | HSN Code: 7117 (Imitation Jewellery)', 50, 52, 7.5, 'F1', '0.4 0.4 0.4');
-  addText('• This is a computer-generated tax invoice and requires no physical signature.', 50, 42, 7.5, 'F1', '0.4 0.4 0.4');
-  addText('Thank you for shopping with VFS Jewels Sowcarpet! 🌸', 170, 24, 9, 'F2', '0.83 0.68 0.21');
+  addText('Declaration: This invoice shows actual price of goods and that all particulars are true and correct.', 50, 40, 7.5, 'F1', '0.5 0.5 0.5');
 
   const streamBody = content.join('\n');
+  const streamLength = Buffer.byteLength(streamBody);
 
-  const pdfString = 
-`%PDF-1.4
+  const pdfString = `%PDF-1.4
 1 0 obj
 << /Type /Catalog /Pages 2 0 R >>
 endobj
-
 2 0 obj
 << /Type /Pages /Kids [3 0 R] /Count 1 >>
 endobj
-
 3 0 obj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>
 endobj
-
 4 0 obj
 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
 endobj
-
 5 0 obj
 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
 endobj
-
 6 0 obj
-<< /Length ${Buffer.byteLength(streamBody)} >>
+<< /Length ${streamLength} >>
 stream
 ${streamBody}
 endstream
 endobj
-
 xref
 0 7
 0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
+0000000010 00000 n 
+0000000059 00000 n 
+0000000116 00000 n 
 0000000244 00000 n 
-0000000315 00000 n 
-0000000391 00000 n 
+0000000305 00000 n 
+0000000371 00000 n 
 trailer
 << /Size 7 /Root 1 0 R >>
 startxref
@@ -255,43 +279,49 @@ module.exports = async (req, res) => {
   const query = req.method === 'POST' ? req.body : req.query;
 
   try {
-    let items = [];
-    if (query.items) {
-      try {
-        items = typeof query.items === 'string' ? JSON.parse(query.items) : query.items;
-      } catch (e) {
-        items = [];
+    const rawId = query.id || query.order || 'J7001';
+    
+    // Fetch stored order payload from Firestore if available
+    let fsOrder = await fetchOrderFromFirestore(rawId);
+    let orderPayload = fsOrder || {};
+
+    let items = orderPayload.items || [];
+    if (!items || items.length === 0) {
+      if (query.items) {
+        try {
+          items = typeof query.items === 'string' ? JSON.parse(query.items) : query.items;
+        } catch (e) {
+          items = [];
+        }
       }
     }
 
     const pdfBuffer = createPDF({
-      id: query.id || query.order || '#J7001',
-      name: query.name || 'Valued Customer',
-      phone: query.phone || '',
-      address: query.address || 'Chennai, Tamil Nadu',
-      city: query.city || 'Chennai',
-      pincode: query.pincode || '',
-      date: query.date || new Date().toLocaleDateString('en-IN'),
-      carrier: query.carrier || 'DTDC',
-      trackingId: query.trackingId || '',
-      paymentMethod: query.paymentMethod || 'Razorpay Online',
-      status: query.status || 'CONFIRMED',
-      total: query.total || '0',
-      subtotal: query.subtotal || query.total || '0',
-      gstAmount: query.gstAmount || '0',
-      shipping: query.shipping || '90',
-      couponDiscount: query.couponDiscount || '0',
-      waReferralDiscount: query.waReferralDiscount || '0',
-      walletDiscount: query.walletDiscount || '0',
-      advanceAdjusted: query.advanceAdjusted || query.advanceDeducted || '0',
+      id: orderPayload.id || (rawId.startsWith('#') ? rawId : '#' + rawId),
+      name: orderPayload.name || query.name || 'Valued Customer',
+      phone: orderPayload.phone || query.phone || '',
+      address: orderPayload.address || query.address || 'Chennai, Tamil Nadu',
+      city: orderPayload.city || query.city || 'Chennai',
+      pincode: orderPayload.pincode || query.pincode || '',
+      date: orderPayload.date || query.date || new Date().toLocaleDateString('en-IN'),
+      carrier: orderPayload.carrier || query.carrier || 'DTDC',
+      trackingId: orderPayload.trackingId || query.trackingId || '',
+      paymentMethod: orderPayload.paymentMethod || query.paymentMethod || 'Razorpay Online',
+      status: orderPayload.status || query.status || 'CONFIRMED',
+      total: orderPayload.total || query.total || '0',
+      subtotal: orderPayload.subtotal || query.subtotal || query.total || '0',
+      gstAmount: orderPayload.gstAmount || query.gstAmount || '0',
+      shipping: orderPayload.shipping || query.shipping || '90',
+      couponDiscount: orderPayload.couponDiscount || query.couponDiscount || '0',
+      walletDiscount: orderPayload.walletDiscount || query.walletDiscount || '0',
+      advanceAdjusted: orderPayload.advanceAdjusted || query.advanceAdjusted || '0',
       items: items
     });
 
-    const fileName = `VFS_Jewels_Tax_Invoice_${(query.id || 'J7001').replace('#', '')}.pdf`;
+    const fileName = `VFS_Jewels_Tax_Invoice_${(rawId).replace('#', '')}.pdf`;
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
-    res.setHeader('Content-Length', pdfBuffer.length);
 
     return res.status(200).send(pdfBuffer);
   } catch (err) {

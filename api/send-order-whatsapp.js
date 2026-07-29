@@ -49,6 +49,55 @@ function sendWhatsAppPayload(payloadData) {
   });
 }
 
+function saveOrderToFirestore(order) {
+  return new Promise((resolve) => {
+    const cleanId = (order.id || 'J7001').replace('#', '');
+    const fields = {};
+
+    for (let k in order) {
+      const v = order[k];
+      if (typeof v === 'number') {
+        fields[k] = { doubleValue: v };
+      } else if (typeof v === 'string') {
+        fields[k] = { stringValue: v };
+      } else if (Array.isArray(v)) {
+        const arrayVals = [];
+        v.forEach(item => {
+          const itemMap = {};
+          for (let ik in item) {
+            const iv = item[ik];
+            if (typeof iv === 'number') {
+              itemMap[ik] = { doubleValue: iv };
+            } else {
+              itemMap[ik] = { stringValue: String(iv || '') };
+            }
+          }
+          arrayVals.push({ mapValue: { fields: itemMap } });
+        });
+        fields[k] = { arrayValue: { values: arrayVals } };
+      }
+    }
+
+    const postData = JSON.stringify({ fields: fields });
+    const path = `/v1/projects/${PROJECT_ID}/databases/(default)/documents/orders?documentId=${cleanId}`;
+
+    const options = {
+      hostname: 'firestore.googleapis.com',
+      path: path,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    };
+
+    const req = https.request(options, () => resolve());
+    req.on('error', () => resolve());
+    req.write(postData);
+    req.end();
+  });
+}
+
 function logToFirestore(logData) {
   return new Promise((resolve) => {
     const data = JSON.stringify({
@@ -103,6 +152,9 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Missing required order fields' });
     }
 
+    // 1. Save full order details to Firestore
+    await saveOrderToFirestore(order);
+
     let customerPhone = order.phone.toString().replace(/\D/g, '');
     if (customerPhone.length === 10) {
       customerPhone = '91' + customerPhone;
@@ -145,7 +197,7 @@ ${order.address || ''}, ${order.city || ''} - ${order.pincode || ''}
 _Thank you for shopping with VFS Jewels!_
 🌐 vfsjewels.store`;
 
-    // 1. Send Text Summary Message
+    // 2. Send Text Summary Message
     console.log(`📤 Sending WhatsApp order summary to +${customerPhone}`);
     const textResult = await sendWhatsAppPayload({
       messaging_product: 'whatsapp',
@@ -166,10 +218,10 @@ _Thank you for shopping with VFS Jewels!_
     });
 
     const cleanId = order.id.replace('#', '');
-    const itemsJsonEncoded = encodeURIComponent(JSON.stringify(order.items || []));
 
-    // 2. Build PDF Invoice Link & Send PDF Tax Invoice Document
-    const invoiceUrl = `https://www.vfsjewels.store/api/invoice?id=${encodeURIComponent(order.id)}&name=${encodeURIComponent(order.name || '')}&phone=${customerPhone}&total=${order.total}&subtotal=${order.subtotal || order.total}&gstAmount=${order.gstAmount || 0}&shipping=${order.shipping || 90}&address=${encodeURIComponent(order.address || '')}&city=${encodeURIComponent(order.city || '')}&pincode=${order.pincode || ''}&carrier=${encodeURIComponent(order.carrier || '')}&items=${itemsJsonEncoded}`;
+    // 3. Build Direct Clean PDF Document Links
+    const invoiceUrl = `https://www.vfsjewels.store/api/invoice?id=${cleanId}`;
+    const photoSlipUrl = `https://www.vfsjewels.store/api/photo-slip?id=${cleanId}`;
 
     console.log(`📄 Sending WhatsApp PDF Tax Invoice to +${customerPhone}`);
     let invoiceResult = null;
@@ -198,9 +250,6 @@ _Thank you for shopping with VFS Jewels!_
     } catch (docErr) {
       console.warn('⚠️ PDF Invoice sending warning:', docErr.message || docErr);
     }
-
-    // 3. Build Photo Slip PDF Link & Send PDF Photo Slip Document
-    const photoSlipUrl = `https://www.vfsjewels.store/api/photo-slip?id=${encodeURIComponent(order.id)}&name=${encodeURIComponent(order.name || '')}&phone=${customerPhone}&total=${order.total}&subtotal=${order.subtotal || order.total}&shipping=${order.shipping || 90}&address=${encodeURIComponent(order.address || '')}&city=${encodeURIComponent(order.city || '')}&pincode=${order.pincode || ''}&carrier=${encodeURIComponent(order.carrier || '')}&items=${itemsJsonEncoded}`;
 
     console.log(`🖼️ Sending WhatsApp PDF Photo Slip to +${customerPhone}`);
     let photoSlipResult = null;
