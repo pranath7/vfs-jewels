@@ -1,12 +1,11 @@
 import re
 
-timestamp = '20260729_v9000'
+timestamp = '20260729_v9999'
 
 def safe_bump_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # Target ONLY script src="..." and link href="..." attributes
     content = re.sub(r'src="app\.js(\?v=[^"]+)?"', f'src="app.js?v={timestamp}"', content)
     content = re.sub(r'src="wholesale\.js(\?v=[^"]+)?"', f'src="wholesale.js?v={timestamp}"', content)
     content = re.sub(r'src="admin\.js(\?v=[^"]+)?"', f'src="admin.js?v={timestamp}"', content)

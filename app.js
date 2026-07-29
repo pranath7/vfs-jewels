@@ -5715,10 +5715,65 @@ function switchModeSeamlessly(targetMode) {
 
 
 /* ============================================================
-   UNIFIED VFS MODALS & PAYMENT GATEWAY FUNNEL SYSTEM
+   UNIFIED VFS MODALS, THEME & WALLET SYSTEM
    ============================================================ */
 
-// 1. Welcome Mode Modal (Wholesale vs Retail)
+// 1. Theme (Dark Mode) Handler
+window.toggleTheme = function() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('vfs_theme', next);
+  if (typeof toast === 'function') {
+    toast(next === 'dark' ? '🌙 Dark Mode Activated' : '☀️ Light Mode Activated');
+  }
+};
+
+function initThemeFromStorage() {
+  const savedTheme = localStorage.getItem('vfs_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+}
+initThemeFromStorage();
+
+// 2. VFS Wallet Modal Handler
+window.openWalletModalFunc = async function() {
+  const modal = document.getElementById('walletModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Refresh balance display if logged in phone exists
+    const phone = localStorage.getItem('vfs_customer_phone');
+    if (phone && window.VFS_DB && window.VFS_DB.getCustomerWalletBalance) {
+      try {
+        const bal = await window.VFS_DB.getCustomerWalletBalance(phone);
+        const balDisp = document.getElementById('walletBalanceDisplay');
+        const phoneDisp = document.getElementById('walletUserPhoneDisplay');
+        const loggedOutView = document.getElementById('walletViewLoggedOut');
+        const loggedInView = document.getElementById('walletViewLoggedIn');
+        
+        if (balDisp) balDisp.textContent = '₹' + (Number(bal) || 0).toLocaleString('en-IN', {minimumFractionDigits:2});
+        if (phoneDisp) phoneDisp.textContent = 'Phone: +91 ' + phone;
+        if (loggedOutView) loggedOutView.style.display = 'none';
+        if (loggedInView) loggedInView.style.display = 'block';
+      } catch(e) {
+        console.warn("Wallet balance fetch note:", e);
+      }
+    }
+  }
+};
+
+window.closeWalletModalFunc = function() {
+  const modal = document.getElementById('walletModal');
+  if (modal) {
+    modal.style.display = 'none';
+    modal.classList.remove('active');
+  }
+  document.body.style.overflow = '';
+};
+
+// 3. Welcome Mode Modal (Wholesale vs Retail)
 window.openWelcomeModeModal = function() {
   const modal = document.getElementById('welcomeModeModal');
   if (modal) {
@@ -5737,7 +5792,7 @@ window.closeWelcomeModeModal = function() {
   document.body.style.overflow = '';
 };
 
-// 2. Wholesale Login Modal (Google Auth & Mobile Reg)
+// 4. Wholesale Login Modal (Google Auth & Mobile Reg)
 window.openWholesaleLoginModal = function() {
   window.closeWelcomeModeModal();
   const termsModal = document.getElementById('wholesaleTermsModal');
@@ -5766,7 +5821,7 @@ window.closeWholesaleLoginModal = function() {
   document.body.style.overflow = '';
 };
 
-// 3. Wholesale Advance Unlock Modal (₹1 Razorpay)
+// 5. Wholesale Advance Unlock Modal (₹1 Razorpay)
 window.openWholesaleUnlockModal = function() {
   window.closeWholesaleLoginModal();
   window.closeWelcomeModeModal();
@@ -5814,7 +5869,7 @@ window.completeWholesaleUnlock = function() {
   }
 };
 
-// 4. Google Sign In Handler
+// 6. Google Sign In Handler
 window.handleUniversalGoogleSignIn = async function() {
   try {
     if (window.VFS_CLOUD_ACTIVE && window.firebase && firebase.auth) {
@@ -5849,7 +5904,7 @@ window.handleUniversalGoogleSignIn = async function() {
   }
 };
 
-// 5. Razorpay ₹1 Advance Payment SDK Trigger
+// 7. Razorpay ₹1 Advance Payment SDK Trigger
 window.triggerRazorpayUnlock = async function(amt = 1) {
   try {
     if (typeof toast === 'function') toast("Opening Razorpay Secure Payment... 💳");
@@ -5924,9 +5979,78 @@ window.triggerRazorpayUnlock = async function(amt = 1) {
   }
 };
 
-// 6. Master Event Listener Initializer
+// 8. Master Event Listener Initializer
 function initAllMasterModalListeners() {
-  // Mode Toggle Buttons
+  // A. INSTANT POPUP ON SITE OPEN
+  const unlocked = localStorage.getItem('vfs_wholesale_unlocked') === 'true';
+  if (!unlocked) {
+    setTimeout(() => {
+      window.openWelcomeModeModal();
+    }, 150);
+  }
+
+  // B. Theme Toggle Buttons
+  const themeBtns = document.querySelectorAll('#themeToggleBtn, #themeToggle, .theme-toggle-btn, [aria-label="Toggle Theme"]');
+  themeBtns.forEach(btn => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      window.toggleTheme();
+    };
+  });
+
+  // C. Wallet Buttons & Modal Listeners
+  const walletBtns = document.querySelectorAll('#openWalletModal, #walletBtn, #headerWalletBtn, .wallet-btn');
+  walletBtns.forEach(btn => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      window.openWalletModalFunc();
+    };
+  });
+
+  const closeWalletBtn = document.getElementById('closeWalletModal');
+  if (closeWalletBtn) {
+    closeWalletBtn.onclick = (e) => {
+      e.preventDefault();
+      window.closeWalletModalFunc();
+    };
+  }
+
+  const walletModal = document.getElementById('walletModal');
+  if (walletModal) {
+    walletModal.onclick = function(e) {
+      if (e.target === walletModal) window.closeWalletModalFunc();
+    };
+  }
+
+  const walletSwitchBtn = document.getElementById('walletSwitchUserBtn');
+  if (walletSwitchBtn) {
+    walletSwitchBtn.onclick = function(e) {
+      e.preventDefault();
+      localStorage.removeItem('vfs_customer_phone');
+      const loggedOutView = document.getElementById('walletViewLoggedOut');
+      const loggedInView = document.getElementById('walletViewLoggedIn');
+      if (loggedOutView) loggedOutView.style.display = 'block';
+      if (loggedInView) loggedInView.style.display = 'none';
+    };
+  }
+
+  const walletForm = document.getElementById('walletLoginForm');
+  if (walletForm) {
+    walletForm.onsubmit = async function(e) {
+      e.preventDefault();
+      const phoneInput = document.getElementById('walletLoginPhone');
+      const phone = phoneInput ? phoneInput.value.trim().replace(/\D/g, '') : '';
+      if (phone && phone.length === 10) {
+        localStorage.setItem('vfs_customer_phone', phone);
+        await window.openWalletModalFunc();
+        if (typeof toast === 'function') toast("Wallet balance updated!");
+      } else {
+        alert("Please enter a valid 10-digit mobile number.");
+      }
+    };
+  }
+
+  // D. Shopping Mode Toggle Buttons
   const modeBtns = document.querySelectorAll('#openModeModal, #modeToggleBtn, #modeToggle, [data-action="toggle-mode"], .mode-toggle-btn, .shopping-mode-btn');
   modeBtns.forEach(btn => {
     btn.onclick = (e) => {
@@ -5935,7 +6059,7 @@ function initAllMasterModalListeners() {
     };
   });
 
-  // Welcome Modal Preference Choice Buttons
+  // E. Welcome Modal Preference Choice Buttons
   const wholesaleChoiceBtn = document.getElementById('chooseWholesaleBtn');
   const retailChoiceBtn = document.getElementById('chooseRetailBtn');
   
@@ -5961,7 +6085,7 @@ function initAllMasterModalListeners() {
     };
   }
 
-  // Google Sign-In Buttons
+  // F. Google Sign-In Buttons
   const gBtns = [
     document.getElementById('btnGoogleSignIn'),
     document.getElementById('royalBtnGoogleSignIn'),
@@ -5971,7 +6095,7 @@ function initAllMasterModalListeners() {
     if (btn) btn.onclick = window.handleUniversalGoogleSignIn;
   });
 
-  // Cancel Buttons
+  // G. Cancel Buttons
   const cancelBtns = [
     document.getElementById('btnCancelLogin'),
     document.getElementById('royalBtnCancelAuth'),
@@ -5992,7 +6116,7 @@ function initAllMasterModalListeners() {
     };
   });
 
-  // Register Form Submit
+  // H. Register Form Submit
   const regBtn = document.getElementById('btnRegisterUser');
   if (regBtn) {
     regBtn.onclick = function(e) {
@@ -6007,7 +6131,7 @@ function initAllMasterModalListeners() {
     };
   }
 
-  // Razorpay Pay Button in Unlock Modal
+  // I. Razorpay Pay Button in Unlock Modal
   const razorpayUnlockBtn = document.getElementById('btnUnlockRazorpayPay');
   if (razorpayUnlockBtn) {
     razorpayUnlockBtn.onclick = function(e) {
@@ -6016,7 +6140,7 @@ function initAllMasterModalListeners() {
     };
   }
 
-  // Modal Backdrop Click Close
+  // J. Modal Backdrop Click Close
   const welcomeModal = document.getElementById('welcomeModeModal');
   if (welcomeModal) {
     welcomeModal.onclick = function(e) {
