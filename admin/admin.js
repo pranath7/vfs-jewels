@@ -1195,9 +1195,9 @@ async function loadDashboard() {
   if ($('#kpiPaid')) $('#kpiPaid').textContent = paidCount + shippedCount + preparingCount + readyCount + completedCount;
   if ($('#kpiUnpaid')) $('#kpiUnpaid').textContent = unpaidCount;
   
-  $('#countUnpaid').textContent = unpaidCount;
-  $('#countPaid').textContent = paidCount;
-  $('#countShipped').textContent = shippedCount;
+  if ($('#countUnpaid')) $('#countUnpaid').textContent = unpaidCount;
+  if ($('#countPaid')) $('#countPaid').textContent = paidCount;
+  if ($('#countShipped')) $('#countShipped').textContent = shippedCount;
   if ($('#countPreparing')) $('#countPreparing').textContent = preparingCount;
   if ($('#countReady')) $('#countReady').textContent = readyCount;
   if ($('#countCompleted')) $('#countCompleted').textContent = completedCount;
