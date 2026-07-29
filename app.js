@@ -5713,22 +5713,25 @@ function switchModeSeamlessly(targetMode) {
   }
 }
 
-function initWelcomeModeModal() {
-  const savedMode = localStorage.getItem('vfs_user_mode');
-  const sessionShown = sessionStorage.getItem('vfs_welcome_session_shown');
+// ── Universal Welcome Mode Modal & Mode Toggle Handlers ──
+window.openWelcomeModeModal = function() {
   const modal = document.getElementById('welcomeModeModal');
-  const openBtn = document.getElementById('openModeModal');
-  
-  if ((!savedMode || !sessionShown) && modal) {
+  if (modal) {
     modal.style.display = 'flex';
+    modal.classList.add('active');
   }
+};
+
+function initWelcomeModeModal() {
+  const modal = document.getElementById('welcomeModeModal');
   
-  if (openBtn && modal) {
-    openBtn.onclick = (e) => {
+  const modeBtns = document.querySelectorAll('#openModeModal, #modeToggleBtn, #modeToggle, [data-action="toggle-mode"], .mode-toggle-btn, .shopping-mode-btn');
+  modeBtns.forEach(btn => {
+    btn.onclick = (e) => {
       e.preventDefault();
-      modal.style.display = 'flex';
+      window.openWelcomeModeModal();
     };
-  }
+  });
   
   const wholesaleBtn = document.getElementById('chooseWholesaleBtn');
   const retailBtn = document.getElementById('chooseRetailBtn');
@@ -5737,7 +5740,11 @@ function initWelcomeModeModal() {
     wholesaleBtn.onclick = (e) => {
       e.preventDefault();
       if (modal) modal.style.display = 'none';
-      openWholesaleFunnel();
+      if (typeof openWholesaleFunnel === 'function') {
+        openWholesaleFunnel();
+      } else if (typeof openWholesaleUnlockModal === 'function') {
+        openWholesaleUnlockModal();
+      }
     };
   }
   
@@ -5745,10 +5752,13 @@ function initWelcomeModeModal() {
     retailBtn.onclick = (e) => {
       e.preventDefault();
       if (modal) modal.style.display = 'none';
-      switchModeSeamlessly('retail');
+      if (typeof switchModeSeamlessly === 'function') {
+        switchModeSeamlessly('retail');
+      }
     };
   }
 }
+
 
 function openWholesaleTermsModal() {
   const welcomeModal = document.getElementById('welcomeModeModal');
