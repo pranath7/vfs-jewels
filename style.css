@@ -4652,3 +4652,17 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
     margin-bottom: 8px;
   }
 }
+
+
+/* Wholesale Business Club Header Strip */
+.wholesale-club-strip {
+  display: block;
+}
+
+html[data-shopping-mode="retail"] .wholesale-club-strip {
+  display: none !important;
+}
+
+html[data-shopping-mode="wholesale"] .wholesale-club-strip {
+  display: block !important;
+}
