@@ -21,7 +21,7 @@ function sendWhatsAppPayload(payloadData) {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
-        'Content-Type': `application/json`,
+        'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(data)
       }
     };
@@ -166,9 +166,10 @@ _Thank you for shopping with VFS Jewels!_
     });
 
     const cleanId = order.id.replace('#', '');
+    const itemsJsonEncoded = encodeURIComponent(JSON.stringify(order.items || []));
 
     // 2. Build PDF Invoice Link & Send PDF Tax Invoice Document
-    const invoiceUrl = `https://www.vfsjewels.store/api/invoice?id=${encodeURIComponent(order.id)}&name=${encodeURIComponent(order.name || '')}&phone=${customerPhone}&total=${order.total}&subtotal=${order.subtotal || order.total}&gstAmount=${order.gstAmount || 0}&shipping=${order.shipping || 90}&address=${encodeURIComponent(order.address || '')}&city=${encodeURIComponent(order.city || '')}&pincode=${order.pincode || ''}&carrier=${encodeURIComponent(order.carrier || '')}`;
+    const invoiceUrl = `https://www.vfsjewels.store/api/invoice?id=${encodeURIComponent(order.id)}&name=${encodeURIComponent(order.name || '')}&phone=${customerPhone}&total=${order.total}&subtotal=${order.subtotal || order.total}&gstAmount=${order.gstAmount || 0}&shipping=${order.shipping || 90}&address=${encodeURIComponent(order.address || '')}&city=${encodeURIComponent(order.city || '')}&pincode=${order.pincode || ''}&carrier=${encodeURIComponent(order.carrier || '')}&items=${itemsJsonEncoded}`;
 
     console.log(`📄 Sending WhatsApp PDF Tax Invoice to +${customerPhone}`);
     let invoiceResult = null;
@@ -199,7 +200,7 @@ _Thank you for shopping with VFS Jewels!_
     }
 
     // 3. Build Photo Slip PDF Link & Send PDF Photo Slip Document
-    const photoSlipUrl = `https://www.vfsjewels.store/api/photo-slip?id=${encodeURIComponent(order.id)}&name=${encodeURIComponent(order.name || '')}&phone=${customerPhone}&total=${order.total}&subtotal=${order.subtotal || order.total}&shipping=${order.shipping || 90}&address=${encodeURIComponent(order.address || '')}&city=${encodeURIComponent(order.city || '')}&pincode=${order.pincode || ''}&carrier=${encodeURIComponent(order.carrier || '')}`;
+    const photoSlipUrl = `https://www.vfsjewels.store/api/photo-slip?id=${encodeURIComponent(order.id)}&name=${encodeURIComponent(order.name || '')}&phone=${customerPhone}&total=${order.total}&subtotal=${order.subtotal || order.total}&shipping=${order.shipping || 90}&address=${encodeURIComponent(order.address || '')}&city=${encodeURIComponent(order.city || '')}&pincode=${order.pincode || ''}&carrier=${encodeURIComponent(order.carrier || '')}&items=${itemsJsonEncoded}`;
 
     console.log(`🖼️ Sending WhatsApp PDF Photo Slip to +${customerPhone}`);
     let photoSlipResult = null;

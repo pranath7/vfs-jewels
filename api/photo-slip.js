@@ -19,13 +19,26 @@ function createPhotoSlipPDF(order) {
   const carrier = order.carrier || 'DTDC Express';
   const trackingId = order.trackingId || `TRK${id.replace('#', '')}VFS`;
 
-  const items = Array.isArray(order.items) && order.items.length ? order.items : [
-    { name: 'VFS Designer Kada #01 (Anti-Tarnish)', qty: 1, price: 499, sku: 'ZU1-201' },
-    { name: 'Royal Emerald CZ Necklace Set', qty: 2, price: 1299, sku: 'ZU1-305' },
-    { name: 'Kandy Gold Plated Bangle Pair', qty: 1, price: 799, sku: 'ZU1-108' }
-  ];
+  let items = [];
+  if (order.items && Array.isArray(order.items)) {
+    items = order.items;
+  } else if (typeof order.items === 'string') {
+    try {
+      items = JSON.parse(order.items);
+    } catch(e) {
+      items = [];
+    }
+  }
 
-  const subtotal = Number(order.subtotal || items.reduce((acc, i) => acc + (i.price * i.qty), 0));
+  if (!items || items.length === 0) {
+    items = [
+      { name: 'VFS Designer Kada #01 (Anti-Tarnish)', qty: 1, price: 499, sku: 'ZU1-201' },
+      { name: 'Royal Emerald CZ Necklace Set', qty: 2, price: 1299, sku: 'ZU1-305' },
+      { name: 'Kandy Gold Plated Bangle Pair', qty: 1, price: 799, sku: 'ZU1-108' }
+    ];
+  }
+
+  const subtotal = Number(order.subtotal || items.reduce((acc, i) => acc + (Number(i.price || 0) * Number(i.qty || 1)), 0));
   const shipping = Number(order.shipping || 90);
   const gstTotal = Number(order.gstAmount || Math.round(subtotal * 0.03));
   const total = Number(order.total || (subtotal + shipping + gstTotal));
@@ -93,7 +106,7 @@ function createPhotoSlipPDF(order) {
 
   y -= 25;
   items.forEach((item, idx) => {
-    if (y < 120) return; // Prevention of overflow
+    if (y < 120) return;
 
     const itemTotal = Number(item.price || 0) * Number(item.qty || 1);
     const sku = item.sku || `ZU1-${100 + idx}`;
@@ -101,7 +114,7 @@ function createPhotoSlipPDF(order) {
 
     addText(String(idx + 1), 60, y, 8.5, 'F1', '0.3 0.3 0.3');
     addText(sku, 85, y, 8.5, 'F2', '0.83 0.68 0.21');
-    addText(itemName.substring(0, 38), 170, y, 8.5, 'F1', '0 0 0');
+    addText(itemName.substring(0, 36), 170, y, 8.5, 'F1', '0 0 0');
     addText(String(item.qty), 395, y, 8.5, 'F2', '0 0 0');
     addText(fmt(item.price), 440, y, 8.5, 'F1', '0.3 0.3 0.3');
     addText(fmt(itemTotal), 500, y, 8.5, 'F2', '0 0 0');
@@ -114,8 +127,8 @@ function createPhotoSlipPDF(order) {
   y -= 20;
   addRect(50, y - 45, 230, 40, '0.97 0.96 0.92');
   addText('PACKING & QUALITY CHECKLIST:', 60, y - 12, 8, 'F2', '0.83 0.68 0.21');
-  addText('✔ Items Count Checked  ✔ Anti-Tarnish Bubble Wrap', 60, y - 25, 7.5, 'F1', '0.2 0.2 0.2');
-  addText('✔ GST Invoice Inserted ✔ Sealed Tamper-Proof Box', 60, y - 37, 7.5, 'F1', '0.2 0.2 0.2');
+  addText('[OK] Items Count Checked  [OK] Anti-Tarnish Bubble Wrap', 60, y - 25, 7.5, 'F1', '0.2 0.2 0.2');
+  addText('[OK] GST Invoice Inserted [OK] Sealed Tamper-Proof Box', 60, y - 37, 7.5, 'F1', '0.2 0.2 0.2');
 
   const rightX = 350;
   addText('Total Items Count:', rightX, y - 10, 8.5, 'F1', '0.3 0.3 0.3');
@@ -131,10 +144,8 @@ function createPhotoSlipPDF(order) {
   addText('GRAND TOTAL:', rightX, y - 55, 10, 'F2', '0 0 0');
   addText(fmt(total), 470, y - 55, 11, 'F2', '0.83 0.68 0.21');
 
-  // Footer Stamp
   addText('Computer-generated VFS Fulfillment Photo Slip & Packing Manifest. Authorized dispatch.', 50, 40, 8, 'F1', '0.5 0.5 0.5');
 
-  // Build PDF Stream
   const contentStream = content.join('\n');
   const streamLength = Buffer.byteLength(contentStream);
 
@@ -178,28 +189,35 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    let order = {};
-    if (req.method === 'POST' && req.body) {
-      order = req.body;
-    } else {
-      order = {
-        id: req.query.id || '#J7001',
-        name: req.query.name || 'Valued Customer',
-        phone: req.query.phone || '',
-        address: req.query.address || '',
-        city: req.query.city || 'Chennai',
-        pincode: req.query.pincode || '',
-        total: req.query.total || 91,
-        subtotal: req.query.subtotal || 1,
-        shipping: req.query.shipping || 90,
-        carrier: req.query.carrier || 'DTDC Express'
-      };
+    const query = req.method === 'POST' ? req.body : req.query;
+
+    let items = [];
+    if (query.items) {
+      try {
+        items = typeof query.items === 'string' ? JSON.parse(query.items) : query.items;
+      } catch(e) {
+        items = [];
+      }
     }
 
-    const pdfBuffer = createPhotoSlipPDF(order);
+    const pdfBuffer = createPhotoSlipPDF({
+      id: query.id || '#J7001',
+      name: query.name || 'Valued Customer',
+      phone: query.phone || '',
+      address: query.address || 'Chennai, Tamil Nadu',
+      city: query.city || 'Chennai',
+      pincode: query.pincode || '',
+      date: query.date || new Date().toLocaleDateString('en-IN'),
+      carrier: query.carrier || 'DTDC Express',
+      trackingId: query.trackingId || '',
+      total: query.total || 91,
+      subtotal: query.subtotal || 1,
+      shipping: query.shipping || 90,
+      items: items
+    });
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="VFS_Photo_Slip_${(order.id || 'J7001').replace('#', '')}.pdf"`);
+    res.setHeader('Content-Disposition', `inline; filename="VFS_Photo_Slip_${(query.id || 'J7001').replace('#', '')}.pdf"`);
     return res.status(200).send(pdfBuffer);
   } catch (err) {
     console.error('Error generating photo slip PDF:', err);
