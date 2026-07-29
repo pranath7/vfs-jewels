@@ -6591,7 +6591,7 @@ window.triggerRazorpayUnlock = async function(amountInPaise = 100) {
       const res = await fetch('/api/create-razorpay-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: amountInPaise, currency: 'INR', receipt: 'adv_' + Date.now() })
+        body: JSON.stringify({ amount: (amountInRupees >= 100) ? amountInRupees : Math.round(amountInRupees * 100), currency: 'INR', receipt: 'adv_' + Date.now() })
       });
       if (res.ok) {
         const data = await res.json();
@@ -6604,7 +6604,7 @@ window.triggerRazorpayUnlock = async function(amountInPaise = 100) {
 
     const options = {
       key: keyId,
-      amount: amountInPaise,
+      amount: (amountInRupees >= 100) ? amountInRupees : Math.round(amountInRupees * 100),
       currency: "INR",
       name: "VFS JEWELS",
       description: "Wholesale Portal Access ₹1 Advance",
