@@ -6659,7 +6659,7 @@ if (document.readyState === 'loading') {
 
 
 // ── Razorpay ₹1 Advance Payment Handler ──
-window.triggerRazorpayUnlock = async function(amountInPaise = 100) {
+window.triggerRazorpayUnlock = async function(amt = 1) {
   try {
     if (typeof toast === 'function') toast("Opening Razorpay Secure Payment... 💳");
 
@@ -6678,15 +6678,17 @@ window.triggerRazorpayUnlock = async function(amountInPaise = 100) {
     const savedName = localStorage.getItem('vfs_customer_name') || 'Reseller Customer';
     const savedEmail = localStorage.getItem('vfs_customer_email') || 'customer@vfsjewels.store';
 
+    const numAmt = Number(amt) || 1;
+    const amountInPaise = (numAmt >= 100 && Number.isInteger(numAmt)) ? numAmt : Math.round(numAmt * 100);
+
     let orderId = '';
     let keyId = window.VFS_CONFIG?.razorpay?.keyId || 'rzp_live_vfs_jewels';
 
-    // Call serverless order creation if backend available
     try {
       const res = await fetch('/api/create-razorpay-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: (amountInRupees >= 100) ? amountInRupees : Math.round(amountInRupees * 100), currency: 'INR', receipt: 'adv_' + Date.now() })
+        body: JSON.stringify({ amount: numAmt, currency: 'INR', receipt: 'adv_' + Date.now() })
       });
       if (res.ok) {
         const data = await res.json();
@@ -6699,7 +6701,7 @@ window.triggerRazorpayUnlock = async function(amountInPaise = 100) {
 
     const options = {
       key: keyId,
-      amount: (amountInRupees >= 100) ? amountInRupees : Math.round(amountInRupees * 100),
+      amount: amountInPaise,
       currency: "INR",
       name: "VFS JEWELS",
       description: "Wholesale Portal Access ₹1 Advance",
@@ -6728,10 +6730,6 @@ window.triggerRazorpayUnlock = async function(amountInPaise = 100) {
     rzp.open();
   } catch(err) {
     console.error("Razorpay Trigger Error:", err);
-    // Fallback if Razorpay SDK popup is blocked
-    const confirmFallback = confirm("Razorpay checkout popup ready. Click OK to complete ₹1 advance unlock!");
-    if (confirmFallback) {
-      window.completeWholesaleUnlock();
-    }
+    alert("Razorpay payment error: " + err.message);
   }
 };
