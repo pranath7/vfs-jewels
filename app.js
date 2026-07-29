@@ -5713,7 +5713,12 @@ function switchModeSeamlessly(targetMode) {
   }
 }
 
-// ── Universal Welcome Mode Modal & Mode Toggle Handlers ──
+
+/* ============================================================
+   UNIFIED VFS MODALS & PAYMENT GATEWAY FUNNEL SYSTEM
+   ============================================================ */
+
+// 1. Welcome Mode Modal (Wholesale vs Retail)
 window.openWelcomeModeModal = function() {
   const modal = document.getElementById('welcomeModeModal');
   if (modal) {
@@ -5723,685 +5728,8 @@ window.openWelcomeModeModal = function() {
   }
 };
 
-function initWelcomeModeModal() {
+window.closeWelcomeModeModal = function() {
   const modal = document.getElementById('welcomeModeModal');
-  
-  const modeBtns = document.querySelectorAll('#openModeModal, #modeToggleBtn, #modeToggle, [data-action="toggle-mode"], .mode-toggle-btn, .shopping-mode-btn');
-  modeBtns.forEach(btn => {
-    btn.onclick = (e) => {
-      e.preventDefault();
-      window.openWelcomeModeModal();
-    };
-  });
-  
-  const wholesaleBtn = document.getElementById('chooseWholesaleBtn');
-  const retailBtn = document.getElementById('chooseRetailBtn');
-  
-  if (wholesaleBtn) {
-    wholesaleBtn.onclick = (e) => {
-      e.preventDefault();
-      if (modal) modal.style.display = 'none';
-      if (typeof openWholesaleFunnel === 'function') {
-        openWholesaleFunnel();
-      } else if (typeof openWholesaleUnlockModal === 'function') {
-        openWholesaleUnlockModal();
-      }
-    };
-  }
-  
-  if (retailBtn) {
-    retailBtn.onclick = (e) => {
-      e.preventDefault();
-      if (modal) modal.style.display = 'none';
-      if (typeof switchModeSeamlessly === 'function') {
-        switchModeSeamlessly('retail');
-      }
-    };
-  }
-}
-
-
-function openWholesaleTermsModal() {
-  const welcomeModal = document.getElementById('welcomeModeModal');
-  if (welcomeModal) welcomeModal.style.display = 'none';
-  
-  const termsModal = document.getElementById('wholesaleTermsModal');
-  if (termsModal) {
-    termsModal.classList.add('active');
-  } else {
-    switchModeSeamlessly('wholesale');
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-function initKeyboardArrowNav() {
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      const dir = e.key === 'ArrowRight' ? 300 : -300;
-      const catScroll = document.getElementById('catScroll');
-      if (catScroll) {
-        catScroll.scrollBy({ left: dir, behavior: 'smooth' });
-      }
-    }
-  });
-}
-
-async function initLiveSlotBooking() {
-  const containers = document.querySelectorAll('#slotStatusContainer, #slotStatusContainerVc, .slot-status-container');
-  if (!containers || containers.length === 0) return;
-  
-  let slotData = { enabled: false, registeredCount: 0, maxSlots: 24, date: new Date().toISOString().split('T')[0] };
-  
-  try {
-    if (window.db) {
-      const doc = await window.db.collection('settings').doc('live_slot_settings').get();
-      if (doc.exists) {
-        slotData = Object.assign(slotData, doc.data());
-      }
-    }
-  } catch (e) {
-    console.warn('Slot settings fetch error:', e);
-  }
-  
-  const remaining = Math.max(0, slotData.maxSlots - (slotData.registeredCount || 0));
-  
-  if (!slotData.enabled) {
-    const disabledHtml = `
-      <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--border-color);">
-        <div style="font-size:3rem; margin-bottom:8px;">🙏</div>
-        <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:8px; font-family:var(--font-heading);">Session Unavailable Today</h3>
-        <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5; margin:0;">We are currently unavailable to connect for a live show today. Please check back tomorrow!</p>
-      </div>`;
-    containers.forEach(c => c.innerHTML = disabledHtml);
-    return;
-  }
-
-  if (remaining <= 0) {
-    const fullHtml = `
-      <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--color-secondary);">
-        <div style="font-size:3rem; margin-bottom:8px;">❌</div>
-        <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:8px; font-family:var(--font-heading);">All 24 Slots Booked Today</h3>
-        <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5; margin:0;">Today's 8:30 PM live session is fully booked! Please join us tomorrow for the 8:30 PM live preview.</p>
-      </div>`;
-    containers.forEach(c => c.innerHTML = fullHtml);
-    return;
-  }
-  
-  const activeFormHtml = `
-    <div style="text-align:center; margin-bottom:16px; padding:12px; background:rgba(212, 175, 55, 0.1); border-radius:8px; border:1px solid var(--color-secondary);">
-      <strong style="font-size:1.3rem; color:var(--color-secondary); display:block;">⚡ ONLY ${remaining} OF 24 SLOTS REMAINING FOR TODAY'S 8:30 PM SESSION</strong>
-      <div style="font-size:1.15rem; color:#D4AF37; font-weight:700; margin-top:4px;">💳 Booking Fee: ₹500 (Adjusted/Refunded on Purchase)</div>
-    </div>
-    <form class="slot-booking-form-class" style="display:flex; flex-direction:column; gap:12px;">
-      <input type="text" class="slot-name-class" placeholder="Your Full Name" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem;">
-      <input type="tel" class="slot-phone-class" placeholder="WhatsApp Phone Number (+91...)" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem;">
-      <input type="text" class="slot-city-class" placeholder="City" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem;">
-      <button type="submit" class="btn-primary" style="padding:14px; font-weight:800; text-transform:uppercase; margin-top:8px; font-size:1.3rem; border:none; cursor:pointer; background:#27ae60; color:#fff;">Pay ₹500 &amp; Confirm 8:30 PM Booking →</button>
-    </form>`;
-    
-  containers.forEach(c => {
-    c.innerHTML = activeFormHtml;
-    const form = c.querySelector('.slot-booking-form-class');
-    if (form) {
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = form.querySelector('.slot-name-class').value.trim();
-        const phone = form.querySelector('.slot-phone-class').value.trim();
-        const city = form.querySelector('.slot-city-class').value.trim();
-        
-        const saveBooking = async (paymentId) => {
-          try {
-            if (window.db) {
-              await window.db.collection('live_slot_bookings').add({
-                name, phone, city,
-                paymentId: paymentId || ('PAY_SLOT_' + Date.now()),
-                amount: 500,
-                status: 'paid',
-                date: slotData.date,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-              });
-              await window.db.collection('settings').doc('live_slot_settings').set({
-                registeredCount: firebase.firestore.FieldValue.increment(1)
-              }, { merge: true });
-            }
-            const successHtml = `
-              <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--color-secondary);">
-                <div style="font-size:3.2rem; margin-bottom:8px;">✅</div>
-                <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:4px; font-family:var(--font-heading);">Slot Booked &amp; Paid (₹500)!</h3>
-                <p style="font-size:1.1rem; color:#27ae60; font-weight:700; margin-bottom:8px;">Payment ID: ${paymentId || 'CONFIRMED'}</p>
-                <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5;">You are registered for today's 8:30 PM live preview. Your Google Meet link will be sent to your WhatsApp (${phone}) at 8:00 PM.</p>
-              </div>`;
-            containers.forEach(cont => cont.innerHTML = successHtml);
-          } catch (err) {
-            if (typeof toast === 'function') toast('Booking failed: ' + err.message);
-            else alert('Booking failed: ' + err.message);
-          }
-        };
-
-        // Trigger Razorpay ₹500 Checkout
-        if (typeof Razorpay !== 'undefined') {
-          const rzpKey = (window.VFS_CONFIG && window.VFS_CONFIG.firebase && window.VFS_CONFIG.firebase.apiKey) ? 'rzp_live_vfsjewels' : 'rzp_test_vfsjewels';
-          const options = {
-            key: rzpKey,
-            amount: 50000,
-            currency: 'INR',
-            name: 'VFS Jewels',
-            description: '8:30 PM Live Video Call Booking Fee',
-            prefill: { name: name, contact: phone },
-            theme: { color: '#D4AF37' },
-            handler: function(response) {
-              saveBooking(response.razorpay_payment_id);
-            }
-          };
-          const rzp = new Razorpay(options);
-          rzp.open();
-        } else {
-          // Direct confirmation fallback
-          saveBooking('PAY_SLOT_CONFIRMED_' + Date.now());
-        }
-      });
-    }
-  });
-}
-
-async function initLiveSlotBooking() {
-  const containers = document.querySelectorAll('#slotStatusContainer, #slotStatusContainerVc, .slot-status-container');
-  if (!containers || containers.length === 0) return;
-  
-  let slotData = { enabled: false, registeredCount: 0, maxSlots: 24, date: new Date().toISOString().split('T')[0] };
-  
-  try {
-    if (window.db) {
-      const doc = await window.db.collection('settings').doc('live_slot_settings').get();
-      if (doc.exists) {
-        slotData = Object.assign(slotData, doc.data());
-      }
-    }
-  } catch (e) {
-    console.warn('Slot settings fetch error:', e);
-  }
-  
-  const remaining = Math.max(0, slotData.maxSlots - (slotData.registeredCount || 0));
-  
-  if (!slotData.enabled) {
-    const disabledHtml = `
-      <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--border-color);">
-        <div style="font-size:3rem; margin-bottom:8px;">🙏</div>
-        <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:8px; font-family:var(--font-heading);">Session Unavailable Today</h3>
-        <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5; margin:0;">We are currently unavailable to connect for a live show today. Please check back tomorrow!</p>
-      </div>`;
-    containers.forEach(c => c.innerHTML = disabledHtml);
-    return;
-  }
-
-  if (remaining <= 0) {
-    const fullHtml = `
-      <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--color-secondary);">
-        <div style="font-size:3rem; margin-bottom:8px;">❌</div>
-        <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:8px; font-family:var(--font-heading);">All 24 Slots Booked Today</h3>
-        <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5; margin:0;">Today's 8:30 PM live session is fully booked! Please join us tomorrow for the 8:30 PM live preview.</p>
-      </div>`;
-    containers.forEach(c => c.innerHTML = fullHtml);
-    return;
-  }
-  
-  const activeFormHtml = `
-    <div style="text-align:center; margin-bottom:16px; padding:12px; background:rgba(212, 175, 55, 0.1); border-radius:8px; border:1px solid var(--color-secondary);">
-      <strong style="font-size:1.3rem; color:var(--color-secondary); display:block;">⚡ ONLY ${remaining} OF 24 SLOTS REMAINING FOR TODAY'S 8:30 PM SESSION</strong>
-      <div style="font-size:1.15rem; color:#D4AF37; font-weight:700; margin-top:4px;">💳 Booking Fee: ₹500 (Adjusted/Refunded on Purchase)</div>
-    </div>
-    <form class="slot-booking-form-class" style="display:flex; flex-direction:column; gap:12px;">
-      <input type="text" class="slot-name-class" placeholder="Your Full Name" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem;">
-      <input type="tel" class="slot-phone-class" placeholder="WhatsApp Phone Number (+91...)" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem;">
-      <input type="text" class="slot-city-class" placeholder="City" required style="padding:12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem;">
-      <button type="submit" class="btn-primary" style="padding:14px; font-weight:800; text-transform:uppercase; margin-top:8px; font-size:1.3rem; border:none; cursor:pointer; background:#27ae60; color:#fff;">Pay ₹500 &amp; Confirm 8:30 PM Booking →</button>
-    </form>`;
-    
-  containers.forEach(c => {
-    c.innerHTML = activeFormHtml;
-    const form = c.querySelector('.slot-booking-form-class');
-    if (form) {
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = form.querySelector('.slot-name-class').value.trim();
-        const phone = form.querySelector('.slot-phone-class').value.trim();
-        const city = form.querySelector('.slot-city-class').value.trim();
-        
-        const saveBooking = async (paymentId) => {
-          try {
-            if (window.db) {
-              await window.db.collection('live_slot_bookings').add({
-                name, phone, city,
-                paymentId: paymentId || ('PAY_SLOT_' + Date.now()),
-                amount: 500,
-                status: 'paid',
-                date: slotData.date,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-              });
-              await window.db.collection('settings').doc('live_slot_settings').set({
-                registeredCount: firebase.firestore.FieldValue.increment(1)
-              }, { merge: true });
-            }
-            const successHtml = `
-              <div style="text-align:center; padding:24px 16px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--color-secondary);">
-                <div style="font-size:3.2rem; margin-bottom:8px;">✅</div>
-                <h3 style="font-size:1.6rem; color:var(--text-primary); margin-bottom:4px; font-family:var(--font-heading);">Slot Booked &amp; Paid (₹500)!</h3>
-                <p style="font-size:1.1rem; color:#27ae60; font-weight:700; margin-bottom:8px;">Payment ID: ${paymentId || 'CONFIRMED'}</p>
-                <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.5;">You are registered for today's 8:30 PM live preview. Your Google Meet link will be sent to your WhatsApp (${phone}) at 8:00 PM.</p>
-              </div>`;
-            containers.forEach(cont => cont.innerHTML = successHtml);
-          } catch (err) {
-            if (typeof toast === 'function') toast('Booking failed: ' + err.message);
-            else alert('Booking failed: ' + err.message);
-          }
-        };
-
-        // Trigger Razorpay ₹500 Checkout
-        if (typeof Razorpay !== 'undefined') {
-          const rzpKey = (window.VFS_CONFIG && window.VFS_CONFIG.firebase && window.VFS_CONFIG.firebase.apiKey) ? 'rzp_live_vfsjewels' : 'rzp_test_vfsjewels';
-          const options = {
-            key: rzpKey,
-            amount: 50000,
-            currency: 'INR',
-            name: 'VFS Jewels',
-            description: '8:30 PM Live Video Call Booking Fee',
-            prefill: { name: name, contact: phone },
-            theme: { color: '#D4AF37' },
-            handler: function(response) {
-              saveBooking(response.razorpay_payment_id);
-            }
-          };
-          const rzp = new Razorpay(options);
-          rzp.open();
-        } else {
-          // Direct confirmation fallback
-          saveBooking('PAY_SLOT_CONFIRMED_' + Date.now());
-        }
-      });
-    }
-  });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  initThemeToggle();
-  initWelcomeModeModal();
-  initKeyboardArrowNav();
-  initLiveSlotBooking();
-  
-  document.querySelectorAll('.open-slot-modal-btn').forEach(b => {
-    b.addEventListener('click', (e) => {
-      e.preventDefault();
-      const slotModal = document.getElementById('slotBookingModal');
-      if (slotModal) slotModal.style.display = 'flex';
-    });
-  });
-  const closeSlotBtn = document.getElementById('closeSlotModalBtn');
-  if (closeSlotBtn) {
-    closeSlotBtn.addEventListener('click', () => {
-      const slotModal = document.getElementById('slotBookingModal');
-      if (slotModal) slotModal.style.display = 'none';
-    });
-  }
-});
-
-
-
-/* ===== GOOGLE REVIEWS FEED (DYNAMIC 1-5 STAR SYNC) ===== */
-
-const GOOGLE_REVIEWS = [
-  { name: "Priya Sharma", rating: 5, time: "2 days ago", comment: "Outstanding anti-tarnish quality! Ordered 12 kadas for my boutique and sold out in 3 days.", verified: true },
-  { name: "Rohan Verma", rating: 5, time: "1 week ago", comment: "The 18K gold plating on the chains looks identical to real gold. Direct wholesale rates are unbeatable.", verified: true },
-  { name: "Ananya Iyer", rating: 4, time: "2 weeks ago", comment: "Beautiful shine and solid weight on the bracelets. Delivery took 4 days to Chennai.", verified: true },
-  { name: "Kavita Reddy", rating: 3, time: "3 weeks ago", comment: "Product quality is very good, but box packaging could be slightly stronger for bulk shipping.", verified: true },
-  { name: "Vikram Malhotra", rating: 5, time: "1 month ago", comment: "Fast wholesale dispatch and direct customer service via WhatsApp. Highly recommended!", verified: true },
-  { name: "Siddharth Jain", rating: 2, time: "1 month ago", comment: "Chain design is nice but size was slightly tighter than expected. Customer team helped with exchange.", verified: true }
-];
-
-function renderGoogleReviews() {
-  const track = document.getElementById('googleReviewsMarquee');
-  if (!track) return;
-
-  const cardsHtml = GOOGLE_REVIEWS.map(r => {
-    const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
-    const starColor = r.rating >= 4 ? '#f39c12' : (r.rating === 3 ? '#e67e22' : '#e74c3c');
-    return `
-      <div class="google-review-card" style="min-width:300px; max-width:340px; padding:20px; border-radius:12px; background:var(--bg-card); border:1px solid var(--border-color); display:inline-block; margin-right:16px; vertical-align:top; text-align:left;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-          <strong style="font-size:1.2rem; color:var(--text-primary);">${r.name}</strong>
-          <span style="font-size:0.9rem; color:var(--text-muted);">${r.time}</span>
-        </div>
-        <div style="color:${starColor}; font-size:1.3rem; margin-bottom:8px;">${stars} <span style="font-size:0.9rem; color:var(--text-muted);">(${r.rating}/5)</span></div>
-        <p style="font-size:1.1rem; color:var(--text-secondary); line-height:1.4; margin:0;">"${r.comment}"</p>
-        <div style="font-size:0.85rem; color:#25D366; font-weight:700; margin-top:10px; display:flex; align-items:center; gap:4px;">
-          ✓ Verified Google Business Review
-        </div>
-      </div>`;
-  }).join('');
-
-  track.innerHTML = cardsHtml + cardsHtml; // duplicate for seamless marquee
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  renderGoogleReviews();
-});
-
-
-
-// Global Mode Button Attacher
-function bindAllModeButtons() {
-  document.querySelectorAll('#openModeModal, .mode-btn, [data-action="switch-mode"], #switchModeBtn, #headerModeBtn').forEach(btn => {
-    btn.onclick = (e) => {
-      e.preventDefault();
-      const modal = document.getElementById('welcomeModeModal');
-      if (modal) modal.style.display = 'flex';
-    };
-  });
-}
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', bindAllModeButtons);
-} else {
-  bindAllModeButtons();
-}
-
-
-/* ===== GUARANTEED WHOLESALE T&C MODAL HANDLERS ===== */
-function bindWholesaleTermsModal() {
-  const termsCheckbox = document.getElementById('agreeWholesaleTerms');
-  const acceptTermsBtn = document.getElementById('btnAcceptTerms');
-  const cancelTermsBtn = document.getElementById('btnCancelTerms');
-  const termsModal = document.getElementById('wholesaleTermsModal');
-  const loginModal = document.getElementById('wholesaleLoginModal');
-  const welcomeModal = document.getElementById('welcomeModeModal');
-
-  if (termsCheckbox && acceptTermsBtn) {
-    termsCheckbox.onchange = () => {
-      if (termsCheckbox.checked) {
-        acceptTermsBtn.removeAttribute('disabled');
-        acceptTermsBtn.disabled = false;
-        acceptTermsBtn.style.opacity = '1';
-        acceptTermsBtn.style.cursor = 'pointer';
-        acceptTermsBtn.style.background = '#D4AF37';
-        acceptTermsBtn.style.color = '#121212';
-      } else {
-        acceptTermsBtn.setAttribute('disabled', 'true');
-        acceptTermsBtn.disabled = true;
-        acceptTermsBtn.style.opacity = '0.6';
-        acceptTermsBtn.style.cursor = 'not-allowed';
-        acceptTermsBtn.style.background = '#121212';
-        acceptTermsBtn.style.color = '#D4AF37';
-      }
-    };
-
-    acceptTermsBtn.onclick = (e) => {
-      e.preventDefault();
-      if (!termsCheckbox.checked) return;
-      if (termsModal) {
-        termsModal.classList.remove('active');
-        termsModal.style.display = 'none';
-      }
-      if (loginModal) {
-        const phoneStep = document.getElementById('loginStepPhone');
-        const otpStep = document.getElementById('loginStepOTP');
-        const regStep = document.getElementById('loginStepRegister');
-        if (phoneStep) phoneStep.style.display = 'block';
-        if (otpStep) otpStep.style.display = 'none';
-        if (regStep) regStep.style.display = 'none';
-        loginModal.classList.add('active');
-        loginModal.style.display = 'flex';
-      } else {
-        if (typeof openWholesaleLoginModal === 'function') openWholesaleLoginModal();
-      }
-    };
-  }
-
-  if (cancelTermsBtn) {
-    cancelTermsBtn.onclick = (e) => {
-      e.preventDefault();
-      if (termsModal) {
-        termsModal.classList.remove('active');
-        termsModal.style.display = 'none';
-      }
-      if (welcomeModal) {
-        welcomeModal.style.display = 'flex';
-      }
-    };
-  }
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', bindWholesaleTermsModal);
-} else {
-  bindWholesaleTermsModal();
-}
-
-
-
-
-
-
-// ── Global Customer Wallet Modal Triggers ──
-
-// ── Global Customer Wallet Modal Close & Scroll Restore ──
-window.closeWalletModalFunc = function() {
-  const modal = document.getElementById('walletModal');
-  if (modal) modal.style.display = 'none';
-  document.body.style.overflow = '';
-  document.body.style.overflowY = 'auto';
-};
-
-window.openWalletModalFunc = async function() {
-  const modal = document.getElementById('walletModal');
-  if (!modal) return;
-  modal.style.setProperty('display', 'flex', 'important');
-  document.body.style.overflow = 'hidden';
-  
-  const loggedOutView = document.getElementById('walletViewLoggedOut');
-  const loggedInView = document.getElementById('walletViewLoggedIn');
-  const balDisplay = document.getElementById('walletBalanceDisplay');
-  const userPhoneDisplay = document.getElementById('walletUserPhoneDisplay');
-
-  const savedPhone = localStorage.getItem('vfs_customer_phone');
-  if (savedPhone && savedPhone.length === 10) {
-    if (loggedOutView) loggedOutView.style.display = 'none';
-    if (loggedInView) loggedInView.style.display = 'block';
-    if (userPhoneDisplay) userPhoneDisplay.textContent = `Phone: +91 ${savedPhone}`;
-    if (balDisplay) balDisplay.textContent = 'Checking Cloud...';
-    
-    try {
-      const bal = await window.VFS_DB.getCustomerWalletBalance(savedPhone);
-      if (balDisplay) balDisplay.textContent = typeof fmt === 'function' ? fmt(bal) : '₹' + bal.toFixed(2);
-    } catch(e) {
-      if (balDisplay) balDisplay.textContent = '₹0.00';
-    }
-  } else {
-    if (loggedOutView) loggedOutView.style.display = 'block';
-    if (loggedInView) loggedInView.style.display = 'none';
-  }
-};
-
-function initWalletModalListeners() {
-  const modal = document.getElementById('walletModal');
-  const openBtn = document.getElementById('openWalletModal');
-  const closeBtn = document.getElementById('closeWalletModal');
-  const loginForm = document.getElementById('walletLoginForm');
-  const phoneInput = document.getElementById('walletLoginPhone');
-  const switchUserBtn = document.getElementById('walletSwitchUserBtn');
-
-  if (openBtn) openBtn.onclick = window.openWalletModalFunc;
-  if (closeBtn) closeBtn.onclick = window.closeWalletModalFunc;
-
-  if (modal) {
-    modal.onclick = (e) => {
-      if (e.target === modal) window.closeWalletModalFunc();
-    };
-  }
-
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') window.closeWalletModalFunc();
-  });
-
-  window.addEventListener('popstate', () => {
-    window.closeWalletModalFunc();
-  });
-
-  if (loginForm) {
-    loginForm.onsubmit = async (e) => {
-      e.preventDefault();
-      let phone = phoneInput.value.trim().replace(/[^0-9]/g, '');
-      if (phone.length === 10) {
-        localStorage.setItem('vfs_customer_phone', phone);
-        await window.openWalletModalFunc();
-      } else {
-        alert('Please enter a valid 10-digit mobile number.');
-      }
-    };
-  }
-
-  if (switchUserBtn) {
-    switchUserBtn.onclick = () => {
-      localStorage.removeItem('vfs_customer_phone');
-      const loggedOutView = document.getElementById('walletViewLoggedOut');
-      const loggedInView = document.getElementById('walletViewLoggedIn');
-      if (loggedOutView) loggedOutView.style.display = 'block';
-      if (loggedInView) loggedInView.style.display = 'none';
-      if (phoneInput) {
-        phoneInput.value = '';
-        phoneInput.focus();
-      }
-    };
-  }
-}
-
-initWalletModalListeners();
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initWalletModalListeners);
-}
-
-
-
-
-
-
-// ── Global Theme Toggle (Light / Dark Mode) ──
-window.toggleTheme = function() {
-  const isDark = document.body.classList.toggle('dark-theme');
-  localStorage.setItem('vfs_theme', isDark ? 'dark' : 'light');
-  window.updateThemeIcons(isDark);
-};
-
-window.updateThemeIcons = function(isDark) {
-  const suns = document.querySelectorAll('.theme-icon-sun');
-  const moons = document.querySelectorAll('.theme-icon-moon');
-  
-  suns.forEach(s => s.style.display = isDark ? 'inline-block' : 'none');
-  moons.forEach(m => m.style.display = isDark ? 'none' : 'inline-block');
-};
-
-// Initial Theme Check on Load
-(function initThemeOnLoad() {
-  const savedTheme = localStorage.getItem('vfs_theme');
-  const isDark = savedTheme === 'dark';
-  if (isDark) {
-    document.body.classList.add('dark-theme');
-  } else {
-    document.body.classList.remove('dark-theme');
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => window.updateThemeIcons(isDark));
-  } else {
-    window.updateThemeIcons(isDark);
-  }
-})();
-
-
-
-// ── Google Sign In Handler ──
-window.handleGoogleSignIn = async function() {
-  try {
-    if (window.VFS_CLOUD_ACTIVE && window.firebase && firebase.auth) {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await firebase.auth().signInWithPopup(provider);
-      const user = result.user;
-      
-      const userPhone = user.phoneNumber ? user.phoneNumber.replace(/\D/g, '').replace(/^91/, '') : '';
-      const userName = user.displayName || 'Reseller Customer';
-      
-      if (userPhone && userPhone.length === 10) {
-        localStorage.setItem('vfs_customer_phone', userPhone);
-      }
-      
-      const authScreen = document.getElementById('royalScreenAuth');
-      const regScreen = document.getElementById('royalScreenRegister');
-      const unlockScreen = document.getElementById('royalScreenUnlock');
-      
-      if (authScreen) authScreen.style.display = 'none';
-      if (regScreen) {
-        const nameInput = document.getElementById('royalRegName');
-        if (nameInput) nameInput.value = userName;
-        regScreen.style.display = 'block';
-      } else if (unlockScreen) {
-        unlockScreen.style.display = 'block';
-      }
-      
-      if (typeof toast === 'function') toast(`Signed in as ${userName} ✓`);
-    } else {
-      const phonePrompt = prompt("Enter your 10-digit mobile number to complete Reseller Google Sign In:");
-      if (phonePrompt && phonePrompt.trim().replace(/\D/g, '').length === 10) {
-        const cleanPhone = phonePrompt.trim().replace(/\D/g, '');
-        localStorage.setItem('vfs_customer_phone', cleanPhone);
-        const authScreen = document.getElementById('royalScreenAuth');
-        const regScreen = document.getElementById('royalScreenRegister');
-        if (authScreen) authScreen.style.display = 'none';
-        if (regScreen) regScreen.style.display = 'block';
-        if (typeof toast === 'function') toast("Signed in successfully!");
-      }
-    }
-  } catch(err) {
-    console.error("Google Sign-In Error:", err);
-    if (err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
-      const phonePrompt = prompt("Google Popup was blocked. Enter your 10-digit mobile number to sign in:");
-      if (phonePrompt && phonePrompt.trim().replace(/\D/g, '').length === 10) {
-        const cleanPhone = phonePrompt.trim().replace(/\D/g, '');
-        localStorage.setItem('vfs_customer_phone', cleanPhone);
-        const authScreen = document.getElementById('royalScreenAuth');
-        const regScreen = document.getElementById('royalScreenRegister');
-        if (authScreen) authScreen.style.display = 'none';
-        if (regScreen) regScreen.style.display = 'block';
-      }
-    } else {
-      alert("Google Sign-In Note: " + (err.message || "Please sign in using mobile number."));
-    }
-  }
-};
-
-function initGoogleSignInListeners() {
-  const gBtn1 = document.getElementById('royalBtnGoogleSignIn');
-  if (gBtn1) gBtn1.onclick = window.handleGoogleSignIn;
-  
-  const gBtn2 = document.getElementById('googleSignInBtn');
-  if (gBtn2) gBtn2.onclick = window.handleGoogleSignIn;
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initGoogleSignInListeners);
-} else {
-  initGoogleSignInListeners();
-}
-
-
-
-// ── Universal Wholesale Login Modal Handlers (#btnGoogleSignIn & #btnCancelLogin) ──
-window.closeWholesaleLoginModal = function() {
-  const modal = document.getElementById('wholesaleLoginModal');
   if (modal) {
     modal.style.display = 'none';
     modal.classList.remove('active');
@@ -6409,126 +5737,39 @@ window.closeWholesaleLoginModal = function() {
   document.body.style.overflow = '';
 };
 
-window.handleUniversalGoogleSignIn = async function() {
-  const loginStepPhone = document.getElementById('loginStepPhone');
-  const loginStepRegister = document.getElementById('loginStepRegister');
-  
-  try {
-    if (window.VFS_CLOUD_ACTIVE && window.firebase && firebase.auth) {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await firebase.auth().signInWithPopup(provider);
-      const user = result.user;
-      
-      const userPhone = user.phoneNumber ? user.phoneNumber.replace(/\D/g, '').replace(/^91/, '') : '';
-      const userName = user.displayName || 'Reseller Member';
-      
-      if (userPhone && userPhone.length === 10) {
-        localStorage.setItem('vfs_customer_phone', userPhone);
-      }
-      if (user.email) {
-        localStorage.setItem('vfs_customer_email', user.email);
-      }
-      
-      if (loginStepPhone) loginStepPhone.style.display = 'none';
-      if (loginStepRegister) {
-        loginStepRegister.style.display = 'block';
-        const nameInp = document.getElementById('regNameInput');
-        if (nameInp) nameInp.value = userName;
-      } else {
-        window.closeWholesaleLoginModal();
-      }
-      if (typeof toast === 'function') toast(`Signed in as ${userName} ✓`);
-    } else {
-      throw new Error("Firebase auth unavailable, fallback to mobile sign in");
-    }
-  } catch(err) {
-    console.warn("Google Auth popup notice:", err);
-    // Mobile / Webview Fallback: Prompt 10-digit mobile number so user is NEVER stuck!
-    const phonePrompt = prompt("Google popup blocked. Enter your 10-digit mobile number to complete Wholesale Sign In:");
-    if (phonePrompt && phonePrompt.trim().replace(/\D/g, '').length === 10) {
-      const cleanPhone = phonePrompt.trim().replace(/\D/g, '');
-      localStorage.setItem('vfs_customer_phone', cleanPhone);
-      
-      if (loginStepPhone) loginStepPhone.style.display = 'none';
-      if (loginStepRegister) {
-        loginStepRegister.style.display = 'block';
-        const phoneInp = document.getElementById('regPhoneInput');
-        if (phoneInp) phoneInp.value = cleanPhone;
-      } else {
-        window.closeWholesaleLoginModal();
-      }
-      if (typeof toast === 'function') toast("Signed in successfully! 🌸");
-    }
-  }
-};
+// 2. Wholesale Login Modal (Google Auth & Mobile Reg)
+window.openWholesaleLoginModal = function() {
+  window.closeWelcomeModeModal();
+  const termsModal = document.getElementById('wholesaleTermsModal');
+  if (termsModal) termsModal.classList.remove('active');
 
-function initWholesaleLoginModalListeners() {
-  // 1. Google Sign-In Buttons (All IDs)
-  const gBtns = [
-    document.getElementById('btnGoogleSignIn'),
-    document.getElementById('royalBtnGoogleSignIn'),
-    document.getElementById('googleSignInBtn')
-  ];
-  gBtns.forEach(btn => {
-    if (btn) btn.onclick = window.handleUniversalGoogleSignIn;
-  });
-
-  // 2. Cancel Buttons (All IDs)
-  const cancelBtns = [
-    document.getElementById('btnCancelLogin'),
-    document.getElementById('royalBtnCancelAuth'),
-    document.getElementById('royalBtnCancelTerms'),
-    document.getElementById('royalBtnCancelRegister')
-  ];
-  cancelBtns.forEach(btn => {
-    if (btn) btn.onclick = window.closeWholesaleLoginModal;
-  });
-
-  // 3. Register Form Submit
-  const regBtn = document.getElementById('btnRegisterUser');
-  if (regBtn) {
-    regBtn.onclick = function() {
-      const phoneInp = document.getElementById('regPhoneInput');
-      const phone = phoneInp ? phoneInp.value.trim().replace(/\D/g, '') : '';
-      if (phone && phone.length === 10) {
-        localStorage.setItem('vfs_customer_phone', phone);
-      }
-      window.closeWholesaleLoginModal();
-      if (typeof toast === 'function') toast("Registration details saved! 🌸");
-    };
-  }
-
-  // 4. Backdrop click close
   const loginModal = document.getElementById('wholesaleLoginModal');
   if (loginModal) {
-    loginModal.onclick = function(e) {
-      if (e.target === loginModal) {
-        window.closeWholesaleLoginModal();
-      }
-    };
+    const loginStepPhone = document.getElementById('loginStepPhone');
+    const loginStepRegister = document.getElementById('loginStepRegister');
+    if (loginStepPhone) loginStepPhone.style.display = 'block';
+    if (loginStepRegister) loginStepRegister.style.display = 'none';
+    loginModal.style.display = 'flex';
+    loginModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  } else {
+    window.openWholesaleUnlockModal();
   }
-}
+};
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initWholesaleLoginModalListeners);
-} else {
-  initWholesaleLoginModalListeners();
-}
-
-
-
-// ── Universal Wholesale Login & Advance Payment Funnel ──
 window.closeWholesaleLoginModal = function() {
-  const modal = document.getElementById('wholesaleLoginModal');
-  if (modal) {
-    modal.style.display = 'none';
-    modal.classList.remove('active');
+  const loginModal = document.getElementById('wholesaleLoginModal');
+  if (loginModal) {
+    loginModal.style.display = 'none';
+    loginModal.classList.remove('active');
   }
   document.body.style.overflow = '';
 };
 
+// 3. Wholesale Advance Unlock Modal (₹1 Razorpay)
 window.openWholesaleUnlockModal = function() {
   window.closeWholesaleLoginModal();
+  window.closeWelcomeModeModal();
   
   const unlockModal = document.getElementById('wholesaleUnlockModal');
   const royalScreenUnlock = document.getElementById('royalScreenUnlock');
@@ -6540,6 +5781,7 @@ window.openWholesaleUnlockModal = function() {
     if (unlockPriceText) unlockPriceText.innerHTML = 'Pay ₹1 portal fee to unlock wholesale prices.';
     unlockModal.style.display = 'flex';
     unlockModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
   } else if (royalScreenUnlock) {
     royalScreenUnlock.style.display = 'block';
   } else {
@@ -6553,6 +5795,7 @@ window.completeWholesaleUnlock = function() {
     unlockModal.style.display = 'none';
     unlockModal.classList.remove('active');
   }
+  document.body.style.overflow = '';
   
   if (typeof wholesaleUnlocked !== 'undefined') {
     wholesaleUnlocked = true;
@@ -6571,10 +5814,8 @@ window.completeWholesaleUnlock = function() {
   }
 };
 
+// 4. Google Sign In Handler
 window.handleUniversalGoogleSignIn = async function() {
-  const loginStepPhone = document.getElementById('loginStepPhone');
-  const loginStepRegister = document.getElementById('loginStepRegister');
-  
   try {
     if (window.VFS_CLOUD_ACTIVE && window.firebase && firebase.auth) {
       const provider = new firebase.auth.GoogleAuthProvider();
@@ -6608,73 +5849,11 @@ window.handleUniversalGoogleSignIn = async function() {
   }
 };
 
-function initWholesaleLoginModalListeners() {
-  // 1. Google Sign-In Buttons
-  const gBtns = [
-    document.getElementById('btnGoogleSignIn'),
-    document.getElementById('royalBtnGoogleSignIn'),
-    document.getElementById('googleSignInBtn')
-  ];
-  gBtns.forEach(btn => {
-    if (btn) btn.onclick = window.handleUniversalGoogleSignIn;
-  });
-
-  // 2. Cancel Buttons
-  const cancelBtns = [
-    document.getElementById('btnCancelLogin'),
-    document.getElementById('royalBtnCancelAuth'),
-    document.getElementById('royalBtnCancelTerms'),
-    document.getElementById('royalBtnCancelRegister'),
-    document.getElementById('btnCancelUnlock')
-  ];
-  cancelBtns.forEach(btn => {
-    if (btn) btn.onclick = function() {
-      window.closeWholesaleLoginModal();
-      const unlockModal = document.getElementById('wholesaleUnlockModal');
-      if (unlockModal) {
-        unlockModal.style.display = 'none';
-        unlockModal.classList.remove('active');
-      }
-    };
-  });
-
-  // 3. Register Form Submit -> Triggers Payment Modal immediately!
-  const regBtn = document.getElementById('btnRegisterUser');
-  if (regBtn) {
-    regBtn.onclick = function() {
-      const phoneInp = document.getElementById('regPhoneInput');
-      const phone = phoneInp ? phoneInp.value.trim().replace(/\D/g, '') : '';
-      if (phone && phone.length === 10) {
-        localStorage.setItem('vfs_customer_phone', phone);
-      }
-      window.openWholesaleUnlockModal();
-      if (typeof toast === 'function') toast("Registration saved! Proceeding to ₹1 Advance Payment 💳");
-    };
-  }
-
-  // 4. Payment Buttons in Unlock Modal -> Unlocks Portal
-  const payBtns = document.querySelectorAll('.upi-pay-btn, #btnSimulateSuccess, #royalBtnRazorpayPay');
-  payBtns.forEach(btn => {
-    btn.onclick = function() {
-      window.completeWholesaleUnlock();
-    };
-  });
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initWholesaleLoginModalListeners);
-} else {
-  initWholesaleLoginModalListeners();
-}
-
-
-
-// ── Razorpay ₹1 Advance Payment Handler ──
+// 5. Razorpay ₹1 Advance Payment SDK Trigger
 window.triggerRazorpayUnlock = async function(amt = 1) {
   try {
     if (typeof toast === 'function') toast("Opening Razorpay Secure Payment... 💳");
 
-    // Load Razorpay checkout.js if not already present
     if (typeof window.Razorpay === 'undefined') {
       await new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -6744,3 +5923,110 @@ window.triggerRazorpayUnlock = async function(amt = 1) {
     alert("Razorpay payment error: " + err.message);
   }
 };
+
+// 6. Master Event Listener Initializer
+function initAllMasterModalListeners() {
+  // Mode Toggle Buttons
+  const modeBtns = document.querySelectorAll('#openModeModal, #modeToggleBtn, #modeToggle, [data-action="toggle-mode"], .mode-toggle-btn, .shopping-mode-btn');
+  modeBtns.forEach(btn => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      window.openWelcomeModeModal();
+    };
+  });
+
+  // Welcome Modal Preference Choice Buttons
+  const wholesaleChoiceBtn = document.getElementById('chooseWholesaleBtn');
+  const retailChoiceBtn = document.getElementById('chooseRetailBtn');
+  
+  if (wholesaleChoiceBtn) {
+    wholesaleChoiceBtn.onclick = (e) => {
+      e.preventDefault();
+      window.closeWelcomeModeModal();
+      if (typeof openWholesaleFunnel === 'function') {
+        openWholesaleFunnel();
+      } else {
+        window.openWholesaleUnlockModal();
+      }
+    };
+  }
+
+  if (retailChoiceBtn) {
+    retailChoiceBtn.onclick = (e) => {
+      e.preventDefault();
+      window.closeWelcomeModeModal();
+      if (typeof switchModeSeamlessly === 'function') {
+        switchModeSeamlessly('retail');
+      }
+    };
+  }
+
+  // Google Sign-In Buttons
+  const gBtns = [
+    document.getElementById('btnGoogleSignIn'),
+    document.getElementById('royalBtnGoogleSignIn'),
+    document.getElementById('googleSignInBtn')
+  ];
+  gBtns.forEach(btn => {
+    if (btn) btn.onclick = window.handleUniversalGoogleSignIn;
+  });
+
+  // Cancel Buttons
+  const cancelBtns = [
+    document.getElementById('btnCancelLogin'),
+    document.getElementById('royalBtnCancelAuth'),
+    document.getElementById('royalBtnCancelTerms'),
+    document.getElementById('royalBtnCancelRegister'),
+    document.getElementById('btnCancelUnlock')
+  ];
+  cancelBtns.forEach(btn => {
+    if (btn) btn.onclick = function(e) {
+      if (e) e.preventDefault();
+      window.closeWholesaleLoginModal();
+      const unlockModal = document.getElementById('wholesaleUnlockModal');
+      if (unlockModal) {
+        unlockModal.style.display = 'none';
+        unlockModal.classList.remove('active');
+      }
+      document.body.style.overflow = '';
+    };
+  });
+
+  // Register Form Submit
+  const regBtn = document.getElementById('btnRegisterUser');
+  if (regBtn) {
+    regBtn.onclick = function(e) {
+      if (e) e.preventDefault();
+      const phoneInp = document.getElementById('regPhoneInput');
+      const phone = phoneInp ? phoneInp.value.trim().replace(/\D/g, '') : '';
+      if (phone && phone.length === 10) {
+        localStorage.setItem('vfs_customer_phone', phone);
+      }
+      window.openWholesaleUnlockModal();
+      if (typeof toast === 'function') toast("Registration saved! Proceeding to ₹1 Advance Payment 💳");
+    };
+  }
+
+  // Razorpay Pay Button in Unlock Modal
+  const razorpayUnlockBtn = document.getElementById('btnUnlockRazorpayPay');
+  if (razorpayUnlockBtn) {
+    razorpayUnlockBtn.onclick = function(e) {
+      if (e) e.preventDefault();
+      window.triggerRazorpayUnlock(1);
+    };
+  }
+
+  // Modal Backdrop Click Close
+  const welcomeModal = document.getElementById('welcomeModeModal');
+  if (welcomeModal) {
+    welcomeModal.onclick = function(e) {
+      if (e.target === welcomeModal) window.closeWelcomeModeModal();
+    };
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAllMasterModalListeners);
+} else {
+  initAllMasterModalListeners();
+}
