@@ -1,7 +1,7 @@
 // ============================================================
 //  VFS Jewels — Ultra-Luxury PDF Photo Slip & Dispatch Manifest Generator API
 //  Exposed at https://www.vfsjewels.store/api/photo-slip
-//  Uses PDFKit to embed high-res product photos alongside item SKUs & specifications
+//  2-Column Grid Layout with LARGE Product Photos
 // ============================================================
 
 const PDFDocument = require('pdfkit');
@@ -20,7 +20,6 @@ function fetchOrderFromFirestore(orderId) {
       path: `/v1/projects/vfs-jewellery/databases/(default)/documents/orders/${cleanId}`,
       method: 'GET'
     };
-
     const req = https.get(options, (res) => {
       let body = '';
       res.on('data', chunk => body += chunk);
@@ -52,9 +51,7 @@ function fetchOrderFromFirestore(orderId) {
             return resolve(parsedOrder);
           }
           resolve(null);
-        } catch(e) {
-          resolve(null);
-        }
+        } catch(e) { resolve(null); }
       });
     });
     req.on('error', () => resolve(null));
@@ -64,12 +61,11 @@ function fetchOrderFromFirestore(orderId) {
 function fetchImageBuffer(url) {
   let targetUrl = url;
   if (!targetUrl || typeof targetUrl !== 'string' || !targetUrl.startsWith('http')) {
-    targetUrl = "https://res.cloudinary.com/cwx4zame/image/upload/f_jpg,w_150,h_150,c_fill/v1783178917/whbmflasdurxiag7au7t.jpg";
+    targetUrl = 'https://res.cloudinary.com/cwx4zame/image/upload/f_jpg,w_400,h_400,c_fill/v1783178917/whbmflasdurxiag7au7t.jpg';
   } else if (targetUrl.includes('cloudinary.com') && targetUrl.includes('/upload/')) {
     const parts = targetUrl.split('/upload/');
-    targetUrl = parts[0] + '/upload/f_jpg,w_150,h_150,c_fill/' + parts[1];
+    targetUrl = parts[0] + '/upload/f_jpg,w_400,h_400,c_fill/' + parts[1];
   }
-
   return new Promise((resolve) => {
     const client = targetUrl.startsWith('https') ? https : http;
     const req = client.get(targetUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
@@ -80,13 +76,12 @@ function fetchImageBuffer(url) {
       res.on('data', c => chunks.push(c));
       res.on('end', () => {
         const buf = Buffer.concat(chunks);
-        if (buf.length > 100) resolve(buf);
-        else resolve(null);
+        resolve(buf.length > 100 ? buf : null);
       });
     });
     req.on('error', () => {
-      const fallbackUrl = "https://res.cloudinary.com/cwx4zame/image/upload/f_jpg,w_150,h_150,c_fill/v1783178917/whbmflasdurxiag7au7t.jpg";
-      https.get(fallbackUrl, res2 => {
+      const fallback = 'https://res.cloudinary.com/cwx4zame/image/upload/f_jpg,w_400,h_400,c_fill/v1783178917/whbmflasdurxiag7au7t.jpg';
+      https.get(fallback, res2 => {
         const chunks = [];
         res2.on('data', c => chunks.push(c));
         res2.on('end', () => resolve(Buffer.concat(chunks)));
@@ -95,130 +90,163 @@ function fetchImageBuffer(url) {
   });
 }
 
-async function createPDFKitPhotoSlip(order, items) {
+async function createPhotoSlipPDF(order, items) {
+  // Fetch all product images in parallel (large 400x400)
   const imageBuffers = await Promise.all(items.map(item => fetchImageBuffer(item.img)));
 
-  return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: 'A4', margin: 40 });
+  return new Promise((resolve) => {
+    const doc = new PDFDocument({ size: 'A4', margin: 30 });
     const buffers = [];
-
     doc.on('data', b => buffers.push(b));
     doc.on('end', () => resolve(Buffer.concat(buffers)));
 
     const GOLD = '#D4AF37';
     const DARK = '#1A1A1A';
     const GRAY = '#666666';
+    const GREEN = '#2E7D32';
+    const LIGHT_GOLD_BG = '#FAF8F0';
+    const PAGE_W = 595;
+    const MARGIN = 30;
 
-    // 1. Top Accent Bar
-    doc.rect(0, 0, 595, 10).fill(GOLD);
+    function drawHeader(pg) {
+      pg.rect(0, 0, PAGE_W, 10).fill(GOLD);
+      pg.fillColor(DARK).fontSize(20).font('Helvetica-Bold').text('VFS JEWELS', MARGIN, 18, { continued: true });
+      pg.fillColor(GOLD).text('.');
+      pg.fillColor(GRAY).fontSize(8).font('Helvetica-Bold').text('OFFICIAL DISPATCH PHOTO SLIP & FULFILLMENT MANIFEST', MARGIN, 42);
+    }
 
-    // 2. Branding Header
-    doc.fillColor(DARK).fontSize(22).font('Helvetica-Bold').text('VFS JEWELS', 40, 25, { continued: true });
-    doc.fillColor(GOLD).text('.');
-    doc.fillColor(GRAY).fontSize(8.5).font('Helvetica-Bold').text('OFFICIAL FULFILLMENT PHOTO SLIP & ITEM MANIFEST', 40, 52);
+    // ── Page 1 Header ──
+    drawHeader(doc);
 
-    // Dispatch Badge Right
-    doc.rect(360, 25, 195, 30).fillAndStroke('#E8F5E9', '#2E7D32');
-    doc.fillColor('#2E7D32').fontSize(12).font('Helvetica-Bold').text('DISPATCH PHOTO SLIP', 370, 34, { width: 175, align: 'center' });
-
+    // Badge Right
     const cleanId = (order.id || '#J7001').replace('#', '');
-    doc.fillColor(DARK).fontSize(8.5).font('Helvetica').text(`Slip ID: PS-${cleanId}`, 370, 62);
-    doc.font('Helvetica-Bold').text(`Order ID: ${order.id || '#J7001'}`, 370, 74);
-    doc.font('Helvetica').text(`Date: ${order.date || new Date().toLocaleDateString('en-IN')}`, 370, 86);
-    doc.fillColor(GOLD).font('Helvetica-Bold').text(`Tracking: ${order.trackingId || ('TRK' + cleanId + 'VFS')}`, 370, 98);
+    doc.rect(370, 18, 195, 32).fillAndStroke('#E8F5E9', GREEN);
+    doc.fillColor(GREEN).fontSize(12).font('Helvetica-Bold').text('DISPATCH PHOTO SLIP', 375, 28, { width: 185, align: 'center' });
+    doc.fillColor(DARK).fontSize(8).font('Helvetica')
+      .text(`Slip ID: PS-${cleanId}   |   Order: ${order.id || '#J7001'}`, 370, 56)
+      .text(`Date: ${order.date || new Date().toLocaleDateString('en-IN')}   |   Carrier: ${order.carrier || 'DTDC Express'}`, 370, 66);
 
-    doc.moveTo(40, 112).lineTo(555, 112).lineWidth(1.5).stroke(GOLD);
+    doc.moveTo(MARGIN, 78).lineTo(PAGE_W - MARGIN, 78).lineWidth(1.5).stroke(GOLD);
 
-    // 3. Customer Info
-    doc.fillColor(GRAY).fontSize(8.5).font('Helvetica-Bold').text('SHIP TO CUSTOMER:', 40, 122);
-    doc.fillColor(DARK).fontSize(10).font('Helvetica-Bold').text(order.name || 'Valued Customer', 40, 134);
-    doc.fillColor(DARK).fontSize(8.5).font('Helvetica').text(`Address: ${order.address || 'Chennai, Tamil Nadu'}`, 40, 146);
-    doc.fillColor('#2E7D32').fontSize(8.5).font('Helvetica-Bold').text(`Phone: +91 ${(order.phone || '').toString().replace(/^91/, '')} | Status: CONFIRMED & PAID`, 40, 158);
+    // Customer Info
+    doc.fillColor(GRAY).fontSize(8).font('Helvetica-Bold').text('SHIP TO:', MARGIN, 86);
+    doc.fillColor(DARK).fontSize(9.5).font('Helvetica-Bold').text(order.name || 'Valued Customer', MARGIN, 96);
+    doc.fillColor(DARK).fontSize(8).font('Helvetica')
+      .text(`${order.address || ''}  ${order.city || 'Chennai'} - ${order.pincode || ''}`, MARGIN, 108)
+      .text(`Phone: +91 ${(order.phone || '').toString().replace(/^91/, '')}   Status: CONFIRMED & PAID`, MARGIN, 118);
 
-    doc.moveTo(40, 172).lineTo(555, 172).lineWidth(0.8).stroke('#DDDDDD');
+    doc.moveTo(MARGIN, 130).lineTo(PAGE_W - MARGIN, 130).lineWidth(0.8).stroke('#DDDDDD');
 
-    // 4. Table Header
-    let y = 182;
-    doc.rect(40, y, 515, 20).fill('#F2F2F2');
-    doc.fillColor(DARK).fontSize(8.5).font('Helvetica-Bold');
-    doc.text('#', 48, y + 5);
-    doc.text('PRODUCT PHOTO', 70, y + 5);
-    doc.text('SKU CODE & ITEM SPECIFICATION', 170, y + 5);
-    doc.text('QTY', 400, y + 5);
-    doc.text('PRICE', 445, y + 5);
-    doc.text('TOTAL', 500, y + 5);
+    // ── 2-Column Product Grid Layout ──
+    const CARD_W = 245;
+    const CARD_H = 210;
+    const IMG_SIZE = 150;
+    const COL_GAP = 15;
+    const COL_LEFT = MARGIN;
+    const COL_RIGHT = MARGIN + CARD_W + COL_GAP;
+    let y = 138;
+    let isFirstPage = true;
 
-    y += 24;
-    let subtotal = 0;
+    for (let i = 0; i < items.length; i++) {
+      const isLeft = (i % 2 === 0);
+      const x = isLeft ? COL_LEFT : COL_RIGHT;
 
-    items.forEach((item, idx) => {
-      if (y > 740) {
-        doc.addPage();
-        doc.rect(0, 0, 595, 10).fill(GOLD);
-        y = 30;
+      // Start new row: if left col and not first item, move y down
+      if (isLeft && i > 0) {
+        y += CARD_H + 10;
       }
 
+      // New page if overflow
+      if (y + CARD_H > 790) {
+        doc.addPage();
+        drawHeader(doc);
+        y = 56;
+        isFirstPage = false;
+      }
+
+      const item = items[i];
+      const imgBuf = imageBuffers[i];
       const price = Number(item.price || 0);
       const qty = Number(item.qty || 1);
       const total = price * qty;
-      subtotal += total;
-      const sku = item.sku || `ZU1-${item.id || idx + 1}`;
+      const sku = item.sku || `ZU1-${item.id || i + 1}`;
       const name = item.name || 'Anti-Tarnish Jewellery';
-      const imgBuf = imageBuffers[idx];
 
-      // Index
-      doc.fillColor(DARK).fontSize(9).font('Helvetica').text(String(idx + 1), 48, y + 18);
+      // Card background
+      doc.rect(x, y, CARD_W, CARD_H).fillAndStroke('#FAFAFA', '#E8E8E8');
 
-      // Embedded Product Image
+      // Gold top accent bar on card
+      doc.rect(x, y, CARD_W, 4).fill(GOLD);
+
+      // Large Product Image centred in card
+      const imgX = x + (CARD_W - IMG_SIZE) / 2;
+      const imgY = y + 8;
       if (imgBuf) {
         try {
-          doc.rect(70, y, 46, 46).stroke(GOLD);
-          doc.image(imgBuf, 71, y + 1, { width: 44, height: 44 });
-        } catch (e) {
-          doc.rect(70, y, 46, 46).fillAndStroke('#F9F9F9', GOLD);
-          doc.fillColor(GRAY).fontSize(7).text('VFS JEWELS', 73, y + 18);
+          doc.image(imgBuf, imgX, imgY, { width: IMG_SIZE, height: IMG_SIZE });
+        } catch(e) {
+          doc.rect(imgX, imgY, IMG_SIZE, IMG_SIZE).fillAndStroke('#F0F0F0', GOLD);
+          doc.fillColor(GRAY).fontSize(9).text('VFS JEWELS', imgX + 30, imgY + 60);
         }
       } else {
-        doc.rect(70, y, 46, 46).fillAndStroke('#F9F9F9', GOLD);
-        doc.fillColor(GRAY).fontSize(7).text('VFS JEWELS', 73, y + 18);
+        doc.rect(imgX, imgY, IMG_SIZE, IMG_SIZE).fillAndStroke('#F0F0F0', GOLD);
+        doc.fillColor(GRAY).fontSize(9).text('VFS JEWELS', imgX + 30, imgY + 60);
       }
 
-      // SKU & Name
-      doc.fillColor(GOLD).fontSize(9).font('Helvetica-Bold').text(`SKU: ${sku}`, 170, y + 5);
-      doc.fillColor(DARK).fontSize(8.5).font('Helvetica').text(name.substring(0, 38), 170, y + 18);
-      doc.fillColor(GRAY).fontSize(7.5).font('Helvetica').text('Anti-Tarnish Premium Jewellery', 170, y + 30);
+      // Item number badge (top-left on image)
+      doc.rect(x + 4, y + 8, 20, 20).fill(GOLD);
+      doc.fillColor('#fff').fontSize(9).font('Helvetica-Bold').text(String(i + 1), x + 8, y + 13);
 
-      // Qty, Price, Total
-      doc.fillColor(DARK).fontSize(9).font('Helvetica-Bold').text(String(qty), 405, y + 18);
-      doc.fillColor(DARK).fontSize(8.5).font('Helvetica').text(fmt(price), 440, y + 18);
-      doc.fillColor(DARK).fontSize(9).font('Helvetica-Bold').text(fmt(total), 495, y + 18);
+      // Text details below image
+      const textY = imgY + IMG_SIZE + 6;
+      doc.fillColor(GOLD).fontSize(8.5).font('Helvetica-Bold').text(`SKU: ${sku}`, x + 6, textY, { width: CARD_W - 12 });
+      doc.fillColor(DARK).fontSize(8).font('Helvetica').text(name.substring(0, 34), x + 6, textY + 12, { width: CARD_W - 12 });
 
-      y += 50;
-      doc.moveTo(40, y - 2).lineTo(555, y - 2).lineWidth(0.5).stroke('#EEEEEE');
-    });
+      // Price row
+      doc.fillColor(DARK).fontSize(8).font('Helvetica')
+        .text(`Qty: ${qty}`, x + 6, textY + 24)
+        .text(`Price: ${fmt(price)}`, x + 65, textY + 24)
+        .text(`Total: `, x + 140, textY + 24, { continued: true });
+      doc.fillColor(GOLD).font('Helvetica-Bold').text(fmt(total), { continued: false });
+    }
 
-    // Summary & Quality Checklist Seal
+    // ── Summary Section ──
+    y += CARD_H + 15;
+    if (y + 80 > 800) {
+      doc.addPage();
+      drawHeader(doc);
+      y = 56;
+    }
+
+    const subtotal = items.reduce((s, item) => s + Number(item.price || 0) * Number(item.qty || 1), 0);
     const shipping = Number(order.shipping || 90);
     const grandTotal = Number(order.total || (subtotal + shipping));
 
-    y += 10;
-    if (y > 740) {
-      doc.addPage();
-      y = 40;
-    }
+    doc.moveTo(MARGIN, y).lineTo(PAGE_W - MARGIN, y).lineWidth(1).stroke(GOLD);
+    y += 8;
 
-    doc.rect(40, y, 240, 50).fillAndStroke('#FAF8F0', GOLD);
-    doc.fillColor(GOLD).fontSize(8).font('Helvetica-Bold').text('PACKING & QUALITY CHECKLIST:', 50, y + 8);
-    doc.fillColor(DARK).fontSize(7.5).font('Helvetica').text('[OK] Items Count Checked    [OK] Bubble Wrap Protected', 50, y + 22);
-    doc.text('[OK] GST Invoice Attached   [OK] Sealed Box Container', 50, y + 34);
+    // Checklist box
+    doc.rect(MARGIN, y, 235, 55).fillAndStroke(LIGHT_GOLD_BG, GOLD);
+    doc.fillColor(GOLD).fontSize(8).font('Helvetica-Bold').text('PACKING & QUALITY CHECKLIST:', MARGIN + 8, y + 8);
+    doc.fillColor(DARK).fontSize(7.5).font('Helvetica')
+      .text('[OK] Items Count Verified   [OK] Anti-Tarnish Bubble Wrap', MARGIN + 8, y + 22)
+      .text('[OK] GST Invoice Enclosed  [OK] Sealed Tamper-Proof Box', MARGIN + 8, y + 34)
+      .text('[OK] Product Photos Matched to Shipped Items', MARGIN + 8, y + 46);
 
-    doc.fillColor(DARK).fontSize(8.5).font('Helvetica').text(`Total Items: ${items.length} SKUs`, 340, y + 5);
-    doc.text(`Subtotal: ${fmt(subtotal)}`, 340, y + 18);
-    doc.text(`Shipping: ${fmt(shipping)}`, 340, y + 31);
+    // Totals
+    const rx = 320;
+    doc.fillColor(DARK).fontSize(8.5).font('Helvetica')
+      .text(`Total SKUs:`, rx, y + 8).text(String(items.length), rx + 150, y + 8)
+      .text(`Subtotal:`, rx, y + 22).text(fmt(subtotal), rx + 150, y + 22)
+      .text(`Delivery:`, rx, y + 36).text(fmt(shipping), rx + 150, y + 36);
 
-    doc.moveTo(340, y + 43).lineTo(555, y + 43).lineWidth(1).stroke(GOLD);
-    doc.fontSize(10).font('Helvetica-Bold').text('GRAND TOTAL:', 340, y + 48);
-    doc.fillColor(GOLD).fontSize(11).font('Helvetica-Bold').text(fmt(grandTotal), 460, y + 48);
+    doc.moveTo(rx, y + 49).lineTo(PAGE_W - MARGIN, y + 49).lineWidth(1).stroke(GOLD);
+    doc.fontSize(10).font('Helvetica-Bold').fillColor(DARK).text('GRAND TOTAL:', rx, y + 54);
+    doc.fontSize(11).fillColor(GOLD).text(fmt(grandTotal), rx + 155, y + 54);
+
+    // Footer
+    doc.fillColor(GRAY).fontSize(7).font('Helvetica')
+      .text('VFS Jewels | 42, Natwar Kurpa Complex, Sowcarpet, Chennai - 600001 | GSTIN: 33AAFVC8491A1ZX | vfsjewels.store', MARGIN, 815, { width: PAGE_W - 2 * MARGIN, align: 'center' });
 
     doc.end();
   });
@@ -241,18 +269,14 @@ module.exports = async (req, res) => {
     let items = orderPayload.items || [];
     if (!items || items.length === 0) {
       if (query.items) {
-        try {
-          items = typeof query.items === 'string' ? JSON.parse(query.items) : query.items;
-        } catch(e) {
-          items = [];
-        }
+        try { items = typeof query.items === 'string' ? JSON.parse(query.items) : query.items; }
+        catch(e) { items = []; }
       }
     }
 
     if (!items || items.length === 0) {
       items = [
-        { name: 'VFS Designer Kada #01 (Anti-Tarnish)', qty: 1, price: 499, sku: 'SN-K001', img: 'https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg' },
-        { name: 'VFS Designer Earring #12', qty: 2, price: 499, sku: 'SN-E012', img: 'https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg' }
+        { name: 'VFS Designer Kada #01', qty: 1, price: 499, sku: 'SN-K001', img: 'https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg' }
       ];
     }
 
@@ -271,7 +295,7 @@ module.exports = async (req, res) => {
       shipping: orderPayload.shipping || query.shipping || 90
     };
 
-    const pdfBuffer = await createPDFKitPhotoSlip(fullOrder, items);
+    const pdfBuffer = await createPhotoSlipPDF(fullOrder, items);
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="VFS_Photo_Slip_${rawId.replace('#', '')}.pdf"`);
