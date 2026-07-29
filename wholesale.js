@@ -1,3 +1,5 @@
+
+
 /* =========================================================
    VFS Jewellery — App Logic
    ========================================================= */
@@ -540,22 +542,24 @@ const fmt = (n) => '₹' + n.toLocaleString('en-IN');
 const pct = (price, mrp) => Math.round(((mrp - price) / mrp) * 100);
 const stars = (r) => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '');
 const clOpt = (url, width) => {
-  if (!url || !url.includes('cloudinary.com')) return url;
+  if (!url || typeof url !== 'string' || url.trim() === '') {
+    return 'https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_800/v1783178917/whbmflasdurxiag7au7t.jpg';
+  }
+  if (!url.includes('cloudinary.com')) return url;
   
   const parts = url.split('/upload/');
   if (parts.length === 2) {
     let cleanPath = parts[1];
     const pathSegments = cleanPath.split('/');
-    if (pathSegments.length > 1 && !/^[vV]\d+$/.test(pathSegments[0]) && (pathSegments[0].includes('_') || pathSegments[0].includes('w_') || pathSegments[0].includes('q_'))) {
+    if (pathSegments.length > 1 && (pathSegments[0].includes('_') || pathSegments[0].includes('w_') || pathSegments[0].includes('q_'))) {
       pathSegments.shift();
       cleanPath = pathSegments.join('/');
     }
-    const isBannerOrLogo = cleanPath.includes('banner') || cleanPath.includes('logo') || cleanPath.includes('icon') || cleanPath.includes('a4hfmqgh7wxjuzucvutj');
-    const cropTransform = '';
-    return `${parts[0]}/upload/f_auto,q_95,w_${width}/${cleanPath}`;
+    return `${parts[0]}/upload/f_auto,q_auto,w_${width}/${cleanPath}`;
   }
   return url;
 };
+window.clOpt = clOpt;
 
 // ── Shopping Mode State (Retail/Wholesale) ──
 let shoppingMode = localStorage.getItem('vfs_user_mode') || localStorage.getItem('vfs_shopping_mode') || 'retail';
@@ -2698,7 +2702,7 @@ function openPDP(id) {
   mainImgContainer.innerHTML = `
     <div class="pdp-images-slider" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; width:100%; height:100%; scrollbar-width:none; -ms-overflow-style:none;">
       ${images.map((imgSrc, idx) => `
-        <img src="${clOpt(imgSrc, 800)}" alt="${p.name} - Image ${idx+1}" style="flex:0 0 100%; width:100%; height:100%; object-fit:contain; scroll-snap-align:start; background:#fff;">
+        <img src="${window.clOpt(imgSrc, 800)}" onerror="this.onerror=null;this.src='https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_800/v1783178917/whbmflasdurxiag7au7t.jpg';" alt="${p.name} - Image ${idx+1}" style="flex:0 0 100%; width:100%; height:100%; object-fit:contain; scroll-snap-align:start; background:#fff;">
       `).join('')}
     </div>
   `;
