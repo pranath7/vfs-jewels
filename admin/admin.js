@@ -1163,7 +1163,7 @@ async function loadDashboard() {
     if (order.status === 'unpaid') {
       unpaidCount++;
       if (unpaidContainer) renderOrderCard(order, unpaidContainer);
-    } else if (order.status === 'paid') {
+    } else if (order.status === 'paid' || order.status === 'CONFIRMED' || order.status === 'processing' || order.paymentMethod === 'Wallet Credit' || order.paymentMethod === 'Wallet') {
       totalSales += (order.total || 0) + (order.advanceAdjusted || 0);
       paidCount++;
       if (paidContainer) renderOrderCard(order, paidContainer);

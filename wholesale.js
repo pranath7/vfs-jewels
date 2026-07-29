@@ -2252,7 +2252,7 @@ async function finalizeOrderAndProceed(paymentMethod, transactionId = '') {
   if (!activeCheckoutOrder) return;
   
   // Set payment details on order
-  activeCheckoutOrder.status = paymentMethod === 'Online' ? 'paid' : 'unpaid';
+  activeCheckoutOrder.status = (paymentMethod === 'Online' || paymentMethod === 'Wallet Credit' || paymentMethod === 'Wallet') ? 'paid' : 'unpaid';
   if (transactionId) {
     activeCheckoutOrder.razorpayPaymentId = transactionId;
   }
