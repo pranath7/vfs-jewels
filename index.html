@@ -1079,7 +1079,7 @@
       
       <div style="display:flex;gap:12px;">
         <button class="btn-primary" id="btnCancelTerms" onclick="(function(){var m=document.getElementById('wholesaleTermsModal');if(m)m.classList.remove('active');window.openWelcomeModeModal&&window.openWelcomeModeModal();})()" style="flex:1;font-size:1.3rem;padding:10px;background:#ccc;color:#333;border:none;cursor:pointer;">Go Back</button>
-        <button class="btn-primary" id="btnAcceptTerms" onclick="(function(){var cb=document.getElementById('agreeWholesaleTerms');if(!cb||!cb.checked){alert('Please check the box to agree to the Terms & Conditions first.');return;}var m=document.getElementById('wholesaleTermsModal');if(m)m.classList.remove('active');window._showWholesalePhoneEntry&&window._showWholesalePhoneEntry();})()" style="flex:2;font-size:1.3rem;padding:10px;background:#121212;color:#D4AF37;border:none;cursor:pointer;">Accept &amp; Proceed</button>
+        <button class="btn-primary" id="btnAcceptTerms" onclick="(function(){var cb=document.getElementById('agreeWholesaleTerms');if(!cb||!cb.checked){alert('Please tick the checkbox to agree to the Terms & Conditions first.');return;}var m=document.getElementById('wholesaleTermsModal');if(m)m.classList.remove('active');window.openWholesaleLoginModal&&window.openWholesaleLoginModal();})()" style="flex:2;font-size:1.3rem;padding:10px;background:#121212;color:#D4AF37;border:none;cursor:pointer;">Accept &amp; Proceed</button>
       </div>
     </div>
   </div>
@@ -1087,15 +1087,25 @@
   <!-- WHOLESALE LOGIN MODAL -->
   <div class="modal-bg" id="wholesaleLoginModal">
     <div class="pin-modal" style="max-width:450px;padding:30px;">
-      <h3 style="font-size:2.2rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;text-align:center;color:#121212;">Wholesale Registration 📋</h3>
-      <p style="font-size:1.3rem;color:#666;margin-bottom:20px;text-align:center;">Enter your details to proceed to ₹1 portal fee payment.</p>
-      
-      <div id="loginStepPhone" style="display:none;">
-        <!-- Hidden — phone entry handled in loginStepRegister directly -->
+      <h3 style="font-size:2.2rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;text-align:center;color:#121212;">Wholesale Login 🔑</h3>
+      <p style="font-size:1.3rem;color:#666;margin-bottom:20px;text-align:center;">Sign in with Google or enter your mobile number.</p>
+
+      <!-- Step 1: Google Sign-In -->
+      <div id="loginStepPhone" style="display:block;">
+        <button class="btn-primary" id="btnGoogleSignIn" onclick="window.handleUniversalGoogleSignIn()" style="width:100%;font-size:1.3rem;padding:14px;background:#fff;color:#333;border:1px solid #ccc;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;border-radius:6px;margin-bottom:12px;">
+          <svg width="20" height="20" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7l2.86 2.22c1.67-1.54 2.63-3.8 2.63-6.55z" fill="#4285F4"/><path d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.86-2.22C11.3 14.13 10.22 14.4 9 14.4c-2.34 0-4.33-1.57-5.03-3.69L1.03 13c1.5 2.98 4.58 5 8.1 5z" fill="#34A853"/><path d="M3.97 10.71A5.39 5.39 0 0 1 3.6 9c0-.59.1-1.17.28-1.71L1.03 5.07A8.99 8.99 0 0 0 0 9c0 1.45.35 2.82.97 4.04l3-2.33z" fill="#FBBC05"/><path d="M9 3.6c1.32 0 2.5.45 3.44 1.35l2.58-2.59C13.47.8 11.43 0 9 0 5.48 0 2.4 2.02.9 5.07l2.94 2.28c.7-2.12 2.69-3.69 5.03-3.69z" fill="#EA4335"/></svg>
+          <span style="font-weight:700;">Continue with Google</span>
+        </button>
+        <div style="text-align:center;color:#aaa;font-size:1.1rem;margin-bottom:12px;">— or enter mobile number directly —</div>
+        <div style="display:flex;gap:8px;">
+          <input type="tel" id="quickPhoneInput" placeholder="10-digit mobile number" maxlength="10" style="flex:1;padding:10px;font-size:1.2rem;border:1px solid #ccc;border-radius:4px;">
+          <button onclick="(function(){var p=document.getElementById('quickPhoneInput').value.replace(/\D/g,'');if(p.length!==10){alert('Enter valid 10-digit number');return;}localStorage.setItem('vfs_customer_phone',p);var s1=document.getElementById('loginStepPhone');var s2=document.getElementById('loginStepRegister');if(s1)s1.style.display='none';if(s2)s2.style.display='block';})()" style="padding:10px 14px;background:#D4AF37;color:#121212;border:none;border-radius:4px;font-weight:700;font-size:1.2rem;cursor:pointer;">→</button>
+        </div>
       </div>
 
-      <div id="loginStepRegister" style="display:block;">
-        <h4 style="font-size:1.4rem;font-weight:700;color:#121212;margin-bottom:12px;border-bottom:1px solid #eee;padding-bottom:6px;">Complete Registration</h4>
+      <!-- Step 2: Registration Form (shown after Google auth or phone entry) -->
+      <div id="loginStepRegister" style="display:none;">
+        <h4 style="font-size:1.4rem;font-weight:700;color:#121212;margin-bottom:12px;border-bottom:1px solid #eee;padding-bottom:6px;">Business Details</h4>
         <div style="margin-bottom:10px;">
           <label style="display:block;font-size:1.1rem;font-weight:700;margin-bottom:4px;color:#121212;">Contact Person Name</label>
           <input type="text" id="regNameInput" placeholder="Enter your full name" style="width:100%;padding:8px;font-size:1.2rem;border:1px solid #ccc;border-radius:4px;">
@@ -1112,10 +1122,10 @@
           <label style="display:block;font-size:1.1rem;font-weight:700;margin-bottom:4px;color:#121212;">Full Shipping Address</label>
           <textarea id="regAddressInput" placeholder="Enter detailed address for shipping" rows="2" style="width:100%;padding:8px;font-size:1.2rem;border:1px solid #ccc;border-radius:4px;resize:none;"></textarea>
         </div>
-        <button class="btn-primary" id="btnRegisterUser" style="width:100%;font-size:1.3rem;padding:10px;background:#D4AF37;color:#121212;border:none;">Complete Registration</button>
+        <button class="btn-primary" id="btnRegisterUser" style="width:100%;font-size:1.3rem;padding:12px;background:#D4AF37;color:#121212;border:none;cursor:pointer;border-radius:6px;font-weight:700;">Proceed to ₹1 Payment →</button>
       </div>
-      
-      <button class="btn-primary" id="btnCancelLogin" onclick="window.closeWholesaleLoginModal()" style="width:100%;margin-top:12px;font-size:1.2rem;padding:8px;background:#eee;color:#333;border:none;">Cancel</button>
+
+      <button class="btn-primary" id="btnCancelLogin" onclick="window.closeWholesaleLoginModal()" style="width:100%;margin-top:12px;font-size:1.2rem;padding:8px;background:#eee;color:#333;border:none;cursor:pointer;">Cancel</button>
     </div>
   </div>
 

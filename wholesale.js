@@ -5956,36 +5956,43 @@ window.completeWholesaleUnlock = function() {
 
 // 6. Google Sign In Handler
 window.handleUniversalGoogleSignIn = async function() {
+  const btnGSign = document.getElementById('btnGoogleSignIn');
+  if (btnGSign) { btnGSign.disabled = true; btnGSign.querySelector('span') && (btnGSign.querySelector('span').textContent = 'Signing in...'); }
   try {
     if (window.VFS_CLOUD_ACTIVE && window.firebase && firebase.auth) {
       const provider = new firebase.auth.GoogleAuthProvider();
       const result = await firebase.auth().signInWithPopup(provider);
       const user = result.user;
-      
       const userPhone = user.phoneNumber ? user.phoneNumber.replace(/\D/g, '').replace(/^91/, '') : '';
-      const userName = user.displayName || 'Reseller Member';
-      
-      if (userPhone && userPhone.length === 10) {
-        localStorage.setItem('vfs_customer_phone', userPhone);
-      }
-      if (user.email) {
-        localStorage.setItem('vfs_customer_email', user.email);
-      }
-      
-      window.openWholesaleUnlockModal();
-      if (typeof toast === 'function') toast(`Signed in as ${userName}! Proceeding to ₹1 Advance Payment 💳`);
+      const userName = user.displayName || '';
+      const userEmail = user.email || '';
+      if (userPhone && userPhone.length === 10) localStorage.setItem('vfs_customer_phone', userPhone);
+      if (userEmail) localStorage.setItem('vfs_customer_email', userEmail);
+      if (userName) localStorage.setItem('vfs_customer_name', userName);
+      // Pre-fill registration form with Google data
+      const nameInp = document.getElementById('regNameInput');
+      const phoneInp = document.getElementById('regPhoneInput');
+      if (nameInp && userName) nameInp.value = userName;
+      if (phoneInp && userPhone) phoneInp.value = userPhone;
+      // Show registration step (business details)
+      const s1 = document.getElementById('loginStepPhone');
+      const s2 = document.getElementById('loginStepRegister');
+      if (s1) s1.style.display = 'none';
+      if (s2) s2.style.display = 'block';
+      if (typeof toast === 'function') toast('Signed in as ' + userName + '! Please fill business details.');
     } else {
-      throw new Error("Firebase auth unavailable, fallback to mobile sign in");
+      throw new Error('Firebase unavailable');
     }
   } catch(err) {
-    console.warn("Google Auth popup notice:", err);
-    const phonePrompt = prompt("Enter your 10-digit mobile number to sign in & pay ₹1 advance:");
-    if (phonePrompt && phonePrompt.trim().replace(/\D/g, '').length === 10) {
-      const cleanPhone = phonePrompt.trim().replace(/\D/g, '');
-      localStorage.setItem('vfs_customer_phone', cleanPhone);
-      window.openWholesaleUnlockModal();
-      if (typeof toast === 'function') toast("Signed in! Proceeding to ₹1 Advance Payment 💳");
-    }
+    console.warn('Google Auth notice:', err);
+    // On failure: show registration form directly (no ugly prompt)
+    const s1 = document.getElementById('loginStepPhone');
+    const s2 = document.getElementById('loginStepRegister');
+    if (s1) s1.style.display = 'none';
+    if (s2) s2.style.display = 'block';
+    if (typeof toast === 'function') toast('Please enter your details to continue.');
+  } finally {
+    if (btnGSign) { btnGSign.disabled = false; if (btnGSign.querySelector('span')) btnGSign.querySelector('span').textContent = 'Continue with Google'; }
   }
 };
 
@@ -6219,17 +6226,14 @@ function initAllMasterModalListeners() {
     };
   }
 
-  // F. Sign-In Buttons — Skip Google auth, use phone+payment directly
+  // F. Sign-In Buttons — wire to Google sign-in handler
   const gBtns = [
     document.getElementById('btnGoogleSignIn'),
     document.getElementById('royalBtnGoogleSignIn'),
     document.getElementById('googleSignInBtn')
   ];
   gBtns.forEach(btn => {
-    if (btn) btn.onclick = function(e) {
-      e.preventDefault();
-      window._showWholesalePhoneEntry();
-    };
+    if (btn) btn.onclick = window.handleUniversalGoogleSignIn;
   });
 
   // G. Cancel Buttons
