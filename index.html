@@ -150,7 +150,7 @@
         <nav class="header-nav">
           <ul class="header-nav-list">
             <li class="header-nav-item">
-              <button>Categories <svg class="caret" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <button aria-label="Categories Dropdown">Categories <svg class="caret" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
               <div class="mega-menu">
                 <div class="mega-heading">Shop Categories</div>
                 <a href="#" data-filter="kadas">Kadas Collection</a>
@@ -170,14 +170,14 @@
             <li class="header-nav-item"><a href="#products" data-filter="offer_stock" class="offer-stock-nav-link">🔥 Offer Stock</a></li>
           </ul>
         </nav>
-        <button class="mobile-menu-toggle" id="openMobileNav" aria-label="Menu">
+        <button class="mobile-menu-toggle" id="openMobileNav" aria-label="Open Navigation Menu">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="3" y1="12" x2="21" y2="12"/>
             <line x1="3" y1="6" x2="21" y2="6"/>
             <line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
         </button>
-        <div class="header-logo"><a href="#"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_160/v1783183759/el5a6iatxalzqaqr50dp.png" alt="VFS Jewels" class="logo-img"></a></div>
+        <div class="header-logo"><a href="#"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_160/v1783183759/el5a6iatxalzqaqr50dp.png" alt="VFS Jewels" class="logo-img" width="160" height="52"></a></div>
         <div class="header-icons">
           <!-- Theme Toggle Switch on Right Side -->
           <button id="themeToggleBtn" onclick="window.toggleTheme()" class="icon-btn theme-toggle-btn" aria-label="Toggle Theme" title="Toggle Dark/Light Mode" style="font-size:1.25rem; border:1.5px solid #D4AF37 !important; width:36px; height:36px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:rgba(212,175,55,0.1); cursor:pointer; flex-shrink:0;">
@@ -194,6 +194,8 @@
       </div>
     </div>
   </header>
+
+  <main id="main-content">
 
     <!-- CATEGORY PAGE VIEW (HIDDEN BY DEFAULT) -->
   <div id="categoryPageView" style="display:none; padding-bottom: 50px;">
@@ -248,7 +250,7 @@
   <section class="hero-section">
     <div class="hero-slider" id="heroSlider">
       <div class="hero-slide active">
-        <img src="assets/hero-kandy-banner.png" alt="VFS Jewels Anti-Tarnish Kandy 316L">
+        <img src="assets/hero-kandy-banner.png" alt="VFS Jewels Anti-Tarnish Kandy 316L" width="1200" height="600" fetchpriority="high">
         <div class="hero-overlay"><div class="hero-text">
           <span class="tag">Kandy 316L Stainless Steel</span>
           <h2>Timeless Beauty. Everyday Shine.</h2>
@@ -257,7 +259,7 @@
         </div></div>
       </div>
       <div class="hero-slide">
-        <img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1783178917/whbmflasdurxiag7au7t.jpg" alt="VFS Kadas Collection">
+        <img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1783178917/whbmflasdurxiag7au7t.jpg" alt="VFS Kadas Collection" width="1200" height="600" loading="lazy" decoding="async">
         <div class="hero-overlay"><div class="hero-text">
           <span class="tag">Anti-Tarnish Fine Luxury</span>
           <h2>Kadas Collection — Premium Artistry</h2>
@@ -266,7 +268,7 @@
         </div></div>
       </div>
       <div class="hero-slide">
-        <img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1783178938/vza7byllycs7nmz8bwdq.jpg" alt="VFS Chains Collection">
+        <img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1783178938/vza7byllycs7nmz8bwdq.jpg" alt="VFS Chains Collection" width="1200" height="600" loading="lazy" decoding="async">
         <div class="hero-overlay"><div class="hero-text">
           <span class="tag">Classic Elegance</span>
           <h2>Chains Collection — Timeless Style</h2>
@@ -304,13 +306,13 @@
   <section class="categories-section" id="categories">
     <div class="section-head"><h2>Shop by Category</h2><p>Discover our Anti-Tarnish Fine collections</p><div class="line"></div></div>
     <div class="cat-scroll" id="catScroll">
-      <div class="cat-item" data-cat="bracelets"><div class="cat-circle"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_100/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg" alt="Bracelets"></div><span class="cat-label">Bracelets</span></div>
-      <div class="cat-item" data-cat="necklaces"><div class="cat-circle"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_100/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg" alt="Necklaces"></div><span class="cat-label">Necklaces</span></div>
-      <div class="cat-item" data-cat="kadas"><div class="cat-circle"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_100/v1783178917/whbmflasdurxiag7au7t.jpg" alt="Kadas"></div><span class="cat-label">Kadas</span></div>
-      <div class="cat-item" data-cat="chains"><div class="cat-circle"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_100/v1783178938/vza7byllycs7nmz8bwdq.jpg" alt="Chains"></div><span class="cat-label">Chains</span></div>
-      <div class="cat-item" data-cat="earrings"><div class="cat-circle"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_100/v1783694425/kuk50yyh9yzosthcsxkk.png" alt="Ear Rings"></div><span class="cat-label">Ear Rings</span></div>
+      <div class="cat-item" data-cat="bracelets"><div class="cat-circle"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_100/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg" alt="Bracelets" width="100" height="100" loading="lazy" decoding="async"></div><span class="cat-label">Bracelets</span></div>
+      <div class="cat-item" data-cat="necklaces"><div class="cat-circle"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_100/v1784987572/necklaces/qxlkhys33w008whmeebo.jpg" alt="Necklaces" width="100" height="100" loading="lazy" decoding="async"></div><span class="cat-label">Necklaces</span></div>
+      <div class="cat-item" data-cat="kadas"><div class="cat-circle"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_100/v1783178917/whbmflasdurxiag7au7t.jpg" alt="Kadas" width="100" height="100" loading="lazy" decoding="async"></div><span class="cat-label">Kadas</span></div>
+      <div class="cat-item" data-cat="chains"><div class="cat-circle"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_100/v1783178938/vza7byllycs7nmz8bwdq.jpg" alt="Chains" width="100" height="100" loading="lazy" decoding="async"></div><span class="cat-label">Chains</span></div>
+      <div class="cat-item" data-cat="earrings"><div class="cat-circle"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_100/v1783694425/kuk50yyh9yzosthcsxkk.png" alt="Ear Rings" width="100" height="100" loading="lazy" decoding="async"></div><span class="cat-label">Ear Rings</span></div>
 
-      <div class="cat-item" data-cat="all"><div class="cat-circle"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_100/v1783183758/pz9zdgce4wgovh7czmzb.webp" alt="View All"></div><span class="cat-label">View All</span></div>
+      <div class="cat-item" data-cat="all"><div class="cat-circle"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_100/v1783183758/pz9zdgce4wgovh7czmzb.webp" alt="View All" width="100" height="100" loading="lazy" decoding="async"></div><span class="cat-label">View All</span></div>
     </div>
   </section>
 
@@ -363,7 +365,7 @@
     <div class="page-width" id="categoryTracksContainer">
       <!-- Static SEO Pre-rendered Catalog (Crawled by search engines, replaced dynamically by JS) -->
       <div class="category-track-row" data-category="kadas">
-        <div class="category-banner" style="background-image: url('https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg')">
+        <div class="category-banner" style="background-image: url('https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_600/v1783178917/whbmflasdurxiag7au7t.jpg')">
           <div class="category-banner-overlay">
             <h2>Kadas Collection</h2>
             <p>Premium Anti-Tarnish Fine daily-wear gold plated Kadas.</p>
@@ -371,7 +373,7 @@
         </div>
         <div class="product-row-scroll">
           <div class="p-card">
-            <div class="p-img"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_1200/v1783178917/whbmflasdurxiag7au7t.jpg" alt="VFS Designer Kada #01" loading="lazy"></div>
+            <div class="p-img"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_400/v1783178917/whbmflasdurxiag7au7t.jpg" alt="VFS Designer Kada #01" loading="lazy" decoding="async" width="400" height="400"></div>
             <div class="p-info">
               <div class="p-meta">Premium Kada</div>
               <div class="p-name">VFS Designer Kada #01</div>
@@ -379,7 +381,7 @@
             </div>
           </div>
           <div class="p-card">
-            <div class="p-img"><img src="https://res.cloudinary.com/cwx4zame/image/upload/v1783178918/j0qhpmddqcww7jyfclpo.jpg" alt="VFS Designer Kada #02" loading="lazy"></div>
+            <div class="p-img"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_400/v1783178918/j0qhpmddqcww7jyfclpo.jpg" alt="VFS Designer Kada #02" loading="lazy" decoding="async" width="400" height="400"></div>
             <div class="p-info">
               <div class="p-meta">Premium Kada</div>
               <div class="p-name">VFS Designer Kada #02</div>
@@ -387,7 +389,7 @@
             </div>
           </div>
           <div class="p-card">
-            <div class="p-img"><img src="https://res.cloudinary.com/cwx4zame/image/upload/v1783178918/d8vmmezbtwedza9gw64b.jpg" alt="VFS Designer Kada #03" loading="lazy"></div>
+            <div class="p-img"><img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_400/v1783178918/d8vmmezbtwedza9gw64b.jpg" alt="VFS Designer Kada #03" loading="lazy" decoding="async" width="400" height="400"></div>
             <div class="p-info">
               <div class="p-meta">Premium Kada</div>
               <div class="p-name">VFS Designer Kada #03</div>
@@ -538,13 +540,14 @@
       </p>
     </div>
   </section>
+  </main>
 
   <!-- FOOTER -->
   <footer class="site-footer">
     <div class="page-width">
       <div class="footer-grid">
         <div class="footer-brand">
-          <img src="https://res.cloudinary.com/cwx4zame/image/upload/v1783183760/ze9xek1cled8puy6vfex.png" alt="VFS Jewels" class="logo-img" style="height: 52px; margin-bottom: 12px;">
+          <img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_160/v1783183760/ze9xek1cled8puy6vfex.png" alt="VFS Jewels" class="logo-img" style="height: 52px; margin-bottom: 12px;" width="160" height="52" loading="lazy" decoding="async">
           <p>Premium Anti-Tarnish Fine fashion Imitation Jewels designed to make luxury accessible. Skin-safe, nickel-free anti-tarnish gold plated Kadas and Chains.</p>
           <div class="footer-socials">
             <a href="https://instagram.com/vfsjewels" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="20" x="2" y="2" rx="5"/><circle cx="12" cy="12" r="5"/><path d="M17.5 6.5h.01"/></svg></a>
@@ -565,8 +568,8 @@
           <h3>Contact &amp; Newsletter</h3>
           <p style="margin-bottom:10px;">📧 vfsjewels@gmail.com | 📞 +91 98407 57363</p>
           <form class="nl-form" id="nlForm">
-            <input type="email" placeholder="Your email address" required>
-            <button type="submit">Join</button>
+            <input type="email" id="nlEmail" placeholder="Your email address" aria-label="Your email address" required>
+            <button type="submit" aria-label="Subscribe to newsletter">Join</button>
           </form>
         </div>
       </div>
@@ -596,8 +599,8 @@
       </div>
       
       <div class="tracking-search" style="display:flex;gap:12px;max-width:500px;margin-bottom:40px;">
-        <input type="text" id="trackInput" placeholder="Enter Order ID (e.g. #VF-1001)" style="flex-grow:1;padding:12px;font-size:1.4rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;">
-        <button id="btnTrackOrder" class="btn-primary" style="padding:12px 24px;font-size:1.3rem;">Track</button>
+        <input type="text" id="trackInput" placeholder="Enter Order ID (e.g. #VF-1001)" aria-label="Order ID" style="flex-grow:1;padding:12px;font-size:1.4rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;">
+        <button id="btnTrackOrder" class="btn-primary" aria-label="Track Order" style="padding:12px 24px;font-size:1.3rem;">Track</button>
       </div>
 
       <div id="trackingDetails" style="display:none;background:#fff;padding:30px;border-radius:var(--rounded-lg);box-shadow:var(--shadow-medium);border:1px solid #eee;">
@@ -609,7 +612,7 @@
   <!-- CHECKOUT MODAL -->
   <div class="modal-bg" id="checkoutModal">
     <div class="pin-modal checkout-modal-card">
-      <button class="modal-x" id="closeCheckout"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      <button class="modal-x" id="closeCheckout" aria-label="Close Checkout Modal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
       <h3 style="font-size:2.4rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:400;text-transform:uppercase;">Checkout &amp; Shipping</h3>
       <p style="font-size:1.3rem;color:#666;margin-bottom:24px;">Enter delivery details to proceed to direct UPI payment.</p>
       
@@ -617,11 +620,11 @@
       <div class="checkout-step active" id="coStep1">
         <form id="coForm" style="display:flex;flex-direction:column;gap:16px;">
           <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
-            <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Full Name</label>
+            <label for="coName" style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Full Name</label>
             <input type="text" id="coName" placeholder="Enter your full name" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;" required>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
-            <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">WhatsApp Phone Number</label>
+            <label for="coPhone" style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">WhatsApp Phone Number</label>
             <input type="tel" id="coPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;" required>
           </div>
           <!-- Wallet Balance Lookup Container -->
@@ -635,27 +638,27 @@
             <p style="margin:6px 0 0 28px;font-size:1.15rem;color:#666;">Apply points to get a discount on this order total.</p>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
-            <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Delivery Address</label>
+            <label for="coAddress" style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Delivery Address</label>
             <input type="text" id="coAddress" placeholder="Flat/House No, Street, Landmark" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;" required>
           </div>
           <div style="display:grid;grid-template-columns: 1fr 1fr;gap:16px;">
             <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
-              <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">City</label>
+              <label for="coCity" style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">City</label>
               <input type="text" id="coCity" placeholder="City" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;" required>
             </div>
             <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
-              <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Pincode</label>
+              <label for="coPincode" style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Pincode</label>
               <input type="text" id="coPincode" placeholder="6-digit Pin" pattern="[0-9]{6}" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;" required>
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;text-align:left;" id="coCouponContainer">
-            <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Apply Coupon Code</label>
+            <label for="coCouponSelect" style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Apply Coupon Code</label>
             <select id="coCouponSelect" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;background:#fff;">
               <option value="">No Coupon Applied</option>
             </select>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
-            <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Choose Delivery Partner</label>
+            <label for="coCarrier" style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Choose Delivery Partner</label>
             <select id="coCarrier" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;background:#fff;" required>
               <option value="DTDC" selected>DTDC (Regional Surface)</option>
               <option value="ST Courier">ST Courier (Express)</option>
@@ -664,7 +667,7 @@
             </select>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
-            <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">GST Number (Optional)</label>
+            <label for="coGST" style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">GST Number (Optional)</label>
             <input type="text" id="coGST" placeholder="15-digit GSTIN (e.g. 22AAAAA0000A1Z5)" maxLength="15" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;text-transform:uppercase;">
           </div>
           <button type="submit" class="btn-primary" style="width:100%;margin-top:10px;padding:14px;font-size:1.3rem;">Proceed to Payment</button>
