@@ -1078,8 +1078,8 @@
       </div>
       
       <div style="display:flex;gap:12px;">
-        <button class="btn-primary" id="btnCancelTerms" style="flex:1;font-size:1.3rem;padding:10px;background:#ccc;color:#333;border:none;">Go Back</button>
-        <button class="btn-primary" id="btnAcceptTerms" style="flex:2;font-size:1.3rem;padding:10px;background:#121212;color:#D4AF37;opacity:0.6;cursor:not-allowed;" disabled>Accept &amp; Proceed</button>
+        <button class="btn-primary" id="btnCancelTerms" onclick="(function(){var m=document.getElementById('wholesaleTermsModal');if(m)m.classList.remove('active');window.openWelcomeModeModal&&window.openWelcomeModeModal();})()" style="flex:1;font-size:1.3rem;padding:10px;background:#ccc;color:#333;border:none;cursor:pointer;">Go Back</button>
+        <button class="btn-primary" id="btnAcceptTerms" onclick="(function(){var cb=document.getElementById('agreeWholesaleTerms');if(!cb||!cb.checked){alert('Please check the box to agree to the Terms & Conditions first.');return;}var m=document.getElementById('wholesaleTermsModal');if(m)m.classList.remove('active');window._showWholesalePhoneEntry&&window._showWholesalePhoneEntry();})()" style="flex:2;font-size:1.3rem;padding:10px;background:#121212;color:#D4AF37;border:none;cursor:pointer;">Accept &amp; Proceed</button>
       </div>
     </div>
   </div>
