@@ -1,8 +1,9 @@
 // ============================================================
-//  VFS Jewels — WhatsApp Wholesale Welcome API (Vercel Serverless)
+//  VFS Jewels — Wholesale Registration WhatsApp Welcome API
 //  Exposed at https://www.vfsjewels.store/api/send-wholesale-welcome
-//  Sends automated WhatsApp welcome notification when a user joins Wholesale Business Club
-//  Logs all outbound notifications to Firestore 'whatsapp_logs'
+//  Sends:
+//    1. Welcome message to new wholesale registrant
+//    2. Admin alert to VFS owner (+91 9840757363)
 // ============================================================
 
 const https = require('https');
@@ -10,11 +11,16 @@ const https = require('https');
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
 const VERSION = 'v19.0';
-const PROJECT_ID = 'vfs-jewellery';
+const ADMIN_PHONE = '919840757363'; // VFS Owner number
 
-function sendWhatsAppPayload(payloadData) {
+function sendWhatsAppText(toPhone, message) {
   return new Promise((resolve, reject) => {
-    const data = JSON.stringify(payloadData);
+    const payload = JSON.stringify({
+      messaging_product: 'whatsapp',
+      to: toPhone,
+      type: 'text',
+      text: { body: message }
+    });
 
     const options = {
       hostname: 'graph.facebook.com',
@@ -23,51 +29,42 @@ function sendWhatsAppPayload(payloadData) {
       headers: {
         'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
         'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(data)
+        'Content-Length': Buffer.byteLength(payload)
       }
     };
 
     const req = https.request(options, (res) => {
       let body = '';
-      res.on('data', (chunk) => body += chunk);
+      res.on('data', chunk => body += chunk);
       res.on('end', () => {
-        try {
-          const parsed = JSON.parse(body);
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            resolve(parsed);
-          } else {
-            reject(parsed);
-          }
-        } catch (e) {
-          reject({ error: body });
-        }
+        try { resolve(JSON.parse(body)); } catch(e) { resolve({ raw: body }); }
       });
     });
-
     req.on('error', reject);
-    req.write(data);
+    req.write(payload);
     req.end();
   });
 }
 
-function logToFirestore(logData) {
+function saveWholesaleUserToFirestore(user) {
   return new Promise((resolve) => {
-    const data = JSON.stringify({
-      fields: {
-        timestamp: { integerValue: Date.now() },
-        recipient: { stringValue: logData.recipient || 'Reseller' },
-        phone: { stringValue: logData.phone || '' },
-        type: { stringValue: logData.type || 'Wholesale Welcome' },
-        orderId: { stringValue: '' },
-        status: { stringValue: logData.status || 'SENT' },
-        messageId: { stringValue: logData.messageId || '' },
-        preview: { stringValue: (logData.preview || '').substring(0, 150) }
-      }
-    });
+    const cleanPhone = (user.phone || '').replace(/\D/g, '');
+    const docId = 'WS_' + cleanPhone + '_' + Date.now();
+    const fields = {
+      name: { stringValue: user.name || '' },
+      businessName: { stringValue: user.businessName || '' },
+      phone: { stringValue: cleanPhone },
+      address: { stringValue: user.address || '' },
+      email: { stringValue: user.email || '' },
+      registeredAt: { integerValue: Date.now() },
+      status: { stringValue: 'REGISTERED' },
+      paymentStatus: { stringValue: 'PENDING' }
+    };
 
+    const data = JSON.stringify({ fields });
     const options = {
       hostname: 'firestore.googleapis.com',
-      path: `/v1/projects/${PROJECT_ID}/databases/(default)/documents/whatsapp_logs`,
+      path: `/v1/projects/vfs-jewellery/databases/(default)/documents/wholesale_registrations?documentId=${docId}`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -88,75 +85,114 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
   try {
     if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
-      return res.status(500).json({ error: 'WhatsApp API credentials not configured in Vercel.' });
+      return res.status(500).json({ error: 'WhatsApp credentials not configured' });
     }
 
-    const { name = 'Valued Reseller', shopName = '', phone } = req.body || {};
+    const { name, businessName, phone, address, email } = req.body || {};
 
     if (!phone) {
-      return res.status(400).json({ error: 'Missing phone number' });
+      return res.status(400).json({ error: 'Phone number is required' });
     }
 
-    let customerPhone = phone.toString().replace(/\D/g, '');
-    if (customerPhone.length === 10) {
-      customerPhone = '91' + customerPhone;
-    }
+    let cleanPhone = phone.toString().replace(/\D/g, '');
+    if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
 
-    const welcomeMessage = 
-`👑 *VFS JEWELS — WELCOME TO THE BUSINESS CLUB!* 👑
+    const displayName = name || 'Valued Reseller';
+    const displayBiz = businessName || 'Your Business';
+    const isPaid = (req.body.paymentStatus === 'paid');
+    const paymentId = req.body.razorpayPaymentId || '';
+
+    // ── 1. Save to Firestore ──
+    await saveWholesaleUserToFirestore({ name, businessName, phone: cleanPhone, address, email });
+
+    // ── 2. Welcome / Confirmation message to registrant ──
+    const welcomeMsg = isPaid ?
+`💼 *VFS JEWELS — WHOLESALE PORTAL ACTIVATED!* 💼
 ━━━━━━━━━━━━━━━━━━━━━━━
-Hello *${name}*! 🎉
+🎉 Congratulations, *${displayName}*!
 
-Congratulations! Your **VFS Jewels Wholesale Business Club** membership is now **ACTIVATED**${shopName ? ` for *${shopName}*` : ''}.
+Your wholesale portal payment is *CONFIRMED* and your Business Club membership is now *ACTIVE*!
 
-💎 *Member Benefits Unlocked:*
-• Exclusive Wholesale Tier Pricing
-• Direct Factory Bulk Ordering
-• Priority Dispatch & Customer Support
-
-🌐 *Access Wholesale Catalog Now:*
-https://www.vfsjewels.store/wholesale.html
+✅ *Business:* ${displayBiz}
+💳 *Payment ID:* ${paymentId || 'Verified'}
+📱 *Registered Phone:* +${cleanPhone}
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-_Thank you for partnering with VFS Jewels!_
-📞 Support: +91 98407 57363`;
+🏷️ *Your Wholesale Benefits (NOW UNLOCKED):*
+• Up to 40% off retail prices
+• Direct factory wholesale rates
+• Anti-Tarnish premium collection
+• COD available for bulk orders
+• Priority dispatch from Sowcarpet
 
-    console.log(`📤 Sending Wholesale Welcome WhatsApp message to +${customerPhone}`);
-    const result = await sendWhatsAppPayload({
-      messaging_product: 'whatsapp',
-      to: customerPhone,
-      type: 'text',
-      text: { body: welcomeMessage }
-    });
+🛍️ Start shopping at wholesale prices now:
+👉 vfsjewels.store
 
-    const msgId = result.messages?.[0]?.id || '';
-    await logToFirestore({
-      recipient: name,
-      phone: customerPhone,
-      type: 'Wholesale Welcome',
-      status: 'SENT',
-      messageId: msgId,
-      preview: `Wholesale membership activated for ${name} (${shopName})`
-    });
+📞 *Dedicated Wholesale Support:*
++91 98407 57363 (Mon–Sat, 9 AM–8 PM)
+
+Welcome to the VFS Jewels Business Club! 💎
+━━━━━━━━━━━━━━━━━━━━━━━`
+:
+`💼 *VFS JEWELS — WHOLESALE PORTAL* 💼
+━━━━━━━━━━━━━━━━━━━━━━━
+Welcome, *${displayName}*! 🎉
+
+Your Wholesale Business Club registration for *${displayBiz}* has been received successfully.
+
+✅ *Next Step:* Complete the ₹1 portal fee payment to unlock exclusive reseller prices.
+
+━━━━━━━━━━━━━━━━━━━━━━━
+🏪 *VFS Jewels Wholesale Benefits:*
+• Up to 40% off retail prices
+• Direct factory wholesale rates
+• Anti-Tarnish premium collection
+• COD available for bulk orders
+• Priority dispatch from Sowcarpet
+
+📞 *Dedicated Wholesale Support:*
++91 98407 57363 (Mon–Sat, 9 AM–8 PM)
+
+🌐 vfsjewels.store
+
+Thank you for choosing VFS Jewels! 💎
+━━━━━━━━━━━━━━━━━━━━━━━`;
+
+    // ── 3. Admin alert to VFS owner ──
+    const adminMsg =
+`🔔 *${isPaid ? 'NEW WHOLESALE MEMBER PAID!' : 'NEW WHOLESALE REGISTRATION'}*
+━━━━━━━━━━━━━━━━━━━━━━━
+👤 *Name:* ${displayName}
+🏪 *Business:* ${displayBiz}
+📱 *Phone:* +${cleanPhone}
+📧 *Email:* ${email || 'Not provided'}
+📍 *Address:* ${address || 'Not provided'}
+💳 *Payment:* ${isPaid ? 'PAID ✅ | ID: ' + paymentId : 'PENDING — Awaiting ₹1'}
+🕐 *Time:* ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+━━━━━━━━━━━━━━━━━━━━━━━`;
+
+    const [welcomeResult, adminResult] = await Promise.allSettled([
+      sendWhatsAppText(cleanPhone, welcomeMsg),
+      sendWhatsAppText(ADMIN_PHONE, adminMsg)
+    ]);
+
+    const welcomeId = welcomeResult.value?.messages?.[0]?.id || null;
+    const adminId = adminResult.value?.messages?.[0]?.id || null;
 
     return res.status(200).json({
       success: true,
-      messageId: msgId,
-      message: `Wholesale Welcome WhatsApp message sent to +${customerPhone}`
+      phone: '+' + cleanPhone,
+      welcomeMessageId: welcomeId,
+      adminAlertId: adminId,
+      message: `Welcome WhatsApp sent to +${cleanPhone} and admin alerted`
     });
 
   } catch (err) {
-    console.error('❌ Error sending Wholesale Welcome WhatsApp message:', err);
-    return res.status(500).json({
-      error: 'Failed to send WhatsApp notification',
-      details: err.error?.message || err.message || JSON.stringify(err)
-    });
+    console.error('Wholesale welcome WhatsApp error:', err);
+    return res.status(500).json({ error: 'Failed to send wholesale welcome', details: err.message });
   }
 };

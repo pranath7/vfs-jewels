@@ -6044,8 +6044,58 @@ window.triggerRazorpayUnlock = async function(amt = 1) {
       description: "Wholesale Portal Access ₹1 Advance",
       image: "https://res.cloudinary.com/cwx4zame/image/upload/v1783183760/ze9xek1cled8puy6vfex.png",
       order_id: orderId || undefined,
-      handler: function (response) {
-        console.log("Razorpay Payment Success:", response);
+      handler: async function (response) {
+        console.log('Razorpay Payment Success:', response);
+
+        // Pull saved registration details
+        const pPhone = localStorage.getItem('vfs_customer_phone') || '';
+        const pName = localStorage.getItem('vfs_customer_name') || 'Wholesale Member';
+        const pBiz = localStorage.getItem('vfs_business_name') || '';
+        const pAddr = localStorage.getItem('vfs_customer_address') || '';
+        const pEmail = localStorage.getItem('vfs_customer_email') || '';
+
+        // 1. Save to Firestore wholesale_users
+        try {
+          if (window.VFS_CLOUD_ACTIVE && window.db) {
+            const uid = 'phone_' + pPhone;
+            await window.db.collection('wholesale_users').doc(uid).set({
+              name: pName,
+              businessName: pBiz,
+              phone: pPhone,
+              address: pAddr,
+              email: pEmail,
+              unlocked: true,
+              paymentStatus: 'paid',
+              razorpayPaymentId: response.razorpay_payment_id || '',
+              razorpayOrderId: response.razorpay_order_id || '',
+              registeredAt: Date.now()
+            }, { merge: true });
+            console.log('Saved to wholesale_users Firestore');
+          }
+        } catch(dbErr) {
+          console.warn('Firestore save note:', dbErr);
+        }
+
+        // 2. Also save to wholesale_registrations via API (includes WhatsApp confirmation)
+        try {
+          await fetch('https://www.vfsjewels.store/api/send-wholesale-welcome', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: pName,
+              businessName: pBiz,
+              phone: pPhone,
+              address: pAddr,
+              email: pEmail,
+              paymentStatus: 'paid',
+              razorpayPaymentId: response.razorpay_payment_id || ''
+            })
+          });
+        } catch(waErr) {
+          console.warn('WhatsApp confirmation note:', waErr);
+        }
+
+        // 3. Unlock wholesale
         window.completeWholesaleUnlock();
       },
       prefill: {
@@ -6257,24 +6307,51 @@ function initAllMasterModalListeners() {
     };
   });
 
-  // H. Register Form Submit
+  // H. Register Form Submit — save details + send WhatsApp welcome + go to payment
   const regBtn = document.getElementById('btnRegisterUser');
   if (regBtn) {
-    regBtn.onclick = function(e) {
+    regBtn.onclick = async function(e) {
       if (e) e.preventDefault();
       const nameInp = document.getElementById('regNameInput');
       const bizInp = document.getElementById('regBusinessInput');
       const phoneInp = document.getElementById('regPhoneInput');
+      const addrInp = document.getElementById('regAddressInput');
       const phone = phoneInp ? phoneInp.value.trim().replace(/\D/g, '') : '';
       if (!phone || phone.length !== 10) {
         alert('Please enter a valid 10-digit WhatsApp number.');
         return;
       }
+      const name = nameInp ? nameInp.value.trim() : '';
+      const biz = bizInp ? bizInp.value.trim() : '';
+      const addr = addrInp ? addrInp.value.trim() : '';
+      const email = localStorage.getItem('vfs_customer_email') || '';
+
+      // Save to localStorage
       localStorage.setItem('vfs_customer_phone', phone);
-      if (nameInp) localStorage.setItem('vfs_customer_name', nameInp.value.trim());
-      if (bizInp) localStorage.setItem('vfs_business_name', bizInp.value.trim());
+      localStorage.setItem('vfs_customer_name', name);
+      localStorage.setItem('vfs_business_name', biz);
+      localStorage.setItem('vfs_customer_address', addr);
+
+      // Show loading state
+      regBtn.textContent = 'Saving...';
+      regBtn.disabled = true;
+
+      // Send WhatsApp welcome immediately on registration
+      try {
+        await fetch('https://www.vfsjewels.store/api/send-wholesale-welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, businessName: biz, phone, address: addr, email })
+        });
+      } catch(err) {
+        console.warn('WhatsApp welcome send note:', err);
+      }
+
+      regBtn.textContent = 'Proceed to ₹1 Payment →';
+      regBtn.disabled = false;
+
       window.openWholesaleUnlockModal();
-      if (typeof toast === 'function') toast('Details saved! Proceeding to ₹1 Advance Payment 💳');
+      if (typeof toast === 'function') toast('✅ Details saved! Check WhatsApp for welcome message. Proceeding to ₹1 payment...');
     };
   }
 
