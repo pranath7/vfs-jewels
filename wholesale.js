@@ -2507,12 +2507,36 @@ function loadRazorpayScript() {
 }
 
 // Secure Razorpay Online Payment Flow
+// Secure Razorpay Online Payment Flow
 $('#coRazorpayBtn').addEventListener('click', async () => {
   if (!activeCheckoutOrder) return;
   
   const payBtn = $('#coRazorpayBtn');
   payBtn.disabled = true;
   const originalText = payBtn.innerHTML;
+
+  // ── Handling 100% Wallet Credit Paid Orders (Grand Total = ₹0) ──
+  if (Number(activeCheckoutOrder.total || 0) <= 0) {
+    payBtn.innerHTML = '<span style="font-size:1.1rem;">Processing Wallet Payment...</span>';
+    try {
+      const usedWallet = Number(activeCheckoutOrder.walletDiscount || 0);
+      if (usedWallet > 0 && activeCheckoutOrder.phone && window.VFS_DB && window.VFS_DB.getCustomerWalletBalance) {
+        const currentBal = await window.VFS_DB.getCustomerWalletBalance(activeCheckoutOrder.phone);
+        const remainingBal = Math.max(0, currentBal - usedWallet);
+        await window.VFS_DB.saveWalletBalance(activeCheckoutOrder.phone, remainingBal);
+      }
+      if (typeof toast === 'function') toast("Paid via Wallet Credit! 👛");
+      await finalizeOrderAndProceed('Wallet Credit', 'WAL_' + Date.now());
+      return;
+    } catch(wErr) {
+      console.error("Wallet checkout error:", wErr);
+      alert("Failed to process wallet payment: " + wErr.message);
+      payBtn.disabled = false;
+      payBtn.innerHTML = originalText;
+      return;
+    }
+  }
+
   payBtn.innerHTML = '<span style="font-size:1.1rem;">Initializing Secure Payment...</span>';
 
   try {
