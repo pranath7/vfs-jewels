@@ -47,36 +47,66 @@ function sendWhatsAppText(toPhone, message) {
 }
 
 function saveWholesaleUserToFirestore(user) {
-  return new Promise((resolve) => {
-    const cleanPhone = (user.phone || '').replace(/\D/g, '');
-    const docId = 'WS_' + cleanPhone + '_' + Date.now();
-    const fields = {
-      name: { stringValue: user.name || '' },
-      businessName: { stringValue: user.businessName || '' },
-      phone: { stringValue: cleanPhone },
-      address: { stringValue: user.address || '' },
-      email: { stringValue: user.email || '' },
-      registeredAt: { integerValue: Date.now() },
-      status: { stringValue: 'REGISTERED' },
-      paymentStatus: { stringValue: 'PENDING' }
-    };
+  const cleanPhone = (user.phone || '').replace(/\D/g, '');
+  const docId = cleanPhone; // Use phone as doc ID — matches how admin reads customers
+  const isPaid = user.paymentStatus === 'paid';
 
-    const data = JSON.stringify({ fields });
+  const fields = {
+    name:          { stringValue: user.name || '' },
+    businessName:  { stringValue: user.businessName || '' },
+    phone:         { stringValue: cleanPhone },
+    address:       { stringValue: user.address || '' },
+    email:         { stringValue: user.email || '' },
+    registeredAt:  { integerValue: Date.now() },
+    unlocked:      { booleanValue: isPaid },
+    paymentStatus: { stringValue: isPaid ? 'paid' : 'pending' },
+    advancePaid:   { doubleValue: isPaid ? 1 : 0 },
+    type:          { stringValue: 'wholesale' }
+  };
+
+  if (user.razorpayPaymentId) {
+    fields.razorpayPaymentId = { stringValue: user.razorpayPaymentId };
+  }
+
+  const data = JSON.stringify({ fields });
+
+  // Save to wholesale_users (the collection admin reads for the Customers tab)
+  const saveToWholesaleUsers = new Promise((resolve) => {
     const options = {
       hostname: 'firestore.googleapis.com',
-      path: `/v1/projects/vfs-jewellery/databases/(default)/documents/wholesale_registrations?documentId=${docId}`,
-      method: 'POST',
+      path: `/v1/projects/vfs-jewellery/databases/(default)/documents/wholesale_users/${docId}`,
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(data)
       }
     };
-
     const req = https.request(options, () => resolve());
     req.on('error', () => resolve());
     req.write(data);
     req.end();
   });
+
+  // Also log to wholesale_registrations as an audit trail
+  const logData = JSON.stringify({ fields: { ...fields, loggedAt: { integerValue: Date.now() } } });
+  const saveLog = new Promise((resolve) => {
+    const logDocId = 'REG_' + cleanPhone + '_' + Date.now();
+    const options = {
+      hostname: 'firestore.googleapis.com',
+      path: `/v1/projects/vfs-jewellery/databases/(default)/documents/wholesale_registrations?documentId=${logDocId}`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(logData)
+      }
+    };
+    const req = https.request(options, () => resolve());
+    req.on('error', () => resolve());
+    req.write(logData);
+    req.end();
+  });
+
+  return Promise.all([saveToWholesaleUsers, saveLog]);
 }
 
 module.exports = async (req, res) => {
