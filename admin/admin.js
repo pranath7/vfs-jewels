@@ -4075,7 +4075,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ===== ADMIN SLOT MANAGEMENT HANDLERS ===== */
 
-function updateSlotToggleBadge() {
+function updateSlotToggleBadge(autoSave = true) {
   const toggle = document.getElementById('adminSlotToggle');
   const badge = document.getElementById('adminSlotStatusBadge');
   if (toggle && badge) {
@@ -4086,27 +4086,30 @@ function updateSlotToggleBadge() {
       badge.textContent = 'OFF (Unavailable)';
       badge.style.background = '#e74c3c';
     }
+    if (autoSave) {
+      saveSlotSettings(true);
+    }
   }
 }
 
-async function saveSlotSettings() {
-  const enabled = document.getElementById('adminSlotToggle').checked;
-  const meetLink = document.getElementById('adminMeetLinkInput').value.trim();
+async function saveSlotSettings(silent = false) {
+  const toggleEl = document.getElementById('adminSlotToggle');
+  const meetInp = document.getElementById('adminMeetLinkInput');
+  const enabled = toggleEl ? toggleEl.checked : false;
+  const meetLink = meetInp ? meetInp.value.trim() : '';
   const todayStr = new Date().toISOString().split('T')[0];
 
   try {
     if (window.db) {
       await window.db.collection('settings').doc('live_slot_settings').set({
-        enabled,
-        meetLink,
+        enabled: enabled,
+        meetLink: meetLink,
         date: todayStr
       }, { merge: true });
-      alert('Slot settings saved successfully!');
-    } else {
-      alert('Firestore DB connection required to save slot settings.');
+      if (!silent && typeof toast === 'function') toast('✅ Slot settings saved successfully!');
     }
   } catch (err) {
-    alert('Error saving slot settings: ' + err.message);
+    console.warn('Error saving slot settings:', err);
   }
 }
 
