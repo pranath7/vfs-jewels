@@ -4704,3 +4704,22 @@ html[data-shopping-mode="wholesale"] .wholesale-club-strip {
   box-sizing: border-box !important;
   margin: auto !important;
 }
+
+/* =========================================================
+   PERFORMANCE & INSTANT LOADING ENGINE (UNDER 2 SECONDS)
+   ========================================================= */
+.p-card {
+  will-change: transform;
+  contain: content;
+}
+
+.p-card img {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+.product-row, .cat-track {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 320px;
+}
