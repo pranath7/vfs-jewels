@@ -4126,45 +4126,48 @@ async function loadSlotPanel() {
         updateSlotToggleBadge();
       }
 
-      // Load registered bookings for today
-      const snap = await window.db.collection('live_slot_bookings')
+      // Real-time listener for today's slot bookings in Admin Panel
+      if (window.adminSlotUnsub) window.adminSlotUnsub();
+      window.adminSlotUnsub = window.db.collection('live_slot_bookings')
         .where('date', '==', todayStr)
-        .get();
+        .onSnapshot(snap => {
+          const tbody = document.getElementById('slotBookingsTbody');
+          const countSpan = document.getElementById('slotCountSpan');
+          if (countSpan) countSpan.textContent = snap.docs ? snap.docs.length : 0;
 
-      const tbody = document.getElementById('slotBookingsTbody');
-      const countSpan = document.getElementById('slotCountSpan');
-      if (countSpan) countSpan.textContent = snap.docs.length;
+          if (!snap.docs || snap.empty) {
+            if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#888;">No slots booked yet today.</td></tr>';
+            return;
+          }
 
-      if (snap.empty) {
-        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#888;">No slots booked yet today.</td></tr>';
-        return;
-      }
+          let rowsHtml = '';
+          const meetUrl = document.getElementById('adminMeetLinkInput') ? document.getElementById('adminMeetLinkInput').value.trim() : '';
 
-      let rowsHtml = '';
-      const meetUrl = document.getElementById('adminMeetLinkInput').value.trim();
+          snap.docs.forEach((d, idx) => {
+            const b = d.data();
+            const cleanPhone = (b.phone || '').replace(/[^0-9]/g, '');
+            const waMsg = encodeURIComponent(`Hi ${b.name}! Here is your Google Meet link for today's 8:30 PM VFS Jewels Live Session: ${meetUrl || 'https://meet.google.com'}`);
+            const waLink = `https://wa.me/${cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone}?text=${waMsg}`;
 
-      snap.docs.forEach((d, idx) => {
-        const b = d.data();
-        const cleanPhone = (b.phone || '').replace(/[^0-9]/g, '');
-        const waMsg = encodeURIComponent(`Hi ${b.name}! Here is your Google Meet link for today's 8:30 PM VFS Jewels Live Session: ${meetUrl || 'https://meet.google.com'}`);
-        const waLink = `https://wa.me/${cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone}?text=${waMsg}`;
+            rowsHtml += `
+              <tr>
+                <td>${idx + 1}</td>
+                <td><strong>${b.name || 'Customer'}</strong></td>
+                <td>${b.phone || '-'}</td>
+                <td>${b.city || '-'}</td>
+                <td><span style="background:rgba(39,174,96,0.2); color:#27ae60; padding:4px 8px; border-radius:4px; font-weight:700; font-size:0.9rem;">Paid ₹${b.slotFee || 1}</span><br><span style="font-size:0.75rem; color:#888;">${b.paymentId || 'PAY_SLOT_CONFIRMED'}</span></td>
+                <td>
+                  <a href="${waLink}" target="_blank" class="btn-primary" style="padding:6px 12px; font-size:0.9rem; text-decoration:none; background:#25D366; border-color:#25D366; display:inline-block;">
+                    📱 Send WA Link
+                  </a>
+                </td>
+              </tr>`;
+          });
 
-        rowsHtml += `
-          <tr>
-            <td>${idx + 1}</td>
-            <td><strong>${b.name || 'Customer'}</strong></td>
-            <td>${b.phone || '-'}</td>
-            <td>${b.city || '-'}</td>
-            <td><span style="background:rgba(39,174,96,0.2); color:#27ae60; padding:4px 8px; border-radius:4px; font-weight:700; font-size:0.9rem;">Paid ₹${b.slotFee || 1}</span><br><span style="font-size:0.75rem; color:#888;">${b.paymentId || 'PAY_SLOT_CONFIRMED'}</span></td>
-            <td>
-              <a href="${waLink}" target="_blank" class="btn-primary" style="padding:6px 12px; font-size:0.9rem; text-decoration:none; background:#25D366; border-color:#25D366; display:inline-block;">
-                📱 Send WA Link
-              </a>
-            </td>
-          </tr>`;
-      });
-
-      if (tbody) tbody.innerHTML = rowsHtml;
+          if (tbody) tbody.innerHTML = rowsHtml;
+        }, err => {
+          console.warn('Real-time slot snapshot error:', err);
+        });
     }
   } catch (err) {
     console.warn('Error loading slot panel:', err);

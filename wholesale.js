@@ -6443,16 +6443,49 @@ function initLiveSlotBooking() {
     });
   };
 
-  renderSlotUI(0);
+  // 1. Initial REST API Fetch for instant count display
+  (async () => {
+    try {
+      const res = await fetch('https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/live_slot_bookings');
+      if (res.ok) {
+        const data = await res.json();
+        const docs = data.documents || [];
+        const todayDocs = docs.filter(d => d.fields && d.fields.date && d.fields.date.stringValue === todayStr);
+        renderSlotUI(todayDocs.length);
+      }
+    } catch (e) {
+      console.warn('Initial REST slot count fetch note:', e);
+    }
+  })();
 
-  // Fetch real-time count from Firestore
-  if (window.db) {
-    window.db.collection('live_slot_bookings').where('date', '==', todayStr).get()
-      .then(snap => {
-        const count = (snap && snap.docs) ? snap.docs.length : 0;
-        renderSlotUI(count);
-      })
-      .catch(e => console.warn('Fetch slot count note:', e));
+  // 2. Real-time Firestore SDK onSnapshot Listener
+  const setupRealtimeWebListener = () => {
+    if (window.db) {
+      try {
+        if (window.webSlotUnsub) window.webSlotUnsub();
+        window.webSlotUnsub = window.db.collection('live_slot_bookings')
+          .where('date', '==', todayStr)
+          .onSnapshot(snap => {
+            const count = (snap && snap.docs) ? snap.docs.length : 0;
+            renderSlotUI(count);
+          }, err => {
+            console.warn('Web real-time slot snapshot error:', err);
+          });
+      } catch (e) {
+        console.warn('Web real-time slot setup note:', e);
+      }
+    }
+  };
+
+  setupRealtimeWebListener();
+  if (!window.db) {
+    const interval = setInterval(() => {
+      if (window.db) {
+        setupRealtimeWebListener();
+        clearInterval(interval);
+      }
+    }, 1000);
+    setTimeout(() => clearInterval(interval), 10000);
   }
 }
 
