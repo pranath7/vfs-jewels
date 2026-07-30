@@ -1159,12 +1159,12 @@
     <div class="vfs-modal-content" style="max-width:480px; padding:28px; border-radius:16px; position:relative; background:var(--bg-card); border:1px solid var(--border-color); width:90%; text-align:center; margin:auto;">
       <button class="modal-x" id="closeVCModal" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:2rem; cursor:pointer; color:var(--text-muted);">&times;</button>
       <div style="text-align:center; margin-bottom:20px;">
-        <span style="background:var(--color-secondary); color:#121212; font-size:1rem; font-weight:800; padding:4px 10px; border-radius:4px; text-transform:uppercase;">📹 Live Video Session</span>
-        <h2 style="font-size:2rem; margin-top:10px; margin-bottom:6px; font-family:var(--font-heading);">Book a Slot (8:30 PM Today)</h2>
+        <span style="background:#D4AF37; color:#121212; font-size:0.95rem; font-weight:800; padding:6px 12px; border-radius:4px; text-transform:uppercase; letter-spacing:0.5px; display:inline-block;">🎥 LIVE VIDEO SESSION</span>
+        <h2 style="font-size:2rem; margin-top:10px; margin-bottom:6px; font-family:var(--font-heading); color:var(--text-primary);">Book a Slot (8:30 PM Today)</h2>
         <p style="font-size:1.2rem; color:var(--text-muted);">Personalized live video preview session with our Imitation Jewels experts</p>
       </div>
       <div class="slot-status-container" id="slotStatusContainerVc">
-        <!-- Loaded dynamically in app.js -->
+        <!-- Dynamically populated in wholesale.js -->
       </div>
     </div>
   </div>
@@ -1445,13 +1445,17 @@
     <div class="vfs-modal-content" style="max-width:480px; padding:28px; border-radius:16px; position:relative; background:var(--bg-card); border:1px solid var(--border-color);">
       <button class="modal-close-btn" id="closeSlotModalBtn" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:2rem; cursor:pointer; color:var(--text-muted);">&times;</button>
       <div style="text-align:center; margin-bottom:20px;">
-        <span style="background:var(--color-secondary); color:#121212; font-size:1rem; font-weight:800; padding:4px 10px; border-radius:4px; text-transform:uppercase;">📹 Live Video Session</span>
-        <h2 style="font-size:2rem; margin-top:10px; margin-bottom:6px; font-family:var(--font-heading);">Book a Slot (8:30 PM Today)</h2>
+        <span style="background:#D4AF37; color:#121212; font-size:0.95rem; font-weight:800; padding:6px 12px; border-radius:4px; text-transform:uppercase; letter-spacing:0.5px; display:inline-block;">🎥 LIVE VIDEO SESSION</span>
+        <h2 style="font-size:2rem; margin-top:10px; margin-bottom:6px; font-family:var(--font-heading); color:var(--text-primary);">Book a Slot (8:30 PM Today)</h2>
         <p style="font-size:1.2rem; color:var(--text-muted);">Personalized live video preview session with our Imitation Jewels experts</p>
       </div>
-      
-      <div id="slotStatusContainer">
-        <!-- Loaded dynamically in wholesale.js"https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+      <div id="slotStatusContainer" class="slot-status-container">
+        <!-- Dynamically populated in wholesale.js -->
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
     integrity="sha384-Yv5O+t3uE3hunW8uyrbpPW3iw6/5/Y7HitWJBLgqfMoA36NogMmy+8wWZMpn3HWc"
     crossorigin="anonymous" defer></script>
 
