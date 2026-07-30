@@ -6259,33 +6259,47 @@ function initLiveSlotBooking() {
   if (!containers || containers.length === 0) return;
 
   const todayStr = new Date().toISOString().split('T')[0];
+  let isSlotEnabledToday = false;
+  let currentBookedCount = 0;
 
-  const renderSlotUI = (bookedCount) => {
-    const totalSlots = 24;
-    const availableSlots = Math.max(0, totalSlots - bookedCount);
-
-    const activeFormHtml = `
-      <div style="text-align:center; margin-bottom:16px; padding:12px; background:rgba(212, 175, 55, 0.1); border-radius:8px; border:1px solid #D4AF37;">
-        <strong style="font-size:1.2rem; color:#D4AF37; display:block; text-transform:uppercase; letter-spacing:0.5px;">⚡ ${availableSlots} OF ${totalSlots} SLOTS AVAILABLE FOR TODAY'S 8:30 PM SESSION</strong>
-        <div style="font-size:1.15rem; color:var(--text-primary); font-weight:700; margin-top:6px;">💳 Slot Booking Fee: <span style="color:#D4AF37; font-size:1.3rem; font-weight:900;">₹1</span></div>
-      </div>
-      <form class="slot-booking-form-class" style="display:flex; flex-direction:column; gap:12px; text-align:left;">
-        <div>
-          <label style="display:block; font-size:1.1rem; font-weight:700; margin-bottom:4px; color:var(--text-primary);">Your Full Name</label>
-          <input type="text" class="slot-name-class" placeholder="Enter your full name" required style="width:100%; padding:10px 12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; font-size:1.1rem; font-weight:700; margin-bottom:4px; color:var(--text-primary);">WhatsApp Phone Number</label>
-          <input type="tel" class="slot-phone-class" placeholder="10-digit mobile number" maxlength="10" required style="width:100%; padding:10px 12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem; outline:none;">
-        </div>
-        <div>
-          <label style="display:block; font-size:1.1rem; font-weight:700; margin-bottom:4px; color:var(--text-primary);">City</label>
-          <input type="text" class="slot-city-class" placeholder="Enter your city" required style="width:100%; padding:10px 12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem; outline:none;">
-        </div>
-        <button type="submit" class="btn-primary" style="padding:14px; font-weight:900; text-transform:uppercase; margin-top:8px; font-size:1.3rem; border:none; cursor:pointer; background:#D4AF37; color:#121212; border-radius:8px; letter-spacing:0.5px; box-shadow:0 4px 15px rgba(212,175,55,0.35);">💳 Pay ₹1 &amp; Confirm 8:30 PM Booking →</button>
-      </form>`;
-
+  const renderSlotUI = () => {
     containers.forEach(c => {
+      if (!isSlotEnabledToday) {
+        c.innerHTML = `
+          <div style="text-align:center; padding:24px 16px; background:rgba(231, 76, 60, 0.08); border-radius:12px; border:1px solid rgba(231, 76, 60, 0.4); margin-bottom:16px;">
+            <span style="background:#e74c3c; color:#fff; font-size:0.9rem; font-weight:800; padding:6px 14px; border-radius:4px; text-transform:uppercase; letter-spacing:0.5px; display:inline-block; margin-bottom:12px;">🔒 BOOKING CURRENTLY CLOSED</span>
+            <h3 style="font-size:1.4rem; color:var(--text-primary); margin-bottom:8px; font-weight:800; font-family:var(--font-heading);">Today's 8:30 PM Session Is Closed</h3>
+            <p style="font-size:1.1rem; color:var(--text-muted); line-height:1.5; margin:0;">
+              Live Video Preview slots reset automatically at 12:00 AM midnight every day. Booking opens once enabled by our host for today's 8:30 PM session. Please check back later!
+            </p>
+          </div>`;
+        return;
+      }
+
+      const totalSlots = 24;
+      const availableSlots = Math.max(0, totalSlots - currentBookedCount);
+
+      const activeFormHtml = `
+        <div style="text-align:center; margin-bottom:16px; padding:12px; background:rgba(212, 175, 55, 0.1); border-radius:8px; border:1px solid #D4AF37;">
+          <strong style="font-size:1.2rem; color:#D4AF37; display:block; text-transform:uppercase; letter-spacing:0.5px;">⚡ ${availableSlots} OF ${totalSlots} SLOTS AVAILABLE FOR TODAY'S 8:30 PM SESSION</strong>
+          <div style="font-size:1.15rem; color:var(--text-primary); font-weight:700; margin-top:6px;">💳 Slot Booking Fee: <span style="color:#D4AF37; font-size:1.3rem; font-weight:900;">₹1</span></div>
+        </div>
+        <form class="slot-booking-form-class" style="display:flex; flex-direction:column; gap:12px; text-align:left;">
+          <div>
+            <label style="display:block; font-size:1.1rem; font-weight:700; margin-bottom:4px; color:var(--text-primary);">Your Full Name</label>
+            <input type="text" class="slot-name-class" placeholder="Enter your full name" required style="width:100%; padding:10px 12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem; outline:none;">
+          </div>
+          <div>
+            <label style="display:block; font-size:1.1rem; font-weight:700; margin-bottom:4px; color:var(--text-primary);">WhatsApp Phone Number</label>
+            <input type="tel" class="slot-phone-class" placeholder="10-digit mobile number" maxlength="10" required style="width:100%; padding:10px 12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem; outline:none;">
+          </div>
+          <div>
+            <label style="display:block; font-size:1.1rem; font-weight:700; margin-bottom:4px; color:var(--text-primary);">City</label>
+            <input type="text" class="slot-city-class" placeholder="Enter your city" required style="width:100%; padding:10px 12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem; outline:none;">
+          </div>
+          <button type="submit" class="btn-primary" style="padding:14px; font-weight:900; text-transform:uppercase; margin-top:8px; font-size:1.3rem; border:none; cursor:pointer; background:#D4AF37; color:#121212; border-radius:8px; letter-spacing:0.5px; box-shadow:0 4px 15px rgba(212,175,55,0.35);">💳 Pay ₹1 &amp; Confirm 8:30 PM Booking →</button>
+        </form>`;
+
       c.innerHTML = activeFormHtml;
       const form = c.querySelector('.slot-booking-form-class');
       if (form) {
@@ -6317,7 +6331,7 @@ function initLiveSlotBooking() {
           if (slotModalEl) { slotModalEl.style.display = 'none'; slotModalEl.classList.remove('active'); }
           document.body.style.overflow = '';
 
-          // Open Razorpay Slot Booking Payment (NOT Wholesale Unlock!)
+          // Open Razorpay Slot Booking Payment
           if (typeof window.triggerRazorpaySlotBooking === 'function') {
             window.triggerRazorpaySlotBooking({ name, phone, city });
           } else {
@@ -6328,33 +6342,57 @@ function initLiveSlotBooking() {
     });
   };
 
-  // 1. Initial REST API Fetch for instant count display
+  // 1. Initial REST API Fetch for Slot Settings & Bookings Count
   (async () => {
     try {
+      // Fetch slot settings
+      const settingsRes = await fetch('https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/settings/live_slot_settings');
+      if (settingsRes.ok) {
+        const sData = await settingsRes.json();
+        const fields = sData.fields || {};
+        const settingDate = fields.date ? fields.date.stringValue : '';
+        const enabled = fields.enabled ? fields.enabled.booleanValue : false;
+        // Enabled ONLY if stored date is today AND enabled is true
+        isSlotEnabledToday = (settingDate === todayStr) && enabled;
+      }
+
+      // Fetch bookings count
       const res = await fetch('https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/live_slot_bookings');
       if (res.ok) {
         const data = await res.json();
         const docs = data.documents || [];
         const todayDocs = docs.filter(d => d.fields && d.fields.date && d.fields.date.stringValue === todayStr);
-        renderSlotUI(todayDocs.length);
+        currentBookedCount = todayDocs.length;
       }
+      renderSlotUI();
     } catch (e) {
-      console.warn('Initial REST slot count fetch note:', e);
+      console.warn('Initial REST slot fetch note:', e);
+      renderSlotUI();
     }
   })();
 
-  // 2. Real-time Firestore SDK onSnapshot Listener
+  // 2. Real-time Firestore SDK Listeners
   const setupRealtimeWebListener = () => {
     if (window.db) {
       try {
+        // Real-time listener for Settings
+        if (window.webSlotSettingsUnsub) window.webSlotSettingsUnsub();
+        window.webSlotSettingsUnsub = window.db.collection('settings').doc('live_slot_settings')
+          .onSnapshot(doc => {
+            if (doc.exists) {
+              const data = doc.data();
+              isSlotEnabledToday = (data.date === todayStr) && !!data.enabled;
+              renderSlotUI();
+            }
+          });
+
+        // Real-time listener for Bookings
         if (window.webSlotUnsub) window.webSlotUnsub();
         window.webSlotUnsub = window.db.collection('live_slot_bookings')
           .where('date', '==', todayStr)
           .onSnapshot(snap => {
-            const count = (snap && snap.docs) ? snap.docs.length : 0;
-            renderSlotUI(count);
-          }, err => {
-            console.warn('Web real-time slot snapshot error:', err);
+            currentBookedCount = (snap && snap.docs) ? snap.docs.length : 0;
+            renderSlotUI();
           });
       } catch (e) {
         console.warn('Web real-time slot setup note:', e);

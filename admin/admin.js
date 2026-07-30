@@ -4121,7 +4121,9 @@ async function loadSlotPanel() {
         const data = doc.data();
         const toggle = document.getElementById('adminSlotToggle');
         const meetInput = document.getElementById('adminMeetLinkInput');
-        if (toggle) toggle.checked = !!data.enabled;
+        // Automatically reset to OFF if stored date is not today (passed midnight 12:00 AM)
+        const isEnabledToday = (data.date === todayStr) && !!data.enabled;
+        if (toggle) toggle.checked = isEnabledToday;
         if (meetInput) meetInput.value = data.meetLink || '';
         updateSlotToggleBadge();
       }
