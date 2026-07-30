@@ -6332,13 +6332,9 @@ function initAllMasterModalListeners() {
       localStorage.setItem('vfs_business_name', biz);
       localStorage.setItem('vfs_customer_address', addr);
 
-      // Show loading state
-      regBtn.textContent = 'Saving...';
-      regBtn.disabled = true;
-
       // Send WhatsApp welcome immediately on registration
       try {
-        await fetch('https://www.vfsjewels.store/api/send-wholesale-welcome', {
+        fetch('/api/send-wholesale-welcome', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, businessName: biz, phone, address: addr, email })
@@ -6347,11 +6343,8 @@ function initAllMasterModalListeners() {
         console.warn('WhatsApp welcome send note:', err);
       }
 
-      regBtn.textContent = 'Proceed to ₹1 Payment →';
-      regBtn.disabled = false;
-
       window.openWholesaleUnlockModal();
-      if (typeof toast === 'function') toast('✅ Details saved! Check WhatsApp for welcome message. Proceeding to ₹1 payment...');
+      if (typeof toast === 'function') toast("Registration saved! Proceeding to ₹1 Advance Payment 💳");
     };
   }
 
@@ -6361,6 +6354,14 @@ function initAllMasterModalListeners() {
     razorpayUnlockBtn.onclick = function(e) {
       if (e) e.preventDefault();
       window.triggerRazorpayUnlock(1);
+    };
+  }
+
+  // J. Modal Backdrop Click Close
+  const welcomeModal = document.getElementById('welcomeModeModal');
+  if (welcomeModal) {
+    welcomeModal.onclick = function(e) {
+      if (e.target === welcomeModal) window.closeWelcomeModeModal();
     };
   }
 
@@ -6424,35 +6425,6 @@ function initLiveSlotBooking() {
           localStorage.setItem('vfs_customer_phone', phone);
           if (name) localStorage.setItem('vfs_customer_name', name);
 
-          // Save booking to Firestore live_slot_bookings (Client SDK)
-          try {
-            if (window.db) {
-              const docId = 'SLOT_' + phone + '_' + Date.now();
-              await window.db.collection('live_slot_bookings').doc(docId).set({
-                date: todayStr,
-                name: name,
-                phone: phone,
-                city: city,
-                slotFee: 1,
-                paymentId: 'SLOT_PAID_CONFIRMED',
-                bookedAt: Date.now()
-              });
-            }
-          } catch (dbErr) {
-            console.warn('Firestore slot booking save note:', dbErr);
-          }
-
-          // Save via serverless API
-          try {
-            fetch('/api/save-slot-booking', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name, phone, city, slotFee: 1 })
-            });
-          } catch (apiErr) {
-            console.warn('API slot save note:', apiErr);
-          }
-
           // Close modal
           const vcModalEl = document.getElementById('vcModal');
           const slotModalEl = document.getElementById('slotBookingModal');
@@ -6460,8 +6432,9 @@ function initLiveSlotBooking() {
           if (slotModalEl) { slotModalEl.style.display = 'none'; slotModalEl.classList.remove('active'); }
           document.body.style.overflow = '';
 
-          if (typeof window.triggerRazorpayUnlock === 'function') {
-            window.triggerRazorpayUnlock(1);
+          // Open Razorpay Slot Booking Payment (NOT Wholesale Unlock!)
+          if (typeof window.triggerRazorpaySlotBooking === 'function') {
+            window.triggerRazorpaySlotBooking({ name, phone, city });
           } else {
             if (typeof toast === 'function') toast('🎉 8:30 PM Live Session Booked!');
           }
