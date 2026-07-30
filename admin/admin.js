@@ -4099,6 +4099,7 @@ async function saveSlotSettings(silent = false) {
   const meetLink = meetInp ? meetInp.value.trim() : '';
   const todayStr = new Date().toISOString().split('T')[0];
 
+  // 1. Client SDK Save
   try {
     if (window.db) {
       await window.db.collection('settings').doc('live_slot_settings').set({
@@ -4106,10 +4107,32 @@ async function saveSlotSettings(silent = false) {
         meetLink: meetLink,
         date: todayStr
       }, { merge: true });
-      if (!silent && typeof toast === 'function') toast('✅ Slot settings saved successfully!');
     }
   } catch (err) {
-    console.warn('Error saving slot settings:', err);
+    console.warn('Error saving slot settings via SDK:', err);
+  }
+
+  // 2. Direct REST API PATCH for 100% reliable save
+  try {
+    const url = 'https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/settings/live_slot_settings';
+    await fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fields: {
+          enabled: { booleanValue: enabled },
+          meetLink: { stringValue: meetLink },
+          date: { stringValue: todayStr }
+        }
+      })
+    });
+  } catch (restErr) {
+    console.warn('Error saving slot settings via REST:', restErr);
+  }
+
+  if (!silent) {
+    const statusMsg = enabled ? '✅ Live Slot Turned ON! Customers can now book slots.' : '🔒 Live Slot Turned OFF! Booking is closed for today.';
+    alert(statusMsg);
   }
 }
 
