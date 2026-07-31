@@ -4956,3 +4956,128 @@ body:has(#profileBG.active) .floating-order-btn {
   pointer-events: none !important;
   visibility: hidden !important;
 }
+
+/* ── Royal Lock Overlay (Wholesale Terms & Unlock Modal) ── */
+.royal-lock-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(15, 17, 24, 0.92) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  z-index: 999999 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.royal-lock-card {
+  background: #ffffff !important;
+  color: #121212 !important;
+  border-radius: 16px !important;
+  padding: 32px !important;
+  max-width: 520px !important;
+  width: 100% !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5) !important;
+  border: 1.5px solid #D4AF37 !important;
+  position: relative !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+}
+
+.royal-lock-logo {
+  font-family: var(--font-heading, serif) !important;
+  font-size: 2.2rem !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  color: #121212 !important;
+}
+
+.royal-lock-logo span {
+  color: #D4AF37 !important;
+}
+
+.royal-lock-badge {
+  display: inline-block !important;
+  background: #D4AF37 !important;
+  color: #121212 !important;
+  font-size: 0.85rem !important;
+  font-weight: 800 !important;
+  padding: 4px 14px !important;
+  border-radius: 20px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin: 6px auto 16px auto !important;
+  text-align: center !important;
+}
+
+.royal-terms-box {
+  background: #f8f9fa !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  padding: 16px !important;
+  font-size: 1.05rem !important;
+  line-height: 1.6 !important;
+  color: #333333 !important;
+  max-height: 240px !important;
+  overflow-y: auto !important;
+  margin-bottom: 16px !important;
+  text-align: left !important;
+}
+
+.royal-checkbox-wrap {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-bottom: 20px !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: #121212 !important;
+  cursor: pointer !important;
+}
+
+.royal-checkbox-wrap input[type="checkbox"] {
+  width: 20px !important;
+  height: 20px !important;
+  accent-color: #D4AF37 !important;
+  cursor: pointer !important;
+}
+
+.royal-form-group {
+  margin-bottom: 14px !important;
+  text-align: left !important;
+}
+
+.royal-form-group label {
+  display: block !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  color: #121212 !important;
+  margin-bottom: 4px !important;
+}
+
+.royal-input, .royal-textarea {
+  width: 100% !important;
+  padding: 10px 14px !important;
+  font-size: 1.15rem !important;
+  border: 1px solid #ccc !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #121212 !important;
+  box-sizing: border-box !important;
+}
+
+.royal-alert-box {
+  background: #FFFDF0 !important;
+  border: 1px dashed #D4AF37 !important;
+  padding: 14px 16px !important;
+  border-radius: 8px !important;
+  font-size: 1.1rem !important;
+  line-height: 1.5 !important;
+  color: #6d5a15 !important;
+  text-align: left !important;
+}

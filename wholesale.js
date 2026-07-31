@@ -5032,13 +5032,31 @@ function setupShoppingMode() {
   const exitToRetail = () => {
     shoppingMode = 'retail';
     saveState();
-    window.location.href = '/index.html';
+    window.location.href = 'index.html';
   };
 
-  $('#royalBtnCancelTerms').addEventListener('click', exitToRetail);
-  $('#royalBtnCancelAuth').addEventListener('click', () => showLockScreen('royalScreenTerms'));
-  $('#royalBtnCancelRegister').addEventListener('click', () => showLockScreen('royalScreenAuth'));
-  $('#royalBtnCancelUnlock').addEventListener('click', exitToRetail);
+  window.closeWholesaleLoginModal = function() {
+    const lockOverlay = $('#royalLockOverlay');
+    if (lockOverlay) lockOverlay.style.display = 'none';
+    const loginModal = $('#wholesaleLoginModal');
+    if (loginModal) loginModal.style.display = 'none';
+    const unlockModal = $('#wholesaleUnlockModal');
+    if (unlockModal) unlockModal.style.display = 'none';
+    document.body.style.overflow = '';
+    
+    if (!wholesaleUnlocked) {
+      exitToRetail();
+    }
+  };
+
+  const cancelTerms = $('#royalBtnCancelTerms');
+  if (cancelTerms) cancelTerms.addEventListener('click', exitToRetail);
+  const cancelAuth = $('#royalBtnCancelAuth');
+  if (cancelAuth) cancelAuth.addEventListener('click', () => showLockScreen('royalScreenTerms'));
+  const cancelReg = $('#royalBtnCancelRegister');
+  if (cancelReg) cancelReg.addEventListener('click', () => showLockScreen('royalScreenAuth'));
+  const cancelUnlock = $('#royalBtnCancelUnlock');
+  if (cancelUnlock) cancelUnlock.addEventListener('click', exitToRetail);
 
   // Terms and Conditions Accept
   const agreeTerms = $('#royalAgreeTerms');
