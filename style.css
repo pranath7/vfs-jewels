@@ -4752,3 +4752,78 @@ html[data-shopping-mode="wholesale"] .wholesale-club-strip {
 #walletModal[style*="display: flex"] {
   display: flex !important;
 }
+
+/* =========================================================
+   UNIVERSAL WHATSAPP BUTTON HOVER EFFECT (TURN GREEN ON HOVER)
+   ========================================================= */
+a[href*="wa.me"],
+a[href*="whatsapp"],
+.btn-wa,
+.btn-whatsapp,
+.share-whatsapp,
+.whatsapp-btn,
+.floating-guide-btn,
+.floating-order-btn,
+.floating-whatsapp-btn,
+#successWaBtn,
+.social-icon[href*="wa.me"],
+.social-link[href*="wa.me"] {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+a[href*="wa.me"]:hover,
+a[href*="whatsapp"]:hover,
+.btn-wa:hover,
+.btn-whatsapp:hover,
+.share-whatsapp:hover,
+.whatsapp-btn:hover,
+.floating-guide-btn:hover,
+.floating-order-btn:hover,
+.floating-whatsapp-btn:hover,
+#successWaBtn:hover,
+.social-icon[href*="wa.me"]:hover,
+.social-link[href*="wa.me"]:hover {
+  background-color: #25D366 !important;
+  background: #25D366 !important;
+  color: #ffffff !important;
+  border-color: #25D366 !important;
+  box-shadow: 0 8px 25px rgba(37, 211, 102, 0.45) !important;
+  transform: translateY(-3px) scale(1.05) !important;
+}
+
+a[href*="wa.me"]:hover svg,
+a[href*="whatsapp"]:hover svg,
+.btn-wa:hover svg,
+.btn-whatsapp:hover svg,
+.share-whatsapp:hover svg,
+.whatsapp-btn:hover svg,
+.floating-guide-btn:hover svg,
+.floating-order-btn:hover svg,
+.floating-whatsapp-btn:hover svg,
+#successWaBtn:hover svg,
+.social-icon[href*="wa.me"]:hover svg,
+.social-link[href*="wa.me"]:hover svg,
+a[href*="wa.me"]:hover path,
+a[href*="whatsapp"]:hover path,
+.btn-wa:hover path,
+.btn-whatsapp:hover path,
+.share-whatsapp:hover path,
+.whatsapp-btn:hover path,
+.floating-guide-btn:hover path,
+.floating-order-btn:hover path,
+.floating-whatsapp-btn:hover path,
+#successWaBtn:hover path {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+
+a[href*="wa.me"]:hover span,
+a[href*="whatsapp"]:hover span,
+.btn-wa:hover span,
+.btn-whatsapp:hover span,
+.floating-guide-btn:hover span,
+.floating-order-btn:hover span,
+.floating-whatsapp-btn:hover span {
+  color: #ffffff !important;
+}
