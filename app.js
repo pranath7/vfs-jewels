@@ -225,11 +225,16 @@ window.VFS_DB = {
   },
 
   getCustomerWalletBalance: async function(phone) {
-    if (window.VFS_CLOUD_ACTIVE) {
+    const cleanPhone = (phone || '').toString().replace(/\D/g, '').slice(-10);
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
-        const doc = await window.db.collection('wallet_credits').doc(phone).get();
+        const doc = await window.db.collection('wallet_credits').doc(cleanPhone).get();
         if (doc.exists) {
           return doc.data().balance || 0;
+        }
+        const userDoc = await window.db.collection('wholesale_users').doc(cleanPhone).get();
+        if (userDoc.exists && userDoc.data().walletBalance !== undefined) {
+          return userDoc.data().walletBalance || 0;
         }
         return 0;
       } catch(e) {
@@ -238,13 +243,18 @@ window.VFS_DB = {
     }
     const local = localStorage.getItem('vfs_customer_credits');
     let credits = local ? JSON.parse(local) : {};
-    return credits[phone] || 0;
+    return credits[cleanPhone] || credits[phone] || 0;
   },
 
   saveWalletBalance: async function(phone, balance) {
-    if (window.VFS_CLOUD_ACTIVE) {
+    const cleanPhone = (phone || '').toString().replace(/\D/g, '').slice(-10);
+    if (!cleanPhone || cleanPhone.length !== 10) return;
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
-        await window.db.collection('wallet_credits').doc(phone).set({ balance: balance });
+        await window.db.collection('wallet_credits').doc(cleanPhone).set({ phone: cleanPhone, balance: balance, updatedAt: Date.now() }, { merge: true });
+        await window.db.collection('wholesale_users').doc(cleanPhone).set({ walletBalance: balance }, { merge: true });
+        await window.db.collection('wholesale_users').doc('phone_' + cleanPhone).set({ walletBalance: balance }, { merge: true });
+        await window.db.collection('wholesale_users').doc('91' + cleanPhone).set({ walletBalance: balance }, { merge: true });
         return;
       } catch(e) {
         console.error("Firestore write error:", e);
@@ -252,7 +262,7 @@ window.VFS_DB = {
     }
     const local = localStorage.getItem('vfs_customer_credits');
     let credits = local ? JSON.parse(local) : {};
-    credits[phone] = balance;
+    credits[cleanPhone] = balance;
     localStorage.setItem('vfs_customer_credits', JSON.stringify(credits));
   },
 

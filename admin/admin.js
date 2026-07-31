@@ -231,14 +231,18 @@ window.uploadToCloudinary = async function(file) {
 window.VFS_DB = {
   // ── Customer Wallet & Store Credit ──
   getCustomerWalletBalance: async function(phone) {
-    const cleanPhone = String(phone || '').replace(/\D/g, '');
-    if (!cleanPhone) return 0;
+    const cleanPhone = String(phone || '').replace(/\D/g, '').slice(-10);
+    if (!cleanPhone || cleanPhone.length !== 10) return 0;
     if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
         const doc = await window.db.collection('wallet_credits').doc(cleanPhone).get();
         if (doc.exists) {
           const val = doc.data().balance;
           return val !== undefined ? Number(val) : 0;
+        }
+        const userDoc = await window.db.collection('wholesale_users').doc(cleanPhone).get();
+        if (userDoc.exists && userDoc.data().walletBalance !== undefined) {
+          return Number(userDoc.data().walletBalance) || 0;
         }
       } catch(e) {
         console.error("Firestore wallet read error:", e);
@@ -250,15 +254,19 @@ window.VFS_DB = {
   },
 
   saveWalletBalance: async function(phone, balance) {
-    const cleanPhone = String(phone || '').replace(/\D/g, '');
-    if (!cleanPhone) return;
+    const cleanPhone = String(phone || '').replace(/\D/g, '').slice(-10);
+    if (!cleanPhone || cleanPhone.length !== 10) return;
     const numBal = Math.max(0, Number(balance) || 0);
     if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
         await window.db.collection('wallet_credits').doc(cleanPhone).set({
+          phone: cleanPhone,
           balance: numBal,
           updatedAt: Date.now()
-        });
+        }, { merge: true });
+        await window.db.collection('wholesale_users').doc(cleanPhone).set({ walletBalance: numBal }, { merge: true });
+        await window.db.collection('wholesale_users').doc('phone_' + cleanPhone).set({ walletBalance: numBal }, { merge: true });
+        await window.db.collection('wholesale_users').doc('91' + cleanPhone).set({ walletBalance: numBal }, { merge: true });
         return;
       } catch(e) {
         console.error("Firestore wallet write error:", e);
@@ -4331,14 +4339,35 @@ document.addEventListener('DOMContentLoaded', () => {
 window.loadAdminWallets = async function() {
   const tbody = document.getElementById('walletTableBody');
   if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#aaa;">Fetching wallet accounts from Cloud...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#aaa;">Fetching wallet accounts from Cloud...</td></tr>';
   
   try {
     const creditsMap = await window.VFS_DB.getWalletCredits();
-    const phones = Object.keys(creditsMap);
-    
+    const users = await window.VFS_DB.getCustomers();
+
+    const merged = {};
+    if (creditsMap) {
+      Object.keys(creditsMap).forEach(rawP => {
+        const cleanP = rawP.replace(/\D/g, '').slice(-10);
+        if (cleanP && cleanP.length === 10) merged[cleanP] = Math.max(merged[cleanP] || 0, Number(creditsMap[rawP]) || 0);
+      });
+    }
+
+    if (users && Array.isArray(users)) {
+      users.forEach(u => {
+        const cleanP = (u.phone || u.id || '').replace(/\D/g, '').slice(-10);
+        if (cleanP && cleanP.length === 10) {
+          const bal = Number(u.walletBalance !== undefined ? u.walletBalance : (u.advancePaid || 0));
+          if (bal > 0) {
+            merged[cleanP] = Math.max(merged[cleanP] || 0, bal);
+          }
+        }
+      });
+    }
+
+    const phones = Object.keys(merged);
     let grandTotal = 0;
-    phones.forEach(p => grandTotal += (creditsMap[p] || 0));
+    phones.forEach(p => grandTotal += merged[p]);
 
     const countEl = document.getElementById('adminKpiWalletCount');
     const totalEl = document.getElementById('adminKpiWalletTotal');
@@ -4346,26 +4375,27 @@ window.loadAdminWallets = async function() {
     if (totalEl) totalEl.textContent = typeof fmt === 'function' ? fmt(grandTotal) : '₹' + grandTotal.toFixed(2);
     
     if (phones.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#aaa;">No wallet accounts found in Cloud.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#aaa;">No wallet accounts found in Cloud.</td></tr>';
       return;
     }
     
     tbody.innerHTML = phones.map((phone, idx) => {
-      const bal = creditsMap[phone] || 0;
+      const bal = merged[phone] || 0;
       return `
         <tr class="wallet-row" data-phone="${phone}">
           <td>${idx + 1}</td>
           <td><strong>+91 ${phone}</strong></td>
-          <td><span style="font-weight:900; color:#D4AF37; font-size:1.35rem;">${typeof fmt === 'function' ? fmt(bal) : '₹' + bal.toFixed(2)}</span></td>
+          <td><span style="font-weight:900; color:#27ae60; font-size:1.35rem;">₹${bal}</span></td>
+          <td>Wholesale Advance & Store Credit</td>
           <td>
-            <button class="btn-card-primary" onclick="quickCreditWalletPrompt('${phone}')" style="padding:6px 14px; font-size:1.1rem; background:#D4AF37; color:#121212; border:none; border-radius:4px; font-weight:700; cursor:pointer;">+ Credit Refund</button>
+            <button class="btn-card-primary" onclick="quickCreditWalletPrompt('${phone}')" style="padding:6px 14px; font-size:1.1rem; background:#D4AF37; color:#121212; border:none; border-radius:4px; font-weight:700; cursor:pointer;">+ Add Credit</button>
           </td>
         </tr>
       `;
     }).join('');
   } catch(e) {
     console.error("Error loading wallets:", e);
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#ff3b30;">Error loading wallets from Cloud.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#ff3b30;">Error loading wallets from Cloud.</td></tr>';
   }
 };
 

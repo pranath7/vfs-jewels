@@ -144,18 +144,25 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
   try {
-    if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
-      return res.status(500).json({ error: 'WhatsApp credentials not configured' });
-    }
-
     const { name, businessName, phone, address, email } = req.body || {};
 
     if (!phone) {
       return res.status(400).json({ error: 'Phone number is required' });
     }
 
-    let cleanPhone = phone.toString().replace(/\D/g, '');
-    if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
+    let cleanPhone = phone.toString().replace(/\D/g, '').slice(-10);
+
+    // ── 1. ALWAYS Save to Firestore first ──
+    try {
+      await saveWholesaleUserToFirestore(req.body || {});
+      console.log('✅ Server-side Firestore save completed for:', cleanPhone);
+    } catch(fsErr) {
+      console.error('Server-side Firestore save error:', fsErr);
+    }
+
+    if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
+      return res.status(200).json({ success: true, firestoreSynced: true, note: 'WhatsApp credentials not set' });
+    }
 
     const displayName = name || 'Valued Reseller';
     const displayBiz = businessName || 'Your Business';
