@@ -12,6 +12,6 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Pass-through straight to network
-  e.respondWith(fetch(e.request));
+  // Always pass through directly to network without caching
+  return;
 });
