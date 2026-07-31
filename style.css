@@ -2644,6 +2644,21 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
     color: #fff;
   }
   
+  .btn-insta {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+  }
+  
+  .btn-insta:hover {
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 8px 25px rgba(220, 39, 67, 0.45) !important;
+  }
+  
+  .btn-insta svg {
+    stroke: #ffffff !important;
+  }
+  
   .btn-vc {
     background: #121212;
     color: var(--color-secondary);
