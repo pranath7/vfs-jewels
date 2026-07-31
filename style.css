@@ -4723,3 +4723,32 @@ html[data-shopping-mode="wholesale"] .wholesale-club-strip {
   content-visibility: auto;
   contain-intrinsic-size: 1px 320px;
 }
+
+/* =========================================================
+   FIX FOR WALLET & POPUP MODALS (HIGH Z-INDEX & FIXED POS)
+   ========================================================= */
+.modal-backdrop,
+#walletModal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  z-index: 9999999 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  padding: 16px !important;
+}
+
+.modal-backdrop.active,
+.modal-backdrop[style*="display: flex"],
+#walletModal.active,
+#walletModal[style*="display: flex"] {
+  display: flex !important;
+}

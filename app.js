@@ -6104,11 +6104,11 @@ function initAllMasterModalListeners() {
   const walletBtns = document.querySelectorAll('#openWalletModal, #walletBtn, #headerWalletBtn, .wallet-btn');
   walletBtns.forEach(btn => {
     btn.onclick = (e) => {
-      e.preventDefault();
-      const loggedOutView = document.getElementById('walletViewLoggedOut');
-      const loggedInView = document.getElementById('walletViewLoggedIn');
-      if (loggedOutView) loggedOutView.style.display = 'block';
-      if (loggedInView) loggedInView.style.display = 'none';
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      window.openWalletModalFunc();
     };
   });
 

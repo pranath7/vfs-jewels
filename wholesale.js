@@ -6222,7 +6222,10 @@ function initAllMasterModalListeners() {
   const walletBtns = document.querySelectorAll('#openWalletModal, #walletBtn, #headerWalletBtn, .wallet-btn');
   walletBtns.forEach(btn => {
     btn.onclick = (e) => {
-      e.preventDefault();
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       window.openWalletModalFunc();
     };
   });
