@@ -1795,10 +1795,14 @@ async function renderTestimonials() {
 // ── Update Badge Counts ──
 function updateCounts() {
   const cCount = cart.reduce((s, c) => s + c.qty, 0);
-  $('#cartCount').textContent = cCount;
-  $('#cartCT').textContent = cCount;
-  $('#wlCount').textContent = wishlist.length;
-  $('#wlCT').textContent = wishlist.length;
+  const cartCountEl = $('#cartCount');
+  if (cartCountEl) cartCountEl.textContent = cCount;
+  const cartCTEl = $('#cartCT');
+  if (cartCTEl) cartCTEl.textContent = cCount;
+  const wlCountEl = $('#wlCount');
+  if (wlCountEl) wlCountEl.textContent = wishlist.length;
+  const wlCTEl = $('#wlCT');
+  if (wlCTEl) wlCTEl.textContent = wishlist.length;
 }
 
 // ── Drawer Open/Close & Profile Hub ──

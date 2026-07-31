@@ -831,11 +831,27 @@ function getCurrentProductPrice(p) {
 
 // ── Render Product Grid (Horizontal Scrolling Categories) ──
 function renderProducts(filter) {
-  const container = $('#categoryTracksContainer');
+  const container = $('#categoryTracksContainer') || $('#products');
   if (!container) return;
   container.innerHTML = "";
 
   const fullCatalog = getFullCatalog();
+
+  if (container.id === 'products') {
+    let list = fullCatalog.filter(p => isProductVisible(p));
+    if (filter && filter !== 'all' && filter !== 'bestsellers' && filter !== 'offer_stock') {
+      list = list.filter(p => p.cat === filter);
+    }
+    if (filter === 'bestsellers') {
+      list = [...list].sort((a, b) => (b.reviews || 0) - (a.reviews || 0));
+    }
+    if (filter === 'offer_stock') {
+      list = list.filter(p => p.offerStock || p.cat === 'offer_stock');
+    }
+    container.innerHTML = list.map(p => getProductCardHtml(p)).join('');
+    attachProductListeners(container);
+    return;
+  }
   
   let categories = [];
   if (filter && filter !== 'all' && filter !== 'sale') {
@@ -1019,29 +1035,26 @@ function loadNextBatch(cat, list, scrollRow) {
   newItems.forEach(p => {
     const isWL = wishlist.includes(p.id);
     
-    let priceHtml = '';
-    let quickActionHtml = '';
+    const wsPrice = getWholesalePrice(p);
+    const retailMrp = p.mrp || Math.round(wsPrice * 2.5);
+    const off = pct(wsPrice, retailMrp);
     
-    if (shoppingMode === 'retail') {
-      const wsPrice = p.wholesalePrice || p.wholesale_price || Math.round((p.price || 499) * 0.5);
-      const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
-      const off = pct(wsPrice, retailMrp);
-      
-      priceHtml = `
-        <span class="price-now" style="color:var(--color-primary); font-weight:800; font-size:1.15rem;">${fmt(wsPrice)}</span>
-        <span class="price-was">${fmt(retailMrp)}</span>
-        <span class="price-off">${off}% OFF</span>
-      `;
-      quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
+    let priceHtml = `
+      <span class="price-now" style="color:var(--color-primary); font-weight:800; font-size:1.15rem;">${fmt(wsPrice)}</span>
+      <span class="price-was">${fmt(retailMrp)}</span>
+      <span class="price-off">${off}% OFF</span>
+    `;
+    let quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
     
     const stockVal = window.VFS_STOCK_CACHE[p.id];
-    const isOOS = (stockVal !== undefined && stockVal <= 0);
+    const minQty = p.moq ? parseInt(p.moq) : 1;
+    const isOOS = (stockVal !== undefined && (stockVal <= 0 || stockVal < minQty));
     
     if (isOOS) {
       quickActionHtml = `<div class="p-quick" style="background:#555;color:#ccc;cursor:not-allowed;font-weight:700;">Sold Out</div>`;
     }
     
-    const dynamicBadge = (shoppingMode === 'retail') ? getRetailPriceInfo(p).badge : (p.badge || '');
+    const dynamicBadge = p.badge || '';
     
     const cardHtml = `
       <div class="p-card" data-id="${p.id}">
@@ -1185,10 +1198,11 @@ function formatBdayDate(dateString) {
 function getProductCardHtml(p) {
   const isWL = wishlist.includes(p.id);
   const stockVal = window.VFS_STOCK_CACHE[p.id];
-  const isOOS = (stockVal !== undefined && stockVal <= 0);
+  const minQty = p.moq ? parseInt(p.moq) : 1;
+  const isOOS = (stockVal !== undefined && (stockVal <= 0 || stockVal < minQty));
   
-  const wsPrice = p.wholesalePrice || p.wholesale_price || Math.round((p.price || 499) * 0.5);
-  const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
+  const wsPrice = getWholesalePrice(p);
+  const retailMrp = p.mrp || Math.round(wsPrice * 2.5);
   const off = pct(wsPrice, retailMrp);
   
   let priceHtml = `
@@ -1202,7 +1216,7 @@ function getProductCardHtml(p) {
     quickActionHtml = `<div class="p-quick" style="background:#555;color:#ccc;cursor:not-allowed;font-weight:700;">Sold Out</div>`;
   }
   
-  const dynamicBadge = (shoppingMode === 'retail') ? getRetailPriceInfo(p).badge : (p.badge || '');
+  const dynamicBadge = p.badge || '';
   
   return `
     <div class="p-card" data-id="${p.id}">
@@ -1684,10 +1698,14 @@ async function renderTestimonials() {
 // ── Update Badge Counts ──
 function updateCounts() {
   const cCount = cart.reduce((s, c) => s + c.qty, 0);
-  $('#cartCount').textContent = cCount;
-  $('#cartCT').textContent = cCount;
-  $('#wlCount').textContent = wishlist.length;
-  $('#wlCT').textContent = wishlist.length;
+  const cartCountEl = $('#cartCount');
+  if (cartCountEl) cartCountEl.textContent = cCount;
+  const cartCTEl = $('#cartCT');
+  if (cartCTEl) cartCTEl.textContent = cCount;
+  const wlCountEl = $('#wlCount');
+  if (wlCountEl) wlCountEl.textContent = wishlist.length;
+  const wlCTEl = $('#wlCT');
+  if (wlCTEl) wlCTEl.textContent = wishlist.length;
 }
 
 // ── Drawer Open/Close & Profile Hub ──
