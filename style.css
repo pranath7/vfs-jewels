@@ -4869,3 +4869,20 @@ body:has(.drawer.active) .floating-order-btn {
   pointer-events: none !important;
   visibility: hidden !important;
 }
+
+/* PDP Instagram Share Icon Styling */
+.share-instagram:hover {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 6px 20px rgba(220, 39, 67, 0.45) !important;
+  transform: translateY(-2px);
+}
+
+.share-instagram:hover svg,
+.share-instagram:hover path,
+.share-instagram:hover circle,
+.share-instagram:hover rect {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
