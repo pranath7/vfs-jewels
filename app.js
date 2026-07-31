@@ -1010,7 +1010,7 @@ function renderProducts(filter) {
       const id = +btn.closest('.p-card').dataset.id;
       const product = getFullCatalog().find(x => x.id === id);
       const text = `Hi VFS Jewels, I would like to inquire about the price of Kada: ${product.name} (SKU: ZU1-${product.id}).`;
-      window.open(`https://api.whatsapp.com/send?phone=919840757363&text=${encodeURIComponent(text)}`, '_blank');
+      window.open(`https://api.whatsapp.com/send?phone=919025327860&text=${encodeURIComponent(text)}`, '_blank');
     });
   });
 
@@ -1172,7 +1172,7 @@ function loadNextBatch(cat, list, scrollRow) {
         const id = +card.dataset.id;
         const product = getFullCatalog().find(x => x.id === id);
         const text = `Hi VFS Jewels, I would like to inquire about the price of Kada: ${product.name} (SKU: ZU1-${product.id}).`;
-        window.open(`https://api.whatsapp.com/send?phone=919840757363&text=${encodeURIComponent(text)}`, '_blank');
+        window.open(`https://api.whatsapp.com/send?phone=919025327860&text=${encodeURIComponent(text)}`, '_blank');
       });
     }
 
@@ -1904,7 +1904,7 @@ function renderProfileHub() {
         <span style="color:#D4AF37; font-weight:800; font-size:1.2rem;">&rarr;</span>
       </div>
 
-      <a href="https://api.whatsapp.com/send?phone=919840757363&text=Hi%20VFS%20Jewels%2C%20I%20need%20assistance%20with%20my%20account." target="_blank" class="profile-menu-item" style="border:1.5px solid #059669 !important; background:rgba(5,150,105,0.08) !important; text-decoration:none !important;">
+      <a href="https://api.whatsapp.com/send?phone=919025327860&text=Hi%20VFS%20Jewels%2C%20I%20need%20assistance%20with%20my%20account." target="_blank" class="profile-menu-item" style="border:1.5px solid #059669 !important; background:rgba(5,150,105,0.08) !important; text-decoration:none !important;">
         <div style="display:flex; align-items:center; gap:12px;">
           <span style="font-size:1.4rem;">💬</span>
           <span style="color:#059669 !important; font-weight:800 !important;">Official WhatsApp VIP Support</span>
@@ -2586,7 +2586,7 @@ ${itemsSummaryText}
     waMessage += `----------------------------------\n_I have attached my UPI Transaction Screenshot below to verify payment._`;
   }
 
-  const waLink = `https://wa.me/919840757363?text=${encodeURIComponent(waMessage)}`;
+  const waLink = `https://wa.me/919025327860?text=${encodeURIComponent(waMessage)}`;
   window.open(waLink, '_blank');
   
   // Populate Order Success Step UI elements
@@ -2642,7 +2642,7 @@ ${itemsSummaryText}
     waBotBtn.parentNode.replaceChild(newWaBotBtn, waBotBtn);
     newWaBotBtn.addEventListener('click', () => {
       const text = `Hi VFS Jewels! I just placed Order #${orderIdClean}. Please send me my official Tax Invoice & Product Photo Slip.`;
-      const url = `https://wa.me/919840757363?text=${encodeURIComponent(text)}`;
+      const url = `https://wa.me/919025327860?text=${encodeURIComponent(text)}`;
       window.open(url, '_blank');
     });
   }
@@ -4051,7 +4051,7 @@ if (vcForm) {
 
     const message = `Hi VFS Jewellery! I'd like to schedule a Live Video Call to view your jewellery collection.\n\nName: ${name}\nWhatsApp: ${phone}\nPreferred Slot: ${slot}`;
 
-    const waLink = `https://wa.me/919840757363?text=${encodeURIComponent(message)}`;
+    const waLink = `https://wa.me/919025327860?text=${encodeURIComponent(message)}`;
     
     // Open in new tab
     window.open(waLink, '_blank');
@@ -6401,7 +6401,7 @@ window.triggerRazorpaySlotBooking = async function(slotData = {}) {
       });
     }
 
-    const savedPhone = slotData.phone || localStorage.getItem('vfs_customer_phone') || '9840757363';
+    const savedPhone = slotData.phone || localStorage.getItem('vfs_customer_phone') || '9025327860';
     const savedName = slotData.name || localStorage.getItem('vfs_customer_name') || 'Customer';
 
     let orderId = '';

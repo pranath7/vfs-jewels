@@ -8,7 +8,7 @@ const https = require('https');
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
 const VERSION = 'v19.0';
-const ADMIN_PHONE = '919840757363';
+const ADMIN_PHONE = '919025327860';
 
 function sendWhatsAppText(toPhone, message) {
   return new Promise((resolve) => {

@@ -3,7 +3,7 @@
 //  Exposed at https://www.vfsjewels.store/api/send-wholesale-welcome
 //  Sends:
 //    1. Welcome message to new wholesale registrant
-//    2. Admin alert to VFS owner (+91 9840757363)
+//    2. Admin alert to VFS owner (+91 9025327860)
 // ============================================================
 
 const https = require('https');
@@ -11,7 +11,7 @@ const https = require('https');
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
 const VERSION = 'v19.0';
-const ADMIN_PHONE = '919840757363'; // VFS Owner number
+const ADMIN_PHONE = '919025327860'; // VFS Owner number
 
 function sendWhatsAppText(toPhone, message) {
   return new Promise((resolve, reject) => {
