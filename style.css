@@ -554,75 +554,43 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .hero-prev { left: 16px; }
 .hero-next { right: 16px; }
 
+.hero-section {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #000000;
+}
+
+.hero-slider {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
 .hero-slide {
   display: none;
   position: relative;
+  width: 100%;
 }
 
-.hero-slide.active { display: block; }
-
-.hero-slide picture,
-.hero-slide img {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: contain;
-}
-
-.hero-banner-wrap {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
+.hero-slide.active {
   display: block;
 }
 
-.hero-banner-wrap img {
-  width: 100%;
-  height: auto;
+.hero-banner-link {
   display: block;
-  object-fit: contain;
-}
-
-.hero-shop-overlay-btn {
-  position: absolute;
-  z-index: 10;
+  width: 100%;
+  text-decoration: none;
   cursor: pointer;
-  background: transparent;
-  border-radius: 4px;
-  transition: all 0.25s ease;
-  outline: none;
-  text-indent: -9999px;
-  overflow: hidden;
-  font-size: 0;
-  line-height: 0;
 }
 
-.btn-light-banner-shop {
-  left: 3.8%;
-  top: 74.5%;
-  width: 26.5%;
-  height: 17.5%;
-}
-
-.btn-light-banner-shop:hover,
-.btn-light-banner-shop:focus {
-  background: rgba(212, 175, 55, 0.18);
-  box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
-  border: 1.5px solid rgba(212, 175, 55, 0.6);
-}
-
-.btn-dark-banner-shop {
-  left: 28.0%;
-  top: 71.5%;
-  width: 32.0%;
-  height: 14.5%;
-}
-
-.btn-dark-banner-shop:hover,
-.btn-dark-banner-shop:focus {
-  background: rgba(212, 175, 55, 0.18);
-  box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
-  border: 1.5px solid rgba(212, 175, 55, 0.6);
+.hero-slide img,
+.hero-banner-link img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
 }
 
 .hero-overlay {
