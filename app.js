@@ -5106,15 +5106,22 @@ function setupShoppingMode() {
     
     const googleUser = window._googleUser;
     const uid = googleUser ? googleUser.uid : ('phone-' + phoneVal);
-    const email = googleUser ? googleUser.email : '';
+    const email = googleUser ? googleUser.email : (localStorage.getItem('vfs_customer_email') || '');
     
+    // Save to localStorage for instant wallet & payment lookup
+    localStorage.setItem('vfs_customer_phone', phoneVal);
+    localStorage.setItem('vfs_customer_name', name);
+    localStorage.setItem('vfs_business_name', business);
+    localStorage.setItem('vfs_customer_address', address);
+    if (email) localStorage.setItem('vfs_customer_email', email);
+
     wholesaleUser = {
       uid: uid,
       email: email,
       phone: phoneVal,
       name: name,
       businessName: business,
-      shopName: business, // keep backward compatibility
+      shopName: business,
       address: address,
       unlocked: false,
       paymentStatus: 'none',
@@ -5124,7 +5131,10 @@ function setupShoppingMode() {
     
     if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
-        await window.db.collection('wholesale_users').doc(uid).set(wholesaleUser);
+        await window.db.collection('wholesale_users').doc(phoneVal).set(wholesaleUser, { merge: true });
+        if (uid !== phoneVal) {
+          await window.db.collection('wholesale_users').doc(uid).set(wholesaleUser, { merge: true });
+        }
       } catch (err) {
         console.error("Firestore save failed:", err);
       }
@@ -5132,16 +5142,19 @@ function setupShoppingMode() {
     
     const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
     mockUsers[uid] = wholesaleUser;
+    mockUsers[phoneVal] = wholesaleUser;
     localStorage.setItem('vfs_wholesale_users', JSON.stringify(mockUsers));
     
     shoppingMode = 'wholesale';
     saveState();
-    wholesaleLoginModal.classList.remove('active');
+    if (wholesaleLoginModal) wholesaleLoginModal.classList.remove('active');
+    if ($('#loginStepPhone')) $('#loginStepPhone').style.display = 'block';
+    if ($('#loginStepRegister')) $('#loginStepRegister').style.display = 'none';
     updateModeUI();
     renderProducts(null);
     
     openWholesaleUnlockModal();
-    toast('Registration completed!');
+    toast('Registration completed! Proceeding to ₹1 unlock payment 💳');
   });
 
   // Unlock Modal helper
@@ -5874,35 +5887,58 @@ window.completeWholesaleUnlock = function() {
 
 // 6. Google Sign In Handler
 window.handleUniversalGoogleSignIn = async function() {
+  const btnGSign = document.getElementById('btnGoogleSignIn');
+  if (btnGSign) {
+    btnGSign.disabled = true;
+    if (btnGSign.querySelector('span')) btnGSign.querySelector('span').textContent = 'Signing in...';
+  }
   try {
     if (window.VFS_CLOUD_ACTIVE && window.firebase && firebase.auth) {
       const provider = new firebase.auth.GoogleAuthProvider();
       const result = await firebase.auth().signInWithPopup(provider);
       const user = result.user;
       
-      const userPhone = user.phoneNumber ? user.phoneNumber.replace(/\D/g, '').replace(/^91/, '') : '';
-      const userName = user.displayName || 'Reseller Member';
+      const userName = user.displayName || '';
+      const userEmail = user.email || '';
       
-      if (userPhone && userPhone.length === 10) {
-        localStorage.setItem('vfs_customer_phone', userPhone);
-      }
-      if (user.email) {
-        localStorage.setItem('vfs_customer_email', user.email);
-      }
+      if (userName) localStorage.setItem('vfs_customer_name', userName);
+      if (userEmail) localStorage.setItem('vfs_customer_email', userEmail);
       
-      window.openWholesaleUnlockModal();
-      if (typeof toast === 'function') toast(`Signed in as ${userName}! Proceeding to ₹1 Advance Payment 💳`);
+      window._googleUser = {
+        uid: user.uid,
+        name: userName,
+        email: userEmail
+      };
+
+      // Pre-fill name in registration form
+      const nameInp = document.getElementById('regNameInput');
+      if (nameInp && userName) nameInp.value = userName;
+      
+      // Force user to complete registration (Name, Shop Name, WhatsApp Phone Number, Address)
+      const s1 = document.getElementById('loginStepPhone');
+      const s2 = document.getElementById('loginStepRegister');
+      if (s1) s1.style.display = 'none';
+      if (s2) s2.style.display = 'block';
+      
+      const phoneInp = document.getElementById('regPhoneInput');
+      if (phoneInp) phoneInp.focus();
+
+      if (typeof toast === 'function') toast('Google sign-in successful! Please enter your WhatsApp number & business details.');
     } else {
-      throw new Error("Firebase auth unavailable, fallback to mobile sign in");
+      throw new Error("Firebase auth unavailable");
     }
   } catch(err) {
-    console.warn("Google Auth popup notice:", err);
-    const phonePrompt = prompt("Enter your 10-digit mobile number to sign in & pay ₹1 advance:");
-    if (phonePrompt && phonePrompt.trim().replace(/\D/g, '').length === 10) {
-      const cleanPhone = phonePrompt.trim().replace(/\D/g, '');
-      localStorage.setItem('vfs_customer_phone', cleanPhone);
-      window.openWholesaleUnlockModal();
-      if (typeof toast === 'function') toast("Signed in! Proceeding to ₹1 Advance Payment 💳");
+    console.warn("Google Auth notice:", err);
+    // On fallback: show registration form directly
+    const s1 = document.getElementById('loginStepPhone');
+    const s2 = document.getElementById('loginStepRegister');
+    if (s1) s1.style.display = 'none';
+    if (s2) s2.style.display = 'block';
+    if (typeof toast === 'function') toast('Please enter your details to continue.');
+  } finally {
+    if (btnGSign) {
+      btnGSign.disabled = false;
+      if (btnGSign.querySelector('span')) btnGSign.querySelector('span').textContent = 'Continue with Google';
     }
   }
 };

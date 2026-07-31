@@ -5037,24 +5037,26 @@ function setupShoppingMode() {
   });
 
   // Complete Registration Form
-  $('#royalBtnRegister').addEventListener('click', async () => {
-    const name = $('#royalRegName').value.trim();
-    const business = $('#royalRegShop').value.trim();
-    const phoneVal = $('#royalRegPhone').value.trim().replace(/\D/g, '');
-    const address = $('#royalRegAddress').value.trim();
-
+  const registerUserHandler = async (name, business, phoneVal, address) => {
     if (!name || !business || !phoneVal || !address) {
       toast('Please fill all fields');
-      return;
+      return false;
     }
     if (phoneVal.length !== 10) {
       toast('Enter a valid 10-digit WhatsApp number');
-      return;
+      return false;
     }
 
     const googleUser = window._googleUser;
     const uid = googleUser ? googleUser.uid : ('phone-' + phoneVal);
-    const email = googleUser ? googleUser.email : '';
+    const email = googleUser ? googleUser.email : (localStorage.getItem('vfs_customer_email') || '');
+
+    // Save to localStorage for instant wallet & payment lookup
+    localStorage.setItem('vfs_customer_phone', phoneVal);
+    localStorage.setItem('vfs_customer_name', name);
+    localStorage.setItem('vfs_business_name', business);
+    localStorage.setItem('vfs_customer_address', address);
+    if (email) localStorage.setItem('vfs_customer_email', email);
 
     wholesaleUser = {
       uid: uid,
@@ -5072,7 +5074,10 @@ function setupShoppingMode() {
 
     if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
-        await window.db.collection('wholesale_users').doc(uid).set(wholesaleUser);
+        await window.db.collection('wholesale_users').doc(phoneVal).set(wholesaleUser, { merge: true });
+        if (uid !== phoneVal) {
+          await window.db.collection('wholesale_users').doc(uid).set(wholesaleUser, { merge: true });
+        }
       } catch (err) {
         console.error("Firestore save failed:", err);
       }
@@ -5080,6 +5085,7 @@ function setupShoppingMode() {
 
     const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
     mockUsers[uid] = wholesaleUser;
+    mockUsers[phoneVal] = wholesaleUser;
     localStorage.setItem('vfs_wholesale_users', JSON.stringify(mockUsers));
 
     saveState();
@@ -5087,7 +5093,37 @@ function setupShoppingMode() {
     updateLockUI();
     renderProducts(null);
     toast('Registration completed!');
-  });
+    return true;
+  };
+
+  const royalBtnReg = $('#royalBtnRegister');
+  if (royalBtnReg) {
+    royalBtnReg.addEventListener('click', async () => {
+      const name = $('#royalRegName').value.trim();
+      const business = $('#royalRegShop').value.trim();
+      const phoneVal = $('#royalRegPhone').value.trim().replace(/\D/g, '');
+      const address = $('#royalRegAddress').value.trim();
+      await registerUserHandler(name, business, phoneVal, address);
+    });
+  }
+
+  const btnRegUser = $('#btnRegisterUser');
+  if (btnRegUser) {
+    btnRegUser.addEventListener('click', async () => {
+      const name = $('#regNameInput').value.trim();
+      const business = $('#regBusinessInput').value.trim();
+      const phoneVal = $('#regPhoneInput').value.trim().replace(/\D/g, '');
+      const address = $('#regAddressInput').value.trim();
+      const ok = await registerUserHandler(name, business, phoneVal, address);
+      if (ok) {
+        const wholesaleLoginModal = $('#wholesaleLoginModal');
+        if (wholesaleLoginModal) wholesaleLoginModal.classList.remove('active');
+        if ($('#loginStepPhone')) $('#loginStepPhone').style.display = 'block';
+        if ($('#loginStepRegister')) $('#loginStepRegister').style.display = 'none';
+        window.triggerRazorpayUnlock(1);
+      }
+    });
+  }
 
   // Razorpay Secure Membership Advance Payment Flow
   const rzpPayBtn = $('#royalBtnRazorpayPay');
@@ -5991,20 +6027,31 @@ window.handleUniversalGoogleSignIn = async function() {
       const userPhone = user.phoneNumber ? user.phoneNumber.replace(/\D/g, '').replace(/^91/, '') : '';
       const userName = user.displayName || '';
       const userEmail = user.email || '';
+      
+      window._googleUser = {
+        uid: user.uid,
+        name: userName,
+        email: userEmail
+      };
+
       if (userPhone && userPhone.length === 10) localStorage.setItem('vfs_customer_phone', userPhone);
       if (userEmail) localStorage.setItem('vfs_customer_email', userEmail);
       if (userName) localStorage.setItem('vfs_customer_name', userName);
+
       // Pre-fill registration form with Google data
       const nameInp = document.getElementById('regNameInput');
       const phoneInp = document.getElementById('regPhoneInput');
       if (nameInp && userName) nameInp.value = userName;
       if (phoneInp && userPhone) phoneInp.value = userPhone;
-      // Show registration step (business details)
+      
+      // Show registration step (business details & WhatsApp phone)
       const s1 = document.getElementById('loginStepPhone');
       const s2 = document.getElementById('loginStepRegister');
       if (s1) s1.style.display = 'none';
       if (s2) s2.style.display = 'block';
-      if (typeof toast === 'function') toast('Signed in as ' + userName + '! Please fill business details.');
+      if (phoneInp) phoneInp.focus();
+      
+      if (typeof toast === 'function') toast('Google sign-in successful! Please enter your WhatsApp number & business details.');
     } else {
       throw new Error('Firebase unavailable');
     }
