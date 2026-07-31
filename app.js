@@ -5991,9 +5991,79 @@ window.triggerRazorpayUnlock = async function(amt = 1) {
       description: "Wholesale Portal Access ₹1 Advance",
       image: "https://res.cloudinary.com/cwx4zame/image/upload/v1783183760/ze9xek1cled8puy6vfex.png",
       order_id: orderId || undefined,
-      handler: function (response) {
+      handler: async function (response) {
         console.log("Razorpay Payment Success:", response);
+        
+        const pPhone = (localStorage.getItem('vfs_customer_phone') || '').replace(/\D/g, '').slice(-10);
+        const pName = localStorage.getItem('vfs_customer_name') || 'Wholesale Member';
+        const pBiz = localStorage.getItem('vfs_business_name') || '';
+        const pAddr = localStorage.getItem('vfs_customer_address') || '';
+        const pEmail = localStorage.getItem('vfs_customer_email') || '';
+        const paidUnlockFee = numAmt || 1;
+
+        if (pPhone && pPhone.length === 10) {
+          const docPayload = {
+            name: pName,
+            businessName: pBiz,
+            shopName: pBiz,
+            phone: pPhone,
+            email: pEmail,
+            address: pAddr,
+            unlocked: true,
+            paymentStatus: 'paid',
+            advancePaid: paidUnlockFee,
+            walletBalance: paidUnlockFee,
+            razorpayPaymentId: response.razorpay_payment_id || '',
+            razorpayOrderId: response.razorpay_order_id || '',
+            registeredAt: Date.now()
+          };
+
+          // 1. Save to Firestore wholesale_users under clean phone ID
+          try {
+            if (window.VFS_CLOUD_ACTIVE && window.db) {
+              await window.db.collection('wholesale_users').doc(pPhone).set(docPayload, { merge: true });
+              await window.db.collection('wholesale_users').doc('phone_' + pPhone).set(docPayload, { merge: true });
+              console.log('✅ Saved customer to wholesale_users Firestore:', pPhone);
+            }
+          } catch (dbErr) {
+            console.error("Firestore customer save error:", dbErr);
+          }
+
+          // 2. Automatically credit paid fee to wallet in Firestore wallet_credits
+          if (window.VFS_DB && window.VFS_DB.saveWalletBalance) {
+            try {
+              const currentBal = await window.VFS_DB.getCustomerWalletBalance(pPhone);
+              const newBal = (Number(currentBal) || 0) + paidUnlockFee;
+              await window.VFS_DB.saveWalletBalance(pPhone, newBal);
+              console.log(`🎁 Automatically credited ₹${paidUnlockFee} to wallet for mobile ${pPhone}. New balance: ₹${newBal}`);
+            } catch (wErr) {
+              console.error("Wallet balance credit error:", wErr);
+            }
+          }
+
+          // 3. Trigger backend API for WhatsApp welcome & server-side Firestore sync
+          try {
+            fetch('https://www.vfsjewels.store/api/send-wholesale-welcome', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: pName,
+                businessName: pBiz,
+                phone: pPhone,
+                email: pEmail,
+                address: pAddr,
+                paymentStatus: 'paid',
+                advancePaid: paidUnlockFee,
+                razorpayPaymentId: response.razorpay_payment_id || ''
+              })
+            }).then(r => r.json()).then(res => {
+              console.log('✅ Wholesale Welcome WhatsApp & DB sync response:', res);
+            }).catch(err => console.warn('WhatsApp welcome notification warning:', err));
+          } catch(e) {}
+        }
+
         window.completeWholesaleUnlock();
+        alert(`🎉 Payment successful! Your Wholesale Portal is unlocked and ₹${paidUnlockFee} has been automatically credited to your wallet (+91 ${pPhone})!`);
       },
       prefill: {
         name: savedName,
