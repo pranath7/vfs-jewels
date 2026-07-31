@@ -2372,8 +2372,8 @@ $('#coForm').addEventListener('submit', async (e) => {
   
   $('#coSumTotal').textContent = fmt(grandTotal);
   
-  // Create UPI URI using your real payment receiver details (8939086608@fam)
-  const upiURI = `upi://pay?pa=8939086608@fam&pn=VFS%20Jewels&am=${grandTotal}&cu=INR&tn=Order%20${newOrder.id}`;
+  // Create UPI URI using real payment receiver details
+  const upiURI = `upi://pay?pa=9025327860@paytm&pn=VFS%20Jewels&am=${grandTotal}&cu=INR&tn=Order%20${newOrder.id}`;
 
   // Use custom static QR code image uploaded by user
   $('#coQRWrapper').innerHTML = `<img src="https://res.cloudinary.com/cwx4zame/image/upload/v1783183761/a4hfmqgh7wxjuzucvutj.png" alt="UPI QR Code" style="width:180px;height:180px;display:block;margin:0 auto;object-fit:contain;">`;
