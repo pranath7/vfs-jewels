@@ -554,44 +554,31 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .hero-prev { left: 16px; }
 .hero-next { right: 16px; }
 
-.hero-section {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  background: #000000;
-}
-
-.hero-slider {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-}
-
 .hero-slide {
   display: none;
   position: relative;
-  width: 100%;
 }
 
-.hero-slide.active {
+.hero-slide.active { display: block; }
+
+.hero-slide picture,
+.hero-slide img {
+  width: 100%;
   display: block;
+  aspect-ratio: 16 / 8;
+  object-fit: cover;
 }
 
-.hero-banner-link {
-  display: block;
-  width: 100%;
-  text-decoration: none;
-  cursor: pointer;
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.08) 55%, transparent 100%);
+  display: flex;
+  align-items: center;
+  padding: 0 6%;
 }
 
-.hero-slide img,
-.hero-banner-link img {
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  display: block;
-  object-fit: contain;
-}
+.hero-text { max-width: 480px; color: #fff; }
 
 .hero-overlay {
   position: absolute;
