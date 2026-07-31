@@ -562,8 +562,10 @@ const clOpt = (url, width = 380) => {
 window.clOpt = clOpt;
 
 // ── Shopping Mode State (Retail/Wholesale) ──
-let shoppingMode = localStorage.getItem('vfs_user_mode') || localStorage.getItem('vfs_shopping_mode') || 'retail';
-document.documentElement.setAttribute('data-shopping-mode', shoppingMode);
+let shoppingMode = 'wholesale';
+localStorage.setItem('vfs_user_mode', 'wholesale');
+localStorage.setItem('vfs_shopping_mode', 'wholesale');
+document.documentElement.setAttribute('data-shopping-mode', 'wholesale');
 let wholesaleUser = null;
 let tempPhone = '';
 try {
@@ -572,7 +574,7 @@ try {
 } catch (e) {
   wholesaleUser = null;
 }
-let wholesaleUnlocked = localStorage.getItem('vfs_wholesale_unlocked') === 'true';
+let wholesaleUnlocked = localStorage.getItem('vfs_wholesale_unlocked') === 'true' || !!wholesaleUser;
 
 async function checkWholesaleStatus() {
   if (!wholesaleUser) return;
