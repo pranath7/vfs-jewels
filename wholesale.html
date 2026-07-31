@@ -102,7 +102,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&family=Outfit:wght@300;400;500;700;900&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&family=Outfit:wght@300;400;500;700;900"></noscript>
 
-  <link rel="stylesheet" href="style.css?v=20260730_v1785507817">
+  <link rel="stylesheet" href="style.css?v=20260730_v1785508449">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -745,6 +745,78 @@
     </div>
   </div>
 
+  <!-- SEARCH OVERLAY -->
+  <div class="search-overlay" id="searchOL">
+    <div class="search-box">
+      <div class="search-inner"><input type="text" placeholder="Search for rings, earrings, kadas, chains..." id="searchInput"><button id="closeSearch"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+      <div class="search-results" id="searchResults"></div>
+    </div>
+  </div>
+
+  <!-- PINCODE MODAL -->
+  <div class="modal-bg" id="pinModal">
+    <div class="pin-modal">
+      <button class="modal-x" id="closePin"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      <h3>Where to Deliver?</h3>
+      <p>Enter your 6-digit pincode to check delivery options.</p>
+      <div class="pin-form"><input type="text" placeholder="Enter pincode" id="pinInput" maxlength="6"><button id="checkPin">Check</button></div>
+      <div class="pin-result" id="pinResult"></div>
+    </div>
+  </div>
+
+  <!-- STORE LOCATOR OVERLAY -->
+  <div class="pdp-overlay" id="storeOverlay">
+    <div class="pdp-container">
+      <button class="pdp-back" id="closeStore">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        Back to Shop
+      </button>
+      <div class="section-head" style="text-align:left; margin-bottom: 30px;">
+        <h2 style="font-size: 3.2rem; font-weight: 400; font-family: var(--font-heading);">Our VFS Outlets</h2>
+        <p style="font-size: 1.4rem; color: var(--color-primary-60); margin-top: 6px;">Visit our stores to experience our imitation collections in person.</p>
+        <div class="line" style="margin: 10px 0 0 0; width: 50px;"></div>
+      </div>
+      <div class="store-list-grid" id="storeList"></div>
+    </div>
+  </div>
+
+  <!-- CART DRAWER -->
+  <div class="dw-bg" id="cartBG"></div>
+  <div class="dw" id="cartDW">
+    <div class="dw-head"><h3>Cart (<span id="cartCT">0</span>)</h3><button class="dw-close" id="closeCartDW"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+    <div class="dw-body" id="cartBody"></div>
+    <div class="dw-foot" id="cartFoot" style="display:none">
+      <div id="cartMoqWarning" style="display:none; padding: 10px 14px; background: rgba(234, 67, 53, 0.1); border: 1px solid rgba(234, 67, 53, 0.3); border-radius: 8px; color: #EA4335; font-size: 13px; font-weight: 500; margin-bottom: 12px; line-height: 1.4; text-align: center;"></div>
+      <div class="dw-total"><span>Total</span><span id="cartTotal">₹0</span></div>
+      <button class="dw-checkout" id="checkoutBtn">Proceed to Checkout</button>
+    </div>
+  </div>
+
+  <!-- WISHLIST DRAWER -->
+  <div class="dw-bg" id="wlBG"></div>
+  <div class="dw" id="wlDW">
+    <div class="dw-head"><h3>Wishlist (<span id="wlCT">0</span>)</h3><button class="dw-close" id="closeWLDW"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+    <div class="dw-body" id="wlBody"></div>
+  </div>
+
+  <!-- CUSTOMER PROFILE DRAWER -->
+  <div class="dw-bg" id="profileBG"></div>
+  <aside class="dw profile-drawer" id="profileDW" style="max-width: 440px;">
+    <div class="dw-head profile-dw-head" style="background: linear-gradient(135deg, #11141e 0%, #1e1b15 100%); color: #ffffff; padding: 20px 24px; border-bottom: 1px solid rgba(212,175,55,0.3); display: flex; align-items: center; justify-content: space-between;">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div class="profile-avatar" style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, #D4AF37, #AA7C11); color:#121212; font-weight:800; font-size:1.5rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(212,175,55,0.3);" id="profileAvatarText">👤</div>
+        <div>
+          <h3 id="profileHeaderName" style="font-size:1.45rem; margin:0; color:#ffffff; font-weight:700;">My Account</h3>
+          <p id="profileHeaderSub" style="font-size:1.1rem; margin:2px 0 0 0; color:#D4AF37; font-weight:500;">VFS Customer Dashboard</p>
+        </div>
+      </div>
+      <button class="dw-close" id="closeProfileDW" aria-label="Close Profile" style="color:#ffffff; background:transparent; border:none; cursor:pointer;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+    <div class="dw-body profile-dw-body" id="profileBody" style="padding: 20px; overflow-y: auto;">
+      <!-- Dynamically filled via renderProfileHub() -->
+    </div>
+  </aside>
+
   <!-- TOASTS -->
   <div class="toast-box" id="toastBox"></div>
 
@@ -762,7 +834,343 @@
 
   <!-- CDN libraries & scripts -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="wholesale.js?v=20260730_v1785507817" defer></script>
+  <script src="wholesale.js?v=20260730_v1785508449" defer></script>
+
+  <!-- DYNAMIC ORDER TRACKING OVERLAY -->
+  <div class="pdp-overlay" id="trackingOverlay">
+    <div class="pdp-container">
+      <button class="pdp-back" id="closeTracking">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        Back to Shop
+      </button>
+      <div class="section-head" style="text-align:left; margin-bottom: 30px;">
+        <h2 style="font-size: 3.2rem; font-weight: 400; font-family: var(--font-heading); text-transform: uppercase;">Track Your Order</h2>
+        <p style="font-size: 1.4rem; color: var(--color-primary-60); margin-top: 6px;">Enter your Order ID below to view delivery updates, carrier, and payment details.</p>
+        <div class="line" style="margin: 10px 0 0 0; width: 50px;"></div>
+      </div>
+      <div class="tracking-search" style="display:flex;gap:12px;max-width:500px;margin-bottom:40px;">
+        <input type="text" id="trackInput" placeholder="Enter Order ID (e.g. #VF-1001)" style="flex-grow:1;padding:12px;font-size:1.4rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;">
+        <button id="btnTrackOrder" class="btn-primary" style="padding:12px 24px;font-size:1.3rem;">Track</button>
+      </div>
+      <div id="trackingDetails" style="display:none;background:#fff;padding:30px;border-radius:var(--rounded-lg);box-shadow:var(--shadow-medium);border:1px solid #eee;">
+        <!-- Loaded dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- CHECKOUT MODAL -->
+  <div class="modal-bg" id="checkoutModal">
+    <div class="pin-modal checkout-modal-card">
+      <button class="modal-x" id="closeCheckout"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      <h3 style="font-size:2.4rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:400;text-transform:uppercase;">Checkout &amp; Shipping</h3>
+      <p style="font-size:1.3rem;color:#666;margin-bottom:24px;">Enter delivery details to proceed to direct UPI payment.</p>
+      <!-- Step 1: Shipping Details -->
+      <div class="checkout-step active" id="coStep1">
+        <form id="coForm" style="display:flex;flex-direction:column;gap:16px;">
+          <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
+            <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Full Name</label>
+            <input type="text" id="coName" placeholder="Enter your full name" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;" required>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
+            <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">WhatsApp Phone Number</label>
+            <input type="tel" id="coPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;" required>
+          </div>
+          <div id="coWalletContainer" style="display:none;background:var(--color-primary-10);border:1px dashed var(--color-primary);padding:12px;border-radius:var(--rounded-md);text-align:left;font-size:1.3rem;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input type="checkbox" id="coUseWallet" style="width:18px;height:18px;cursor:pointer;">
+              <label for="coUseWallet" style="cursor:pointer;font-weight:700;color:var(--color-primary);display:inline-block;vertical-align:middle;margin:0;">
+                🎁 Redeem VFS Wallet Points (Balance: <span id="coWalletBalance">₹0</span>)
+              </label>
+            </div>
+            <p style="margin:6px 0 0 28px;font-size:1.15rem;color:#666;">Apply points to get a discount on this order total.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
+            <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Delivery Address</label>
+            <input type="text" id="coAddress" placeholder="Flat/House No, Street, Landmark" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;" required>
+          </div>
+          <div style="display:grid;grid-template-columns: 1fr 1fr;gap:16px;">
+            <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
+              <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">City</label>
+              <input type="text" id="coCity" placeholder="City" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;" required>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
+              <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Pincode</label>
+              <input type="text" id="coPincode" placeholder="6-digit Pin" pattern="[0-9]{6}" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;" required>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;text-align:left;" id="coCouponContainer">
+            <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Apply Coupon Code</label>
+            <select id="coCouponSelect" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;background:#fff;">
+              <option value="">No Coupon Applied</option>
+            </select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
+            <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">Choose Delivery Partner</label>
+            <select id="coCarrier" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;background:#fff;" required>
+              <option value="DTDC" selected>DTDC (Regional Surface)</option>
+              <option value="ST Courier">ST Courier (Express)</option>
+              <option value="FedEx">FedEx (Priority Air)</option>
+              <option value="others">Others (Alternative Partner)</option>
+            </select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
+            <label style="font-size:1.15rem;font-weight:700;color:#555;text-transform:uppercase;">GST Number (Optional)</label>
+            <input type="text" id="coGST" placeholder="15-digit GSTIN (e.g. 22AAAAA0000A1Z5)" maxLength="15" style="padding:12px;font-size:1.35rem;border:1px solid #ddd;border-radius:var(--rounded-md);outline:none;text-transform:uppercase;">
+          </div>
+          <button type="submit" class="btn-primary" style="width:100%;margin-top:10px;padding:14px;font-size:1.3rem;">Proceed to Payment</button>
+        </form>
+      </div>
+      <!-- Step 2: Payment -->
+      <div class="checkout-step" id="coStep2" style="display:none;text-align:center;">
+        <div class="checkout-summary" style="padding:16px;border-radius:var(--rounded-md);margin-bottom:20px;text-align:left;font-size:1.35rem;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>Cart Total:</span><strong id="coSumSubtotal">₹0</strong></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>GST (3%):</span><strong id="coSumGST">₹0</strong></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>Delivery Fee:</span><strong id="coSumShipping">₹0</strong></div>
+          <div id="coSumDiscountRow" style="display:none;justify-content:space-between;margin-bottom:8px;color:#27ae60;"><span>Wallet Discount:</span><strong id="coSumDiscount">-₹0</strong></div>
+          <div id="coSumCouponRow" style="display:none;justify-content:space-between;margin-bottom:8px;color:#27ae60;"><span>Coupon Discount (<span id="coSumCouponCode"></span>):</span><strong id="coSumCouponAmount">-₹0</strong></div>
+          <div id="coSumAdvanceRow" style="display:none;justify-content:space-between;margin-bottom:8px;color:#d35400;"><span>Wholesale Advance Adjusted:</span><strong id="coSumAdvance">-₹0</strong></div>
+          <div id="coSumWaReferralRow" style="display:none;justify-content:space-between;margin-bottom:8px;color:#27ae60;"><span>WhatsApp Referral Discount (1%):</span><strong id="coSumWaReferral">-₹0</strong></div>
+          <div style="display:flex;justify-content:space-between;border-top:1px dashed #ccc;padding-top:8px;margin-top:8px;font-size:1.6rem;color:var(--color-secondary);"><span>Grand Total:</span><strong id="coSumTotal">₹0</strong></div>
+        </div>
+        <button class="dw-checkout" id="coRazorpayBtn" style="width:100%;background:#3399FF;border-color:#3399FF;color:#FFFFFF;font-size:1.3rem;padding:14px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid #3399FF;cursor:pointer;border-radius:var(--rounded-sm);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+          Pay Online Securely (UPI/Cards)
+        </button>
+        <div id="coQRWrapper" style="display:none;padding:12px;background:#fff;border:1px solid var(--color-tertiary);border-radius:var(--rounded-md);margin-bottom:12px;"></div>
+        <div class="upi-id-box" style="display:none;background:#fff;border:1px dashed var(--color-secondary);padding:10px;border-radius:var(--rounded-sm);font-weight:700;margin:10px 0 16px;font-size:1.4rem;letter-spacing:1px;">8939086608@fam</div>
+        <a href="#" class="btn-primary" id="coMobilePayBtn" style="display:none;width:100%;margin-bottom:16px;padding:14px;font-size:1.3rem;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-weight:700;">Pay via UPI App</a>
+        <button class="dw-checkout" id="coConfirmBtn" style="display:none;width:100%;background:#25D366;border-color:#25D366;color:#FFFFFF;font-size:1.3rem;padding:14px;font-weight:800;">Confirm &amp; Place Order on WhatsApp</button>
+      </div>
+      <!-- Step 3: Success -->
+      <div class="checkout-step" id="coStep3" style="display:none;text-align:center;padding:20px 10px;">
+        <div class="success-icon-wrapper" style="margin-bottom:20px;">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m22 4-10 10.01-3-3"/></svg>
+        </div>
+        <h3 style="font-size:2.2rem;color:#121212;font-family:var(--font-heading);margin-bottom:8px;text-transform:uppercase;">Order Submitted!</h3>
+        <p style="font-size:1.35rem;color:#555;line-height:1.6;margin-bottom:16px;">Your order <strong id="successOrderId" style="color:var(--color-secondary);">#VF-0000</strong> has been recorded.</p>
+        <div class="success-status-box" style="background:#fdfcf7;border:1px dashed var(--color-secondary);padding:14px;border-radius:var(--rounded-md);margin-bottom:20px;text-align:left;font-size:1.3rem;">
+          <div style="margin-bottom:6px;"><strong>Status:</strong> <span id="successStatus" style="color:#f39c12;font-weight:700;text-transform:uppercase;">Awaiting Payment Verification</span></div>
+          <div><strong id="successStatusLabel">Amount to Verify:</strong> <span id="successOrderTotal" style="font-weight:700;">₹0</span></div>
+        </div>
+        <p id="successInstructions" style="font-size:1.25rem;color:#777;line-height:1.5;margin-bottom:24px;">We have opened WhatsApp to let you send your payment screenshot. If WhatsApp did not open, tap the button below:</p>
+        <button class="dw-checkout" id="successWaBtn" style="width:100%;background:#25D366;border-color:#25D366;color:#FFFFFF;font-size:1.3rem;padding:14px;font-weight:800;margin-bottom:12px;">Open WhatsApp to Confirm</button>
+        <button id="successPdfBtn" style="width:100%;padding:12px;font-size:1.3rem;font-weight:700;background:#fff;border:1.5px solid var(--color-secondary);color:var(--color-secondary);border-radius:4px;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;">📄 Download Invoice PDF</button>
+        <button class="btn-primary" id="successCloseBtn" style="width:100%;padding:14px;font-size:1.3rem;justify-content:center;background:#121212;color:#FFFFFF;border:none;cursor:pointer;">Continue Shopping</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCT DETAIL PAGE OVERLAY -->
+  <div class="pdp-overlay" id="pdpOverlay">
+    <div class="pdp-container">
+      <button class="pdp-back" id="pdpBack">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        Back to Shop
+      </button>
+      <div class="pdp-grid">
+        <div class="pdp-gallery">
+          <div class="pdp-main-img" id="pdpMainImg"></div>
+          <div class="pdp-thumbs" id="pdpThumbs"></div>
+        </div>
+        <div class="pdp-info" id="pdpInfo"></div>
+      </div>
+      <div class="pdp-related" style="margin-top: 40px; margin-bottom: 30px;">
+        <div class="section-head"><h2>Swipe to Discover Suggestions</h2><div class="line"></div></div>
+        <div class="tinder-swiper-container" id="tinderSwiperContainer">
+          <div class="tinder-card-stack" id="tinderCardStack"></div>
+          <div class="tinder-controls">
+            <button class="tinder-btn dislike" id="tinderDislikeBtn" onclick="if(typeof window.executeSwipe==='function') window.executeSwipe(false)" aria-label="Dislike">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+            <button class="tinder-btn like" id="tinderLikeBtn" onclick="if(typeof window.executeSwipe==='function') window.executeSwipe(true)" aria-label="Add to Cart">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GOOGLE REVIEW MODAL -->
+  <div class="modal-bg" id="googleReviewModal">
+    <div class="review-modal">
+      <button class="modal-x" id="closeReviewModal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      <div class="rev-modal-header">
+        <svg class="google-logo" viewBox="0 0 24 24" style="height: 24px; width: auto; display: inline-block;">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.62-.62-1.07-1.37-1.37-2.18z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <div class="rev-modal-biz">
+          <h4>VFS Jewels Sowcarpet</h4>
+          <p>Posting publicly on Google Reviews</p>
+        </div>
+      </div>
+      <div class="rev-modal-body">
+        <div class="rev-modal-stars" id="modalReviewStars">
+          <span class="star" data-value="1">★</span>
+          <span class="star" data-value="2">★</span>
+          <span class="star" data-value="3">★</span>
+          <span class="star" data-value="4">★</span>
+          <span class="star" data-value="5">★</span>
+        </div>
+        <p class="rev-stars-label" id="revStarsLabel">Excellent (5/5)</p>
+        <input type="text" id="modalReviewName" placeholder="Your Name (Optional)" style="width: 100%; padding: 10px; font-size: 1.3rem; border: 1px solid #ddd; border-radius: var(--rounded-sm); outline: none; margin-bottom: 12px;">
+        <textarea id="modalReviewText" rows="5" placeholder="Share details of your experience at this place..."></textarea>
+        <div style="margin: 15px 0 10px; text-align: left;">
+          <label for="modalReviewFile" style="font-size: 1.25rem; font-weight: 700; color: #555; display: block; margin-bottom: 6px;">Upload Photo or Video (unboxing/reel)</label>
+          <input type="file" id="modalReviewFile" accept="image/*,video/*" style="font-size: 1.2rem; cursor: pointer;">
+        </div>
+        <div class="rev-modal-actions">
+          <button class="btn-rev-cancel" id="cancelReviewModal">Cancel</button>
+          <button class="btn-rev-submit" id="submitReviewModal">Post Review</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORY SHIFT MODAL -->
+  <div class="modal-bg" id="categoryShiftModal">
+    <div class="pin-modal" style="max-width: 420px; padding: 30px; text-align: center; border-radius: var(--rounded-lg);">
+      <div style="font-size: 3.2rem; margin-bottom: 12px;">🔍</div>
+      <h3 style="font-size: 2rem; margin-bottom: 10px; font-family: var(--font-heading); font-weight: 400; text-transform: uppercase;">Explore another category?</h3>
+      <p style="font-size: 1.3rem; color: #666; margin-bottom: 20px; line-height: 1.5;">You've swiped several products in this category. Would you like to check out some different collections?</p>
+      <div class="cat-shift-options" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;" id="catShiftOptions"></div>
+      <button class="btn-primary" id="closeCatShiftModal" style="width: 100%; padding: 12px; font-size: 1.25rem; background: #999; color: #fff; border: none; border-radius: var(--rounded-md); cursor: pointer;">Keep Swiping</button>
+    </div>
+  </div>
+
+  <!-- IMAGE ZOOM LIGHTBOX -->
+  <div class="modal-bg" id="zoomLightbox" style="z-index: 2500;">
+    <button class="modal-x" id="closeZoomLightbox" style="top: 20px; right: 20px; color: #fff; font-size: 2.5rem; background: rgba(0,0,0,0.5); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="zoom-lightbox-content" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+      <img src="" id="zoomLightboxImg" alt="Zoomed View" style="max-width: 95%; max-height: 95%; object-fit: contain; cursor: zoom-in; transition: transform 0.25s ease-out; transform-origin: center center; user-select: none; touch-action: none;">
+    </div>
+    <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 1.2rem; pointer-events: none;">Click/Tap to zoom. Drag to pan.</div>
+  </div>
+
+  <!-- RETURN POLICY MODAL -->
+  <div class="modal-bg" id="returnPolicyModal">
+    <div class="pin-modal" style="max-width:550px;padding:35px;">
+      <button class="modal-x" id="closeReturnPolicy"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      <h3 style="font-size:2.2rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:400;text-transform:uppercase;text-align:center;">Return &amp; Exchange Policy 🔄</h3>
+      <p style="font-size:1.3rem;color:#666;margin-bottom:24px;text-align:center;">Please read our mandatory guidelines to process returns and request credit points.</p>
+      <div class="guide-steps-container" style="display:flex;flex-direction:column;gap:16px;">
+        <div class="guide-step-card"><div class="step-num">1</div><div class="step-text-container"><h4 class="step-title">Get Your Invoice PDF</h4><p class="step-desc">Go to the Track Order panel and download the official Invoice PDF. Take a screenshot or photo of this invoice to upload as proof.</p></div></div>
+        <div class="guide-step-card"><div class="step-num">2</div><div class="step-text-container"><h4 class="step-title">Record Unboxing Video</h4><p class="step-desc">You must record a continuous video showing you receiving the parcel from the delivery boy and unboxing it instantly. No cuts or edits are allowed.</p></div></div>
+        <div class="guide-step-card"><div class="step-num">3</div><div class="step-text-container"><h4 class="step-title">Submit Verification Details</h4><p class="step-desc">Open your order in the Track Order panel, fill out the Return Request form, upload your invoice photo + unboxing video, and submit.</p></div></div>
+        <div class="guide-step-card"><div class="step-num">4</div><div class="step-text-container"><h4 class="step-title">Earn Store Credit Points</h4><p class="step-desc">Our team will verify the details. Upon approval, you will receive credit points directly in your VFS account to buy other items!</p></div></div>
+      </div>
+      <button class="btn-primary" id="btnPolicyTrackOrder" style="width:100%;margin-top:20px;font-size:1.3rem;padding:12px;background:#121212;color:#D4AF37;border:1px solid #D4AF37;cursor:pointer;justify-content:center;">Track Order &amp; Request Return</button>
+    </div>
+  </div>
+
+  <!-- SHIPPING POLICY MODAL -->
+  <div class="modal-bg" id="shippingPolicyModal">
+    <div class="pin-modal guide-pin-modal" style="max-width:550px;padding:35px;">
+      <button class="modal-x" id="closeShippingPolicy"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      <h3 style="font-size:2.2rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:400;text-transform:uppercase;text-align:center;">Shipping Rates &amp; Policies 🚚</h3>
+      <p style="font-size:1.3rem;color:#666;margin-bottom:24px;text-align:center;">We ensure premium packaging and partner with top express couriers for secure delivery.</p>
+      <div class="guide-steps-container" style="display:flex;flex-direction:column;gap:16px;">
+        <div class="guide-step-card"><div style="font-size: 2.2rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary-10); color: var(--color-primary); font-weight: 700; flex-shrink: 0;">₹</div><div class="step-text-container"><h4 class="step-title">Flat Shipping Rates</h4><p class="step-desc">Standard shipping across India is flat ₹90 per order. This includes transit insurance and courier charges.</p></div></div>
+        <div class="guide-step-card"><div style="font-size: 2rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary-10); color: var(--color-primary); font-weight: 700; flex-shrink: 0;">⏱️</div><div class="step-text-container"><h4 class="step-title">Dispatch &amp; Delivery Timeline</h4><p class="step-desc">Orders are processed within 24-48 hours. Metro cities receive parcels in 2-4 business days, and other locations in 4-7 business days.</p></div></div>
+        <div class="guide-step-card"><div style="font-size: 2rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary-10); color: var(--color-primary); font-weight: 700; flex-shrink: 0;">📦</div><div class="step-text-container"><h4 class="step-title">Trusted Express Partners</h4><p class="step-desc">We dispatch shipments using India's leading logistics providers: Delhivery (Standard Express), BlueDart (Priority Air), and DTDC.</p></div></div>
+        <div class="guide-step-card"><div style="font-size: 2rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary-10); color: var(--color-primary); font-weight: 700; flex-shrink: 0;">📍</div><div class="step-text-container"><h4 class="step-title">Live Order Tracking</h4><p class="step-desc">As soon as your shipment is dispatched, you will receive a tracking ID. Use the Track Order feature in the header/footer to trace your parcel live.</p></div></div>
+      </div>
+      <button class="btn-primary" id="btnPolicyCloseShipping" style="width:100%;margin-top:20px;font-size:1.3rem;padding:12px;background:#121212;color:#D4AF37;border:1px solid #D4AF37;cursor:pointer;justify-content:center;">Close Policy</button>
+    </div>
+  </div>
+
+  <!-- VIDEO CALL SCHEDULER MODAL -->
+  <div class="modal-bg" id="vcModal">
+    <div class="vfs-modal-content" style="max-width:480px; padding:28px; border-radius:16px; position:relative; background:var(--bg-card); border:1px solid var(--border-color); width:90%; text-align:center; margin:auto;">
+      <button class="modal-x" id="closeVCModal" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:2rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+      <div style="text-align:center; margin-bottom:20px;">
+        <span style="background:#D4AF37; color:#121212; font-size:0.95rem; font-weight:800; padding:6px 12px; border-radius:4px; text-transform:uppercase; letter-spacing:0.5px; display:inline-block;">🎥 LIVE VIDEO SESSION</span>
+        <h2 style="font-size:2rem; margin-top:10px; margin-bottom:6px; font-family:var(--font-heading); color:var(--text-primary);">Book a Slot (8:30 PM Today)</h2>
+        <p style="font-size:1.2rem; color:var(--text-muted);">Personalized live video preview session with our Imitation Jewels experts</p>
+      </div>
+      <div class="slot-status-container" id="slotStatusContainerVc">
+        <!-- Dynamically populated in wholesale.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW TO ORDER GUIDE MODAL -->
+  <div class="modal-bg" id="guideModal">
+    <div class="pin-modal guide-pin-modal" style="max-width:550px;padding:35px;">
+      <button class="modal-x" id="closeGuideModal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      <h3 style="font-size:2.2rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:400;text-transform:uppercase;text-align:center;">How to Order Guide 🎥</h3>
+      <p style="font-size:1.3rem;color:#666;margin-bottom:24px;text-align:center;">Ordering premium Anti-Tarnish Fine VFS Imitation Jewels is quick and easy. Follow these 4 simple steps!</p>
+      <div class="guide-steps-container" style="display:flex;flex-direction:column;gap:16px;">
+        <div class="guide-step-card"><div class="step-num">1</div><div class="step-text-container"><h4 class="step-title">Select &amp; Add Products</h4><p class="step-desc">Browse our catalog of rings, earrings, necklaces, and bracelets. Choose your quantity and add them to your cart.</p></div></div>
+        <div class="guide-step-card"><div class="step-num">2</div><div class="step-text-container"><h4 class="step-title">Fill Delivery Details</h4><p class="step-desc">Click "Proceed to Checkout" in your cart and fill in your WhatsApp phone number and delivery address details.</p></div></div>
+        <div class="guide-step-card"><div class="step-num">3</div><div class="step-text-container"><h4 class="step-title">Pay via UPI Transfer</h4><p class="step-desc">Scan the displayed payment QR code or tap the UPI payment button on mobile to pay directly to <strong>8939086608@fam</strong>.</p></div></div>
+        <div class="guide-step-card"><div class="step-num">4</div><div class="step-text-container"><h4 class="step-title">Submit Receipt on WhatsApp</h4><p class="step-desc">Click "Confirm &amp; Place Order", which opens WhatsApp with pre-filled details. Attach your payment screenshot to verify payment!</p></div></div>
+      </div>
+      <div class="guide-video-call-cta" style="margin-top:24px;text-align:center;background:var(--bg-secondary);padding:20px;border-radius:12px;border:1px dashed var(--color-secondary);">
+        <h4 style="font-size:1.5rem;color:var(--text-primary);font-weight:700;margin-bottom:6px;font-family:var(--font-heading);">📹 Live Video Call Session (8:30 PM Today)</h4>
+        <p style="font-size:1.2rem;color:var(--text-muted);margin-bottom:14px;line-height:1.4;">Book one of 24 daily slots for today's live preview session with our Imitation Jewels experts.</p>
+        <button class="btn-primary open-slot-modal-btn" id="guideToVCBtn" style="border:none;cursor:pointer;width:100%;padding:12px;font-size:1.3rem;font-weight:800;border-radius:8px;">📹 Book 8:30 PM Slot</button>
+      </div>
+      <button class="btn-primary" id="btnBackToShopFromGuide" style="width:100%;margin-top:16px;font-size:1.3rem;padding:12px;background:#121212;color:#D4AF37;border:1px solid #D4AF37;cursor:pointer;justify-content:center;">← Back to Storefront</button>
+    </div>
+  </div>
+
+  <!-- FLOATING HOW TO ORDER WIDGET -->
+  <button class="floating-guide-btn" id="openGuideBtn" aria-label="How to Order Guide">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+    <span>How to Order?</span>
+  </button>
+
+  <!-- SCROLL TO TOP -->
+  <button class="scroll-to-top" id="scrollTopBtn" aria-label="Scroll to top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 15-6-6-6 6"/></svg>
+  </button>
+
+  <!-- MOBILE SIDE DRAWER NAV -->
+  <div class="drawer-overlay" id="mobileNavDrawer">
+    <div class="drawer-content drawer-left">
+      <div class="drawer-header-row">
+        <div class="logo-text">VFS<span class="dot">.</span></div>
+        <button class="drawer-close" id="closeMobileNav">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <div class="drawer-search-row">
+        <div class="drawer-search-box">
+          <input type="text" id="drawerSearchInput" placeholder="Search for products...">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </div>
+      </div>
+      <div class="drawer-tabs-header">
+        <button class="drawer-tab-btn active" data-tab="menu">MENU</button>
+        <button class="drawer-tab-btn" data-tab="categories">CATEGORIES</button>
+      </div>
+      <div class="drawer-tab-content active" id="tabContentMenu">
+        <ul class="drawer-menu-list">
+          <li><a href="#" class="drawer-nav-link" data-target="home">HOME</a></li>
+          <li><a href="#trust" class="drawer-nav-link" data-target="about">ABOUT US</a></li>
+          <li><a href="#products" class="drawer-nav-link" data-target="shop">SHOP</a></li>
+          <li><a href="#store" class="drawer-nav-link" data-target="contact">CONTACT US</a></li>
+          <li><a href="#" class="drawer-nav-link" data-target="shipping-policy">SHIPPING POLICY</a></li>
+        </ul>
+      </div>
+      <div class="drawer-tab-content" id="tabContentCategories">
+        <ul class="drawer-menu-list" id="drawerCategoriesList">
+          <!-- Dynamically populated from JS -->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- html2pdf loaded last — only needed when user downloads invoice -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+    integrity="sha384-Yv5O+t3uE3hunW8uyrbpPW3iw6/5/Y7HitWJBLgqfMoA36NogMmy+8wWZMpn3HWc"
+    crossorigin="anonymous" defer></script>
 
 </body>
 </html>
