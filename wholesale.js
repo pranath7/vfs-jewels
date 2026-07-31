@@ -856,81 +856,58 @@ function renderProducts(filter) {
     const bannerInfo = CATEGORY_BANNERS[cat] || { 
       title: cat.charAt(0).toUpperCase() + cat.slice(1) + " Collection", 
       desc: "Premium handcrafted VFS creations.", 
-      img: "assets/hero_banner.webp" 
-    };
+    let catProducts = fullCatalog.filter(p => p.cat === cat);
+    if (!catProducts.length) return;
 
-    const trackHtml = `
-      <div class="category-track-row" data-category="${cat}">
-        <!-- Category Banner -->
-        <div class="category-banner" style="background-image: url('${clOpt(bannerInfo.img, 1200)}')">
-          <div class="category-banner-overlay">
-            <h2>${bannerInfo.title}</h2>
-            <p>${bannerInfo.desc}</p>
-            <a href="#category=${cat}" class="cat-view-all-btn">View All</a>
-          </div>
+    const section = document.createElement('section');
+    section.className = 'cat-track-section';
+    
+    const catTitle = cat.charAt(0).toUpperCase() + cat.slice(1);
+    
+    section.innerHTML = `
+      <div class="cat-track-header">
+        <div>
+          <h2 class="cat-track-title">✨ ${catTitle}</h2>
+          <p class="cat-track-sub">Handcrafted premium wholesale pieces</p>
         </div>
-        <!-- Horizontal Scroll Container -->
-        <div class="product-row-scroll" id="scrollRow_${cat}">
-          ${visibleList.map(p => {
+        <a href="#category/${cat}" class="cat-track-viewall">View All →</a>
+      </div>
+      <div class="cat-track-slider-wrapper">
+        <button class="track-nav-btn prev" aria-label="Previous">&lt;</button>
+        <div class="cat-track-slider" id="track-${cat}">
+          ${catProducts.map(p => {
+            const sku = `ZU1-${p.id}`;
             const isWL = wishlist.includes(p.id);
-            
             const stockVal = window.VFS_STOCK_CACHE[p.id];
-            const isOOS = (stockVal !== undefined && stockVal <= 0);
+            const minQty = p.moq ? parseInt(p.moq) : 1;
+            const isOOS = (stockVal !== undefined && (stockVal <= 0 || stockVal < minQty));
             
-            let priceHtml = '';
-            let quickActionHtml = '';
+            const wsPrice = p.wholesalePrice || p.wholesale_price || Math.round((p.price || 499) * 0.5);
+            const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
+            const off = pct(wsPrice, retailMrp);
             
-            if (shoppingMode === 'retail') {
-              const priceInfo = getRetailPriceInfo(p);
-              const retailPrice = priceInfo.price;
-              const retailMrp = priceInfo.mrp;
-              const isDiscounted = retailMrp > retailPrice;
-              const off = isDiscounted ? pct(retailPrice, retailMrp) : 0;
-              
-              priceHtml = `
-                <span class="price-now">${fmt(retailPrice)}</span>
-                ${isDiscounted ? `
-                  <span class="price-was">${fmt(retailMrp)}</span>
-                  <span class="price-off">${off}% OFF</span>
-                ` : ''}
-              `;
-              
-              quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
-            } else {
-              // Wholesale mode
-              if (!wholesaleUnlocked) {
-                priceHtml = `<span class="price-now" style="font-size:1.15rem; color:#ff3b30; font-weight:700;">🔒 Locked (Pay Advance)</span>`;
-                quickActionHtml = `<div class="p-quick unlock-prices-btn" style="background:#D4AF37; color:#121212; font-weight:700;">Unlock Prices</div>`;
-              } else {
-                const wsPrice = p.wholesalePrice || Math.round((p.price || 499) * 0.6);
-                const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
-                const off = pct(wsPrice, retailMrp);
-                
-                priceHtml = `
-                  <span class="price-now" style="color:var(--color-primary);">${fmt(wsPrice)}</span>
-                  <span class="price-was">${fmt(retailMrp)}</span>
-                  <span class="price-off">${off}% OFF</span>
-                `;
-                quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
-              }
-            }
+            let priceHtml = `
+              <span class="price-now" style="color:var(--color-primary); font-weight:800; font-size:1.15rem;">${fmt(wsPrice)}</span>
+              <span class="price-was">${fmt(retailMrp)}</span>
+              <span class="price-off">${off}% OFF</span>
+            `;
+            let quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
             
             if (isOOS) {
               quickActionHtml = `<div class="p-quick" style="background:#555;color:#ccc;cursor:not-allowed;font-weight:700;">Sold Out</div>`;
             }
             
-            const dynamicBadge = (shoppingMode === 'retail') ? getRetailPriceInfo(p).badge : (p.badge || '');
-            
+            const dynamicBadge = p.badge || '';
+
             return `
               <div class="p-card" data-id="${p.id}">
-                ${isOOS ? `<span class="p-badge" style="background:#ff3b30;color:#fff;">Sold Out</span>` : (dynamicBadge ? `<span class="p-badge${dynamicBadge === 'Sale' ? ' sale' : ''}">${dynamicBadge}</span>` : '')}
-                <button class="p-wish${isWL ? ' active' : ''}" data-wl="${p.id}" aria-label="Wishlist">
+                ${dynamicBadge ? `<span class="p-badge">${dynamicBadge}</span>` : ''}
+                <button class="p-wish ${isWL ? 'active' : ''}" data-wish="${p.id}">
                   <svg viewBox="0 0 24 24" fill="${isWL ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
                 </button>
-    <div class="p-img">
-      <img src="${clOpt(p.img, 380)}" alt="${p.name}" loading="lazy" decoding="async">
-      ${quickActionHtml}
-    </div>
+                <div class="p-img-wrap">
+                  <img src="${window.clOpt(p.img, 400)}" onerror="this.onerror=null;this.src='https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_400/v1783178917/whbmflasdurxiag7au7t.jpg';" alt="${p.name}" loading="lazy">
+                </div>
                 <div class="p-info">
                   <div class="p-meta">${p.meta}</div>
                   <div class="p-name">${p.name}</div>
@@ -1030,39 +1007,16 @@ function loadNextBatch(cat, list, scrollRow) {
     let quickActionHtml = '';
     
     if (shoppingMode === 'retail') {
-      const priceInfo = getRetailPriceInfo(p);
-      const retailPrice = priceInfo.price;
-      const retailMrp = priceInfo.mrp;
-      const isDiscounted = retailMrp > retailPrice;
-      const off = isDiscounted ? pct(retailPrice, retailMrp) : 0;
+      const wsPrice = p.wholesalePrice || p.wholesale_price || Math.round((p.price || 499) * 0.5);
+      const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
+      const off = pct(wsPrice, retailMrp);
       
       priceHtml = `
-        <span class="price-now">${fmt(retailPrice)}</span>
-        ${isDiscounted ? `
-          <span class="price-was">${fmt(retailMrp)}</span>
-          <span class="price-off">${off}% OFF</span>
-        ` : ''}
+        <span class="price-now" style="color:var(--color-primary); font-weight:800; font-size:1.15rem;">${fmt(wsPrice)}</span>
+        <span class="price-was">${fmt(retailMrp)}</span>
+        <span class="price-off">${off}% OFF</span>
       `;
-      
       quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
-    } else {
-      // Wholesale mode
-      if (!wholesaleUnlocked) {
-        priceHtml = `<span class="price-now" style="font-size:1.15rem; color:#ff3b30; font-weight:700;">🔒 Locked (Pay Advance)</span>`;
-        quickActionHtml = `<div class="p-quick unlock-prices-btn" style="background:#D4AF37; color:#121212; font-weight:700;">Unlock Prices</div>`;
-      } else {
-        const wsPrice = p.wholesalePrice || Math.round((p.price || 499) * 0.6);
-        const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
-        const off = pct(wsPrice, retailMrp);
-        
-        priceHtml = `
-          <span class="price-now" style="color:var(--color-primary);">${fmt(wsPrice)}</span>
-          <span class="price-was">${fmt(retailMrp)}</span>
-          <span class="price-off">${off}% OFF</span>
-        `;
-        quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
-      }
-    }
     
     const stockVal = window.VFS_STOCK_CACHE[p.id];
     const isOOS = (stockVal !== undefined && stockVal <= 0);
@@ -1217,42 +1171,16 @@ function getProductCardHtml(p) {
   const stockVal = window.VFS_STOCK_CACHE[p.id];
   const isOOS = (stockVal !== undefined && stockVal <= 0);
   
-  let priceHtml = '';
-  let quickActionHtml = '';
+  const wsPrice = p.wholesalePrice || p.wholesale_price || Math.round((p.price || 499) * 0.5);
+  const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
+  const off = pct(wsPrice, retailMrp);
   
-  if (shoppingMode === 'retail') {
-    const priceInfo = getRetailPriceInfo(p);
-    const retailPrice = priceInfo.price;
-    const retailMrp = priceInfo.mrp;
-    const isDiscounted = retailMrp > retailPrice;
-    const off = isDiscounted ? pct(retailPrice, retailMrp) : 0;
-    
-    priceHtml = `
-      <span class="price-now">${fmt(retailPrice)}</span>
-      ${isDiscounted ? `
-        <span class="price-was">${fmt(retailMrp)}</span>
-        <span class="price-off">${off}% OFF</span>
-      ` : ''}
-    `;
-    
-    quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
-  } else {
-    if (!wholesaleUnlocked) {
-      priceHtml = `<span class="price-now" style="font-size:1.15rem; color:#ff3b30; font-weight:700;">🔒 Locked (Pay Advance)</span>`;
-      quickActionHtml = `<div class="p-quick unlock-prices-btn" style="background:#D4AF37; color:#121212; font-weight:700;">Unlock Prices</div>`;
-    } else {
-      const wsPrice = p.wholesalePrice || Math.round((p.price || 499) * 0.6);
-      const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
-      const off = pct(wsPrice, retailMrp);
-      
-      priceHtml = `
-        <span class="price-now" style="color:var(--color-primary);">${fmt(wsPrice)}</span>
-        <span class="price-was">${fmt(retailMrp)}</span>
-        <span class="price-off">${off}% OFF</span>
-      `;
-      quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
-    }
-  }
+  let priceHtml = `
+    <span class="price-now" style="color:var(--color-primary); font-weight:800; font-size:1.15rem;">${fmt(wsPrice)}</span>
+    <span class="price-was">${fmt(retailMrp)}</span>
+    <span class="price-off">${off}% OFF</span>
+  `;
+  let quickActionHtml = `<div class="p-quick" data-add="${p.id}">Add to Cart</div>`;
   
   if (isOOS) {
     quickActionHtml = `<div class="p-quick" style="background:#555;color:#ccc;cursor:not-allowed;font-weight:700;">Sold Out</div>`;
@@ -2772,67 +2700,26 @@ function openPDP(id) {
   let priceHtml = '';
   let qtyCartHtml = '';
   
-  if (shoppingMode === 'retail') {
-    const priceInfo = getRetailPriceInfo(p);
-    const retailPrice = priceInfo.price;
-    const retailMrp = priceInfo.mrp;
-    const isDisc = retailMrp > retailPrice;
-    const offPct = isDisc ? pct(retailPrice, retailMrp) : 0;
-    
-    priceHtml = `
-      <span class="pdp-price-now">${fmt(retailPrice)}</span>
-      ${isDisc ? `
-        <span class="pdp-price-was">${fmt(retailMrp)}</span>
-        <span class="pdp-price-off">${offPct}% OFF</span>
-      ` : ''}
-    `;
-    
-    qtyCartHtml = `
-      <div class="pdp-qty-selector">
-        <button id="pdpQtyDec" class="pdp-qty-btn">−</button>
-        <input type="number" id="pdpQtyInput" class="pdp-qty-input" value="${minQty}" min="${minQty}" readonly>
-        <button id="pdpQtyInc" class="pdp-qty-btn">+</button>
-      </div>
-      <button class="pdp-btn-add-new" id="pdpBtnAdd" data-id="${p.id}">
-        ADD TO CART
-      </button>
-    `;
-  } else {
-    // Wholesale Mode
-    if (!wholesaleUnlocked) {
-      priceHtml = `
-        <span class="pdp-price-now" style="font-size: 1.8rem; font-weight:700; color:#ff3b30; display:flex; align-items:center; gap:6px;">
-          🔒 Locked (Pay Advance to View)
-        </span>
-      `;
-      qtyCartHtml = `
-        <button class="pdp-btn-add-new" id="pdpUnlockTrigger" style="width: 100%; background: #D4AF37; border-color: #D4AF37; color: #121212; font-weight:700;">
-          PAY ADVANCE TO UNLOCK WHOLESALE PRICES
-        </button>
-      `;
-    } else {
-      const wsPrice = p.wholesalePrice || Math.round((p.price || 499) * 0.6);
-      const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
-      const offPct = pct(wsPrice, retailMrp);
-      
-      priceHtml = `
-        <span class="pdp-price-now" style="color:var(--color-primary);">${fmt(wsPrice)} <span style="font-size:1.1rem;font-weight:400;color:#888;">(Wholesale Price)</span></span>
-        <span class="pdp-price-was">${fmt(retailMrp)}</span>
-        <span class="pdp-price-off">${offPct}% OFF</span>
-      `;
-      
-      qtyCartHtml = `
-        <div class="pdp-qty-selector">
-          <button id="pdpQtyDec" class="pdp-qty-btn">−</button>
-          <input type="number" id="pdpQtyInput" class="pdp-qty-input" value="${minQty}" min="${minQty}" readonly>
-          <button id="pdpQtyInc" class="pdp-qty-btn">+</button>
-        </div>
-        <button class="pdp-btn-add-new" id="pdpBtnAdd" data-id="${p.id}">
-          ADD TO CART
-        </button>
-      `;
-    }
-  }
+  const wsPrice = p.wholesalePrice || p.wholesale_price || Math.round((p.price || 499) * 0.5);
+  const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
+  const offPct = pct(wsPrice, retailMrp);
+  
+  priceHtml = `
+    <span class="pdp-price-now" style="color:var(--color-primary); font-weight:800;">${fmt(wsPrice)} <span style="font-size:1.1rem;font-weight:400;color:#888;">(Wholesale Price)</span></span>
+    <span class="pdp-price-was">${fmt(retailMrp)}</span>
+    <span class="pdp-price-off">${offPct}% OFF</span>
+  `;
+  
+  qtyCartHtml = `
+    <div class="pdp-qty-selector">
+      <button id="pdpQtyDec" class="pdp-qty-btn">−</button>
+      <input type="number" id="pdpQtyInput" class="pdp-qty-input" value="${minQty}" min="${minQty}" readonly>
+      <button id="pdpQtyInc" class="pdp-qty-btn">+</button>
+    </div>
+    <button class="pdp-btn-add-new" id="pdpBtnAdd" data-id="${p.id}">
+      ADD TO CART
+    </button>
+  `;
 
   const stock = window.VFS_STOCK_CACHE[p.id];
   const isOutOfStock = (stock !== undefined && (stock <= 0 || (shoppingMode === 'wholesale' && stock < minQty)));
