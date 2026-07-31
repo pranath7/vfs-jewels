@@ -839,6 +839,10 @@ function getCurrentProductPrice(p) {
 
 // ── Render Product Grid (Horizontal Scrolling Categories) ──
 function renderProducts(filter) {
+  try {
+    if (typeof renderProductShelves === 'function') renderProductShelves();
+  } catch (e) {}
+
   const container = $('#categoryTracksContainer');
   if (!container) return;
   container.innerHTML = "";
@@ -5566,7 +5570,7 @@ function setupBirthdayCircle() {
 async function renderProductShelves() {
   const catalog = getFullCatalog();
   const now = Date.now();
-  const isWholesale = (shoppingMode === 'wholesale' || window.location.pathname.includes('wholesale'));
+  const isWholesale = (shoppingMode === 'wholesale' || localStorage.getItem('vfs_user_mode') === 'wholesale' || localStorage.getItem('vfs_shopping_mode') === 'wholesale' || window.location.pathname.includes('wholesale'));
 
   function shelfCard(p, badge) {
     const curPrice = isWholesale ? getWholesalePrice(p) : getRetailPriceInfo(p).price;
@@ -5958,6 +5962,9 @@ function switchModeSeamlessly(targetMode) {
   
   if (typeof renderProducts === 'function') {
     try { renderProducts(null); } catch (e) {}
+  }
+  if (typeof renderProductShelves === 'function') {
+    try { renderProductShelves(); } catch (e) {}
   }
   if (typeof renderCart === 'function') {
     try { renderCart(); } catch (e) {}
