@@ -5357,12 +5357,8 @@ async function renderProductShelves() {
   const mode = shoppingMode;
 
   function shelfCard(p, badge) {
-    const priceInfo = getRetailPriceInfo(p);
-    const displayPrice = mode === 'wholesale'
-      ? (wholesaleUnlocked ? fmt(p.wholesalePrice || Math.round((p.price || 499) * 0.6)) : '🔒 Login to view')
-      : fmt(priceInfo.price);
-    const oldPrice = mode === 'retail' && priceInfo.mrp && priceInfo.mrp !== priceInfo.price
-      ? `<span style="text-decoration:line-through;color:#aaa;font-size:1.1rem;margin-left:4px;">${fmt(priceInfo.mrp)}</span>` : '';
+    const wsPrice = getWholesalePrice(p);
+    const retailMrp = p.mrp || Math.round(wsPrice * 2.5);
     const badgeHtml = badge ? `<span class="sale-ribbon">${badge}</span>` : '';
     return `
       <div class="p-card" style="cursor:pointer;position:relative;" onclick="openPDP(${p.id})">
@@ -5373,7 +5369,10 @@ async function renderProductShelves() {
         <div class="p-info" style="padding:10px 8px;">
           <div class="p-meta" style="font-size:1.1rem;color:#888;">${p.meta || ''}</div>
           <div class="p-name" style="font-size:1.3rem;font-weight:700;margin:3px 0;">${p.name}</div>
-          <div class="p-prices" style="font-size:1.4rem;font-weight:700;color:var(--color-secondary);">${displayPrice}${oldPrice}</div>
+          <div class="p-prices" style="font-size:1.4rem;font-weight:700;color:var(--color-primary);display:flex;align-items:center;gap:6px;">
+            <span>${fmt(wsPrice)}</span>
+            <span style="text-decoration:line-through;color:#aaa;font-size:1.1rem;font-weight:400;">${fmt(retailMrp)}</span>
+          </div>
         </div>
       </div>`;
   }
