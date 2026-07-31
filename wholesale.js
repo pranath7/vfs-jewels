@@ -1699,13 +1699,153 @@ function updateCounts() {
   $('#wlCT').textContent = wishlist.length;
 }
 
-// ── Drawer Open/Close ──
+// ── Drawer Open/Close & Profile Hub ──
+function renderProfileHub() {
+  const profileBody = $('#profileBody');
+  if (!profileBody) return;
+
+  const storedUser = localStorage.getItem('vfs_wholesale_user');
+  let user = null;
+  try {
+    user = storedUser ? JSON.parse(storedUser) : null;
+  } catch (e) {
+    user = null;
+  }
+
+  const walletVal = (typeof getWalletBalance === 'function') ? getWalletBalance() : (user ? (user.walletBalance || 0) : 0);
+  const isWholesale = shoppingMode === 'wholesale';
+  const wlCount = wishlist.length;
+
+  const userName = user ? (user.name || 'Reseller Partner') : 'Valued Customer';
+  const userPhone = user ? (user.phone || '') : '';
+  const shopName = user ? (user.shopName || user.businessName || '') : '';
+
+  const avatarChar = userName ? userName.charAt(0).toUpperCase() : '👑';
+  const avatarEl = $('#profileAvatarText');
+  if (avatarEl) avatarEl.textContent = avatarChar;
+
+  const headerName = $('#profileHeaderName');
+  if (headerName) headerName.textContent = userName;
+
+  const headerSub = $('#profileHeaderSub');
+  if (headerSub) headerSub.textContent = isWholesale ? (shopName ? `🏬 ${shopName}` : '👑 Wholesale Business Member') : '✨ Retail Preferred Member';
+
+  profileBody.innerHTML = `
+    <!-- User Info Card -->
+    <div class="profile-hub-card" style="background:linear-gradient(135deg, #11141e 0%, #1e1b15 100%); color:#fff; border:1px solid #D4AF37;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+        <div>
+          <h4 style="margin:0; font-size:1.35rem; color:#ffffff; font-weight:700;">${userName}</h4>
+          ${userPhone ? `<p style="margin:4px 0 0 0; font-size:1.1rem; color:#aaa;">📞 ${userPhone}</p>` : ''}
+          ${shopName ? `<p style="margin:4px 0 0 0; font-size:1.1rem; color:#D4AF37; font-weight:600;">🏬 ${shopName}</p>` : ''}
+        </div>
+        <span style="background:#D4AF37; color:#121212; font-size:0.85rem; font-weight:800; padding:4px 10px; border-radius:20px; text-transform:uppercase;">
+          ${isWholesale ? '👑 Wholesale' : '✨ Retail'}
+        </span>
+      </div>
+    </div>
+
+    <!-- Wallet Balance Banner -->
+    <div class="profile-wallet-banner">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:1.8rem;">👛</span>
+          <div>
+            <div style="font-size:0.95rem; color:#D4AF37; font-weight:700; text-transform:uppercase;">VFS Customer Wallet</div>
+            <div style="font-size:1.8rem; font-weight:900; color:#ffffff;">₹${walletVal}</div>
+          </div>
+        </div>
+        <button id="pHubOpenWallet" style="background:#D4AF37; color:#121212; border:none; padding:8px 16px; border-radius:6px; font-weight:800; cursor:pointer; font-size:1.05rem;">
+          Open Wallet
+        </button>
+      </div>
+      <p style="font-size:0.95rem; color:rgba(255,255,255,0.75); margin:0;">Includes Advance Credits &amp; Refund Balances.</p>
+    </div>
+
+    <!-- Action Links -->
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div class="profile-menu-item" id="pHubWishlist">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:1.4rem;">❤️</span>
+          <span>My Saved Wishlist</span>
+        </div>
+        <span style="background:var(--color-primary, #D4AF37); color:#121212; padding:2px 10px; border-radius:12px; font-weight:800; font-size:0.95rem;">${wlCount} items</span>
+      </div>
+
+      <div class="profile-menu-item" id="pHubTracking">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:1.4rem;">📦</span>
+          <span>Track Order &amp; Shipments</span>
+        </div>
+        <span>&rarr;</span>
+      </div>
+
+      <div class="profile-menu-item" id="pHubSwitchMode">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:1.4rem;">🔄</span>
+          <span>Switch Mode (${isWholesale ? 'Wholesale' : 'Retail'})</span>
+        </div>
+        <span>&rarr;</span>
+      </div>
+
+      <a href="https://api.whatsapp.com/send?phone=919840757363&text=Hi%20VFS%20Jewels%2C%20I%20need%20assistance%20with%20my%20account." target="_blank" class="profile-menu-item" style="border-color:#25D366; color:#25D366;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:1.4rem;">💬</span>
+          <span>Official WhatsApp VIP Support</span>
+        </div>
+        <span>&rarr;</span>
+      </a>
+    </div>
+  `;
+
+  const walletBtn = $('#pHubOpenWallet');
+  if (walletBtn) {
+    walletBtn.onclick = () => {
+      closeDrawer('profile');
+      if (typeof window.openWalletModalFunc === 'function') window.openWalletModalFunc();
+    };
+  }
+
+  const wlBtn = $('#pHubWishlist');
+  if (wlBtn) {
+    wlBtn.onclick = () => {
+      closeDrawer('profile');
+      openDrawer('wl');
+    };
+  }
+
+  const trackBtn = $('#pHubTracking');
+  if (trackBtn) {
+    trackBtn.onclick = () => {
+      closeDrawer('profile');
+      const trackModal = $('#trackingModal') || $('#openTracking');
+      if (trackModal) trackModal.click();
+    };
+  }
+
+  const modeBtn = $('#pHubSwitchMode');
+  if (modeBtn) {
+    modeBtn.onclick = () => {
+      closeDrawer('profile');
+      const modeModal = $('#openModeModal');
+      if (modeModal) modeModal.click();
+      else window.location.href = isWholesale ? 'index.html' : 'wholesale.html';
+    };
+  }
+}
+
 function openDrawer(type) {
   if (type === 'cart') {
     pruneCart();
     renderCart();
     $('#cartBG').classList.add('active');
     $('#cartDW').classList.add('active');
+  } else if (type === 'profile') {
+    renderProfileHub();
+    const bg = $('#profileBG');
+    const dw = $('#profileDW');
+    if (bg) bg.classList.add('active');
+    if (dw) dw.classList.add('active');
   } else {
     renderWishlist();
     $('#wlBG').classList.add('active');
@@ -1720,6 +1860,11 @@ function closeDrawer(type) {
   if (type === 'cart') {
     $('#cartBG').classList.remove('active');
     $('#cartDW').classList.remove('active');
+  } else if (type === 'profile') {
+    const bg = $('#profileBG');
+    const dw = $('#profileDW');
+    if (bg) bg.classList.remove('active');
+    if (dw) dw.classList.remove('active');
   } else {
     $('#wlBG').classList.remove('active');
     $('#wlDW').classList.remove('active');
@@ -1733,9 +1878,19 @@ $('#openCart').addEventListener('click', () => openDrawer('cart'));
 $('#closeCartDW').addEventListener('click', () => closeDrawer('cart'));
 $('#cartBG').addEventListener('click', () => closeDrawer('cart'));
 
-$('#openWL').addEventListener('click', () => openDrawer('wl'));
-$('#closeWLDW').addEventListener('click', () => closeDrawer('wl'));
-$('#wlBG').addEventListener('click', () => closeDrawer('wl'));
+const openProfileBtn = $('#openProfileBtn');
+if (openProfileBtn) openProfileBtn.addEventListener('click', () => openDrawer('profile'));
+const closeProfileDW = $('#closeProfileDW');
+if (closeProfileDW) closeProfileDW.addEventListener('click', () => closeDrawer('profile'));
+const profileBG = $('#profileBG');
+if (profileBG) profileBG.addEventListener('click', () => closeDrawer('profile'));
+
+const openWLBtn = $('#openWL');
+if (openWLBtn) openWLBtn.addEventListener('click', () => openDrawer('wl'));
+const closeWLDWBtn = $('#closeWLDW');
+if (closeWLDWBtn) closeWLDWBtn.addEventListener('click', () => closeDrawer('wl'));
+const wlBGElem = $('#wlBG');
+if (wlBGElem) wlBGElem.addEventListener('click', () => closeDrawer('wl'));
 
 // ── Search ──
 $('#openSearch').addEventListener('click', () => {

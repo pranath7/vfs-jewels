@@ -115,7 +115,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap"></noscript>
 
-  <link rel="stylesheet" href="style.css?v=20260730_v1785504480">
+  <link rel="stylesheet" href="style.css?v=20260730_v1785504903">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -184,9 +184,10 @@
           </button>
           <button class="icon-btn" id="openSearch" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button>
           <button class="icon-btn" id="openTracking" aria-label="Track Order" title="Track Order"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2" ry="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></button>
-          <button class="icon-btn" id="openModeModal" aria-label="Change Mode" title="Wholesale / Retail Preference" style="font-size:1.1rem; padding:4px 8px; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-secondary);">🔄 Mode</button>
-          <button class="icon-btn" id="openWalletModal" onclick="window.openWalletModalFunc()" aria-label="Wallet" title="VFS Customer Wallet & Refund Balance" style="font-size:1.1rem; padding:4px 8px; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--color-secondary); font-weight:700; display:inline-flex; align-items:center; gap:4px;">👛 Wallet</button>
-          <button class="icon-btn" id="openWL" aria-label="Wishlist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg><span class="badge" id="wlCount">0</span></button>
+          <button class="icon-btn profile-nav-btn" id="openProfileBtn" aria-label="Customer Profile" title="My Account & Customer Dashboard" style="font-size:1.1rem; padding:5px 12px; border-radius:20px; border:1px solid #D4AF37; background:rgba(212,175,55,0.1); color:var(--color-secondary); font-weight:700; display:inline-flex; align-items:center; gap:6px; cursor:pointer; position:relative;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span id="profileNavLabel" style="font-size:0.95rem;">Account</span>
+          </button>
           <button class="icon-btn" id="openCart" aria-label="Cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="badge" id="cartCount">0</span></button>
         </div>
       </div>
@@ -852,6 +853,24 @@
     <div class="dw-body" id="wlBody"></div>
   </div>
 
+  <!-- CUSTOMER PROFILE DRAWER -->
+  <div class="dw-bg" id="profileBG"></div>
+  <aside class="dw profile-drawer" id="profileDW" style="max-width: 440px;">
+    <div class="dw-head profile-dw-head" style="background: linear-gradient(135deg, #11141e 0%, #1e1b15 100%); color: #ffffff; padding: 20px 24px; border-bottom: 1px solid rgba(212,175,55,0.3); display: flex; align-items: center; justify-content: space-between;">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div class="profile-avatar" style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, #D4AF37, #AA7C11); color:#121212; font-weight:800; font-size:1.5rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(212,175,55,0.3);" id="profileAvatarText">👤</div>
+        <div>
+          <h3 id="profileHeaderName" style="font-size:1.45rem; margin:0; color:#ffffff; font-weight:700;">My Account</h3>
+          <p id="profileHeaderSub" style="font-size:1.1rem; margin:2px 0 0 0; color:#D4AF37; font-weight:500;">VFS Customer Dashboard</p>
+        </div>
+      </div>
+      <button class="dw-close" id="closeProfileDW" aria-label="Close Profile" style="color:#ffffff; background:transparent; border:none; cursor:pointer;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+    <div class="dw-body profile-dw-body" id="profileBody" style="padding: 20px; overflow-y: auto;">
+      <!-- Dynamically filled via renderProfileHub() -->
+    </div>
+  </aside>
+
   <!-- GOOGLE REVIEW MODAL -->
   <div class="modal-bg" id="googleReviewModal">
     <div class="review-modal">
@@ -1319,7 +1338,7 @@
 
   <!-- CDN libraries loaded last so they don't block page render -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="app.js?v=20260730_v1785504480" defer></script>
+  <script src="app.js?v=20260730_v1785504903" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

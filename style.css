@@ -4886,3 +4886,55 @@ body:has(.drawer.active) .floating-order-btn {
   stroke: #ffffff !important;
   color: #ffffff !important;
 }
+
+/* ── Customer Profile Hub & Drawer Styling ── */
+.profile-hub-card {
+  background: var(--bg-secondary, #1a1e2b);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.profile-wallet-banner {
+  background: linear-gradient(135deg, #1e1b15 0%, #2a2214 100%);
+  border: 1px solid #D4AF37;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+.profile-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--bg-secondary, #ffffff);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  color: var(--color-text, #121212);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-menu-item:hover {
+  border-color: #D4AF37;
+  background: rgba(212, 175, 55, 0.08);
+  transform: translateX(3px);
+}
+
+body:has(#profileDW.active) .floating-guide-btn,
+body:has(#profileBG.active) .floating-guide-btn,
+body:has(#profileDW.active) .floating-order-btn,
+body:has(#profileBG.active) .floating-order-btn {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
