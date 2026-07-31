@@ -2077,18 +2077,26 @@ function closeCheckout() {
   }
 }
 
-$('#checkoutBtn').addEventListener('click', openCheckout);
-$('#closeCheckout').addEventListener('click', closeCheckout);
-$('#checkoutModal').addEventListener('click', (e) => {
-  if (e.target === $('#checkoutModal')) closeCheckout();
-});
+const btnCo = $('#checkoutBtn');
+if (btnCo) btnCo.addEventListener('click', openCheckout);
+const closeCo = $('#closeCheckout');
+if (closeCo) closeCo.addEventListener('click', closeCheckout);
+const modalCo = $('#checkoutModal');
+if (modalCo) {
+  modalCo.addEventListener('click', (e) => {
+    if (e.target === modalCo) closeCheckout();
+  });
+}
 // Automatically check wallet balance and coupons when phone number is entered
 async function checkWalletBalance() {
-  const phoneVal = $('#coPhone').value.trim();
+  const coPhoneEl = $('#coPhone');
+  if (!coPhoneEl) return;
+  const phoneVal = coPhoneEl.value.trim();
   const cleanPhone = phoneVal.replace(/\D/g, '').slice(-10);
   const walletContainer = $('#coWalletContainer');
   const walletBalanceSpan = $('#coWalletBalance');
   const walletCheckbox = $('#coUseWallet');
+  if (!walletContainer || !walletBalanceSpan || !walletCheckbox) return;
   
   if (cleanPhone.length === 10) {
     try {
@@ -2112,7 +2120,9 @@ async function checkWalletBalance() {
 }
 
 async function updateEligibleCoupons() {
-  const phoneVal = $('#coPhone').value.trim();
+  const coPhoneEl = $('#coPhone');
+  if (!coPhoneEl) return;
+  const phoneVal = coPhoneEl.value.trim();
   const cleanPhone = phoneVal.replace(/\D/g, '').slice(-10);
   const couponSelect = $('#coCouponSelect');
   if (!couponSelect) return;
