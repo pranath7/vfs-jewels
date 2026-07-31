@@ -5150,6 +5150,7 @@ function setupShoppingMode() {
     modeSelectorModal.classList.remove('active');
     updateModeUI();
     renderProducts(null);
+    renderProductShelves();
     toast('Switched to Retail Mode successfully!');
   });
 
@@ -5565,14 +5566,12 @@ function setupBirthdayCircle() {
 async function renderProductShelves() {
   const catalog = getFullCatalog();
   const now = Date.now();
-  const mode = shoppingMode;
+  const isWholesale = (shoppingMode === 'wholesale' || window.location.pathname.includes('wholesale'));
 
   function shelfCard(p, badge) {
-    let wsPrice = getWholesalePrice(p);
-    let retailPrice = getRetailPriceInfo(p).price;
-    let displayPrice = shoppingMode === 'wholesale' ? fmt(wsPrice) : fmt(retailPrice);
-    let retailMrp = p.mrp || Math.round((shoppingMode === 'wholesale' ? wsPrice : retailPrice) * 1.5);
-    let badgeHtml = badge ? `<span class="sale-ribbon">${badge}</span>` : '';
+    const curPrice = isWholesale ? getWholesalePrice(p) : getRetailPriceInfo(p).price;
+    const retailMrp = p.mrp || Math.round(isWholesale ? curPrice * 2.5 : curPrice * 1.5);
+    const badgeHtml = badge ? `<span class="sale-ribbon">${badge}</span>` : '';
     return `
       <div class="p-card" style="cursor:pointer;position:relative;" onclick="openPDP(${p.id})">
         ${badgeHtml}
@@ -5583,7 +5582,7 @@ async function renderProductShelves() {
           <div class="p-meta" style="font-size:1.1rem;color:#888;">${p.meta || ''}</div>
           <div class="p-name" style="font-size:1.3rem;font-weight:700;margin:3px 0;">${p.name}</div>
           <div class="p-prices" style="font-size:1.4rem;font-weight:700;color:var(--color-primary);display:flex;align-items:center;gap:6px;">
-            <span>${displayPrice}</span>
+            <span>${fmt(curPrice)}</span>
             <span style="text-decoration:line-through;color:#aaa;font-size:1.1rem;font-weight:400;">${fmt(retailMrp)}</span>
           </div>
         </div>

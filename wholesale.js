@@ -5562,7 +5562,6 @@ function setupBirthdayCircle() {
 async function renderProductShelves() {
   const catalog = getFullCatalog();
   const now = Date.now();
-  const mode = shoppingMode;
 
   function shelfCard(p, badge) {
     const wsPrice = getWholesalePrice(p);
