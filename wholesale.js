@@ -1345,25 +1345,16 @@ function showHomePage() {
   const catView = $('#categoryPageView');
   if (catView) catView.style.display = 'none';
 
-  const elsToShow = [
+  const sectionsToDisplay = [
     '.hero-section', '.delivery-strip', '.categories-section', 
     '.banners-section', '.brand-story-section', '.products-section', 
-    '.trust-section', '.testimonials-section'
+    '.trust-section', '.testimonials-section', '#shelfNewArrivals', 
+    '#shelfBestSellers', '#shelfSale', '#instaReelsSection'
   ];
-  elsToShow.forEach(sel => {
+  sectionsToDisplay.forEach(sel => {
     const el = document.querySelector(sel);
-    if (el) el.style.display = '';
+    if (el) el.style.display = 'block';
   });
-
-  const newArrivals = $('#shelfNewArrivals');
-  const bestSellers = $('#shelfBestSellers');
-  const sale = $('#shelfSale');
-  const reels = $('#instaReelsSection');
-  
-  if (newArrivals && newArrivals.querySelector('.shelf-scroll')?.innerHTML) newArrivals.style.display = 'block';
-  if (bestSellers && bestSellers.querySelector('.shelf-scroll')?.innerHTML) bestSellers.style.display = 'block';
-  if (sale && sale.querySelector('.shelf-scroll')?.innerHTML) sale.style.display = 'block';
-  if (reels && reels.querySelector('.reels-grid')?.innerHTML) reels.style.display = 'block';
 
   renderProducts(currentFilter);
 }
@@ -1827,9 +1818,17 @@ function renderProfileHub() {
   if (modeBtn) {
     modeBtn.onclick = () => {
       closeDrawer('profile');
-      const modeModal = $('#openModeModal');
-      if (modeModal) modeModal.click();
-      else window.location.href = isWholesale ? 'index.html' : 'wholesale.html';
+      if (shoppingMode === 'wholesale' || window.location.pathname.includes('wholesale.html')) {
+        localStorage.setItem('vfs_user_mode', 'retail');
+        localStorage.setItem('vfs_shopping_mode', 'retail');
+        document.documentElement.setAttribute('data-shopping-mode', 'retail');
+        window.location.href = 'index.html';
+      } else {
+        localStorage.setItem('vfs_user_mode', 'wholesale');
+        localStorage.setItem('vfs_shopping_mode', 'wholesale');
+        document.documentElement.setAttribute('data-shopping-mode', 'wholesale');
+        window.location.href = 'wholesale.html';
+      }
     };
   }
 }
