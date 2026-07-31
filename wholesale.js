@@ -5173,16 +5173,35 @@ function setupShoppingMode() {
               if (verifyData.verified) {
                 rzpPayBtn.innerHTML = 'Unlocking Membership...';
                 
-                // Unlock membership immediately on confirmation
+                // Unlock membership & credit fee to customer wallet
+                const paidUnlockFee = advanceAmount || 1;
                 wholesaleUser.paymentStatus = 'paid';
                 wholesaleUser.unlocked = true;
+                wholesaleUser.advancePaid = (wholesaleUser.advancePaid || 0) + paidUnlockFee;
                 wholesaleUser.razorpayPaymentId = response.razorpay_payment_id;
                 wholesaleUnlocked = true; // ← critical: update module-level flag
+
+                // ── AUTOMATIC WALLET CREDIT FOR MOBILE NUMBER ──
+                const cleanPhone = (wholesaleUser.phone || '').replace(/\D/g, '');
+                let newWalletBal = paidUnlockFee;
+                if (cleanPhone && cleanPhone.length === 10 && window.VFS_DB && window.VFS_DB.getCustomerWalletBalance) {
+                  try {
+                    const currentBal = await window.VFS_DB.getCustomerWalletBalance(cleanPhone);
+                    newWalletBal = currentBal + paidUnlockFee;
+                    await window.VFS_DB.saveWalletBalance(cleanPhone, newWalletBal);
+                    console.log(`🎁 Automatically credited ₹${paidUnlockFee} to wallet for mobile ${cleanPhone}. New balance: ₹${newWalletBal}`);
+                  } catch (wErr) {
+                    console.error("Wallet credit error:", wErr);
+                  }
+                }
+                wholesaleUser.walletBalance = newWalletBal;
 
                 if (window.VFS_CLOUD_ACTIVE && window.db) {
                   await window.db.collection('wholesale_users').doc(wholesaleUser.uid).update({
                     paymentStatus: 'paid',
                     unlocked: true,
+                    advancePaid: wholesaleUser.advancePaid,
+                    walletBalance: newWalletBal,
                     razorpayPaymentId: response.razorpay_payment_id,
                     unlockedAt: Date.now()
                   });
@@ -5201,14 +5220,17 @@ function setupShoppingMode() {
                     body: JSON.stringify({
                       name: wholesaleUser.name || 'Reseller',
                       shopName: wholesaleUser.shopName || '',
-                      phone: wholesaleUser.phone
+                      phone: wholesaleUser.phone,
+                      paymentStatus: 'paid',
+                      advancePaid: paidUnlockFee,
+                      razorpayPaymentId: response.razorpay_payment_id
                     })
                   }).then(r => r.json()).then(res => {
                     console.log('✅ Wholesale Welcome WhatsApp sent:', res);
                   }).catch(err => console.warn('WhatsApp welcome notification warning:', err));
                 } catch(e) {}
 
-                alert("🎉 Payment successful! Your Business Club membership has been activated and wholesale prices are unlocked!");
+                alert(`🎉 Payment successful! Your Business Club membership has been activated, wholesale prices are unlocked, and ₹${paidUnlockFee} has been automatically credited to your wallet (+91 ${cleanPhone})!`);
                 
                 // Close the lock overlay using the CORRECT element ID
                 const lockOverlay = $('#royalLockOverlay');

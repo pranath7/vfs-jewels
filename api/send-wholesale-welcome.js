@@ -106,7 +106,33 @@ function saveWholesaleUserToFirestore(user) {
     req.end();
   });
 
-  return Promise.all([saveToWholesaleUsers, saveLog]);
+  // Automatically credit paid unlock fee to customer's wallet in wallet_credits collection
+  const shortPhone = cleanPhone.slice(-10);
+  const creditAmount = isPaid ? (user.advancePaid || 1) : 0;
+  const walletData = JSON.stringify({
+    fields: {
+      balance: { doubleValue: creditAmount },
+      updatedAt: { integerValue: Date.now() },
+      phone: { stringValue: shortPhone }
+    }
+  });
+  const saveWalletCredit = isPaid ? new Promise((resolve) => {
+    const options = {
+      hostname: 'firestore.googleapis.com',
+      path: `/v1/projects/vfs-jewellery/databases/(default)/documents/wallet_credits/${shortPhone}`,
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(walletData)
+      }
+    };
+    const req = https.request(options, () => resolve());
+    req.on('error', () => resolve());
+    req.write(walletData);
+    req.end();
+  }) : Promise.resolve();
+
+  return Promise.all([saveToWholesaleUsers, saveLog, saveWalletCredit]);
 }
 
 module.exports = async (req, res) => {

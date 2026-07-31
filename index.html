@@ -115,7 +115,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap"></noscript>
 
-  <link rel="stylesheet" href="style.css?v=20260730_v1785417654">
+  <link rel="stylesheet" href="style.css?v=20260730_v1785476997">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -1095,7 +1095,7 @@
   <div class="modal-bg" id="wholesaleLoginModal">
     <div class="pin-modal" style="max-width:450px;padding:30px;">
       <h3 style="font-size:2.2rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;text-align:center;color:#121212;">Wholesale Login 🔑</h3>
-      <p style="font-size:1.3rem;color:#666;margin-bottom:20px;text-align:center;">Sign in with Google or enter your mobile number.</p>
+      <p style="font-size:1.3rem;color:#666;margin-bottom:20px;text-align:center;">Sign in with Google to log in or register.</p>
 
       <!-- Step 1: Google Sign-In -->
       <div id="loginStepPhone" style="display:block;">
@@ -1103,11 +1103,6 @@
           <svg width="20" height="20" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7l2.86 2.22c1.67-1.54 2.63-3.8 2.63-6.55z" fill="#4285F4"/><path d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.86-2.22C11.3 14.13 10.22 14.4 9 14.4c-2.34 0-4.33-1.57-5.03-3.69L1.03 13c1.5 2.98 4.58 5 8.1 5z" fill="#34A853"/><path d="M3.97 10.71A5.39 5.39 0 0 1 3.6 9c0-.59.1-1.17.28-1.71L1.03 5.07A8.99 8.99 0 0 0 0 9c0 1.45.35 2.82.97 4.04l3-2.33z" fill="#FBBC05"/><path d="M9 3.6c1.32 0 2.5.45 3.44 1.35l2.58-2.59C13.47.8 11.43 0 9 0 5.48 0 2.4 2.02.9 5.07l2.94 2.28c.7-2.12 2.69-3.69 5.03-3.69z" fill="#EA4335"/></svg>
           <span style="font-weight:700;">Continue with Google</span>
         </button>
-        <div style="text-align:center;color:#aaa;font-size:1.1rem;margin-bottom:12px;">— or enter mobile number directly —</div>
-        <div style="display:flex;gap:8px;">
-          <input type="tel" id="quickPhoneInput" placeholder="10-digit mobile number" maxlength="10" style="flex:1;padding:10px;font-size:1.2rem;border:1px solid #ccc;border-radius:4px;">
-          <button onclick="(function(){var p=document.getElementById('quickPhoneInput').value.replace(/\D/g,'');if(p.length!==10){alert('Enter valid 10-digit number');return;}localStorage.setItem('vfs_customer_phone',p);var s1=document.getElementById('loginStepPhone');var s2=document.getElementById('loginStepRegister');if(s1)s1.style.display='none';if(s2)s2.style.display='block';})()" style="padding:10px 14px;background:#D4AF37;color:#121212;border:none;border-radius:4px;font-weight:700;font-size:1.2rem;cursor:pointer;">→</button>
-        </div>
       </div>
 
       <!-- Step 2: Registration Form (shown after Google auth or phone entry) -->
@@ -1322,7 +1317,7 @@
 
   <!-- CDN libraries loaded last so they don't block page render -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="app.js?v=20260730_v1785417654" defer></script>
+  <script src="app.js?v=20260730_v1785476997" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

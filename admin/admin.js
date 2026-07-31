@@ -3146,14 +3146,30 @@ async function loadCustomers() {
  
     const searchVal = ($('#custSearchInput')?.value || '').toLowerCase();
     const filtered = customers.filter(c =>
-      !searchVal || (c.name || '').toLowerCase().includes(searchVal) || (c.phone || '').includes(searchVal)
+      !searchVal || (c.name || '').toLowerCase().includes(searchVal) || (c.phone || '').includes(searchVal) || (c.email || '').toLowerCase().includes(searchVal)
     );
  
     if (filtered.length === 0) {
       custBody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;color:#aaa;">No customers found</td></tr>';
       return;
     }
- 
+
+    // Get wallet credits for active balance display
+    const walletMap = {};
+    if (window.VFS_DB && window.VFS_DB.getWalletCredits) {
+      try {
+        const credits = await window.VFS_DB.getWalletCredits();
+        if (credits && Array.isArray(credits)) {
+          credits.forEach(cr => {
+            const pKey = (cr.id || cr.phone || '').replace(/\D/g, '').slice(-10);
+            if (pKey) walletMap[pKey] = cr.balance || 0;
+          });
+        }
+      } catch (wErr) {
+        console.warn("Wallet credits fetch warning:", wErr);
+      }
+    }
+
     custBody.innerHTML = filtered.map((c, i) => {
       let phoneDisplay = c.phone || '-';
       const custOrders = orders.filter(o => {
@@ -3187,42 +3203,39 @@ async function loadCustomers() {
         }
       }
       
+      const cleanPhoneKey = (phoneDisplay || '').replace(/\D/g, '').slice(-10);
+      const walletBal = (c.walletBalance !== undefined) ? c.walletBalance : (walletMap[cleanPhoneKey] || 0);
+
       const completedOrders = custOrders.filter(o => ['paid','dispatched','delivered','completed'].includes(o.status));
-      const totalSpend = completedOrders.reduce((s, o) => s + (o.total || 0) + (o.advanceAdjusted || 0), 0);
-      const orderCount = custOrders.length;
- 
-      // Tier logic
-      let tier = 'Bronze', tierClass = 'cust-tier-bronze';
-      if (totalSpend >= 200000) { tier = 'Platinum'; tierClass = 'cust-tier-platinum'; }
-      else if (totalSpend >= 100000) { tier = 'Gold'; tierClass = 'cust-tier-gold'; }
-      else if (totalSpend >= 50000) { tier = 'Silver'; tierClass = 'cust-tier-silver'; }
- 
+      const orderSpend = completedOrders.reduce((s, o) => s + (o.total || 0) + (o.advanceAdjusted || 0), 0);
+      const advancePaid = c.advancePaid || (c.unlocked || c.paymentStatus === 'paid' ? 1 : 0);
+      const totalSpend = advancePaid + orderSpend;
+
       const joined = c.registeredAt ? new Date(c.registeredAt).toLocaleDateString('en-IN') : '-';
+      const emailDisplay = c.email || c.userEmail || '-';
+      const businessDisplay = c.businessName || c.shopName || c.shop || '-';
       
-      // Wholesale Portal Status (Online Gateway Automated)
+      // Wholesale Portal Access Status
       let statusHtml = '';
       if (c.unlocked || c.paymentStatus === 'paid') {
-        statusHtml = `
-          <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
-            <span style="color:#27AE60; font-weight:700; font-size:1.15rem;">● Unlocked (Paid Online)</span>
-            <button class="btn-card-secondary" onclick="openWaDirectChat('${escapeHtml(phoneDisplay)}', '${escapeHtml(c.name || 'Reseller')}')" style="font-size:1.05rem; padding:4px 8px; border-radius:4px; font-weight:700; cursor:pointer; background:#25d366; color:#fff; border:none;">💬 Chat WhatsApp</button>
-          </div>
-        `;
+        statusHtml = `<span style="color:#27AE60; font-weight:700; font-size:1.15rem;">● Unlocked (Paid)</span>`;
       } else {
         statusHtml = `<span style="color:#e67e22; font-weight:600; font-size:1.1rem;">Pending Payment</span>`;
       }
- 
+
+      const waActionHtml = `<button class="btn-card-secondary" onclick="openWaDirectChat('${escapeHtml(phoneDisplay)}', '${escapeHtml(c.name || 'Reseller')}')" style="font-size:1.05rem; padding:6px 12px; border-radius:4px; font-weight:700; cursor:pointer; background:#25d366; color:#fff; border:none;">💬 Chat WhatsApp</button>`;
+
       return `<tr>
         <td>${i + 1}</td>
         <td><strong>${escapeHtml(c.name || '-')}</strong></td>
-        <td>${escapeHtml(phoneDisplay)}</td>
-        <td>${escapeHtml(c.shopName || c.shop || c.businessName || '-')}</td>
-        <td>${escapeHtml(c.city || '-')}</td>
+        <td><strong style="color:var(--color-primary);">${escapeHtml(phoneDisplay)}</strong></td>
+        <td>${escapeHtml(emailDisplay)}</td>
+        <td>${escapeHtml(businessDisplay)}</td>
+        <td><strong style="color:#27AE60; font-size:1.2rem;">${fmt(totalSpend)}</strong></td>
+        <td><strong style="color:#D4AF37; font-size:1.2rem;">${fmt(walletBal)}</strong></td>
         <td>${joined}</td>
-        <td>${orderCount}</td>
-        <td>${fmt(totalSpend)}</td>
-        <td><span class="cust-tier-badge ${tierClass}">${tier}</span></td>
         <td>${statusHtml}</td>
+        <td>${waActionHtml}</td>
       </tr>`;
     }).join('');
  
