@@ -3178,19 +3178,35 @@ async function loadCustomers() {
     // Get all customers from Firestore wholesale_users collection
     let rawCustomers = await window.VFS_DB.getCustomers();
 
-    // Deduplicate by clean 10-digit phone number
-    const seenPhones = new Set();
+    // Smart deduplication & status merging by clean 10-digit phone number
+    const phoneMap = {};
     let customers = [];
     if (rawCustomers && rawCustomers.length > 0) {
       rawCustomers.forEach(c => {
         const cleanP = (c.phone || c.id || '').replace(/\D/g, '').slice(-10);
-        if (cleanP && !seenPhones.has(cleanP)) {
-          seenPhones.add(cleanP);
-          customers.push({ ...c, phone: cleanP });
-        } else if (!cleanP) {
+        if (cleanP && cleanP.length === 10) {
+          if (!phoneMap[cleanP]) {
+            phoneMap[cleanP] = { ...c, phone: cleanP };
+          } else {
+            // Merge properties — paid status overrides pending status!
+            const existing = phoneMap[cleanP];
+            const isPaid = (c.paymentStatus === 'paid' || c.unlocked === true || c.advancePaid > 0) || (existing.paymentStatus === 'paid' || existing.unlocked === true || existing.advancePaid > 0);
+            phoneMap[cleanP] = {
+              ...existing,
+              ...c,
+              phone: cleanP,
+              name: (c.name && c.name !== 'Wholesale Member') ? c.name : existing.name,
+              businessName: c.businessName || existing.businessName,
+              paymentStatus: isPaid ? 'paid' : 'pending',
+              unlocked: isPaid,
+              advancePaid: isPaid ? Math.max(c.advancePaid || 0, existing.advancePaid || 0, 1) : 0
+            };
+          }
+        } else {
           customers.push(c);
         }
       });
+      customers = [...Object.values(phoneMap), ...customers];
     }
 
     // If no Firestore data, fall back to reading localStorage wholesale customers

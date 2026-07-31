@@ -47,8 +47,7 @@ function sendWhatsAppText(toPhone, message) {
 }
 
 function saveWholesaleUserToFirestore(user) {
-  const cleanPhone = (user.phone || '').replace(/\D/g, '');
-  const docId = cleanPhone; // Use phone as doc ID — matches how admin reads customers
+  const cleanPhone = (user.phone || '').replace(/\D/g, '').slice(-10);
   const isPaid = user.paymentStatus === 'paid';
 
   const fields = {
@@ -70,8 +69,9 @@ function saveWholesaleUserToFirestore(user) {
 
   const data = JSON.stringify({ fields });
 
-  // Save to wholesale_users (the collection admin reads for the Customers tab)
-  const saveToWholesaleUsers = new Promise((resolve) => {
+  // Save to wholesale_users (patching cleanPhone, phone_cleanPhone, 91cleanPhone)
+  const docVariants = [cleanPhone, 'phone_' + cleanPhone, '91' + cleanPhone];
+  const saveToWholesaleUsers = Promise.all(docVariants.map(docId => new Promise((resolve) => {
     const options = {
       hostname: 'firestore.googleapis.com',
       path: `/v1/projects/vfs-jewellery/databases/(default)/documents/wholesale_users/${docId}`,
@@ -85,7 +85,7 @@ function saveWholesaleUserToFirestore(user) {
     req.on('error', () => resolve());
     req.write(data);
     req.end();
-  });
+  })));
 
   // Also log to wholesale_registrations as an audit trail
   const logData = JSON.stringify({ fields: { ...fields, loggedAt: { integerValue: Date.now() } } });
