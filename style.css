@@ -554,19 +554,43 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .hero-prev { left: 16px; }
 .hero-next { right: 16px; }
 
+.hero-section {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #000000;
+}
+
+.hero-slider {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
 .hero-slide {
   display: none;
   position: relative;
+  width: 100%;
 }
 
-.hero-slide.active { display: block; }
-
-.hero-slide picture,
-.hero-slide img {
-  width: 100%;
+.hero-slide.active {
   display: block;
-  aspect-ratio: 16 / 8;
-  object-fit: cover;
+}
+
+.hero-banner-link {
+  display: block;
+  width: 100%;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.hero-slide img,
+.hero-banner-link img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
 }
 
 .hero-overlay {
