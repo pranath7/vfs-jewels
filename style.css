@@ -564,9 +564,9 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .hero-slide picture,
 .hero-slide img {
   width: 100%;
+  height: auto;
   display: block;
-  aspect-ratio: 16 / 8;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .hero-banner-wrap {
@@ -579,7 +579,6 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .hero-banner-wrap img {
   width: 100%;
   height: auto;
-  aspect-ratio: auto !important;
   display: block;
   object-fit: contain;
 }
@@ -592,6 +591,10 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   border-radius: 4px;
   transition: all 0.25s ease;
   outline: none;
+  text-indent: -9999px;
+  overflow: hidden;
+  font-size: 0;
+  line-height: 0;
 }
 
 .btn-light-banner-shop {
@@ -604,7 +607,8 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .btn-light-banner-shop:hover,
 .btn-light-banner-shop:focus {
   background: rgba(212, 175, 55, 0.18);
-  box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
+  border: 1.5px solid rgba(212, 175, 55, 0.6);
 }
 
 .btn-dark-banner-shop {
@@ -617,7 +621,8 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .btn-dark-banner-shop:hover,
 .btn-dark-banner-shop:focus {
   background: rgba(212, 175, 55, 0.18);
-  box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
+  border: 1.5px solid rgba(212, 175, 55, 0.6);
 }
 
 .hero-overlay {
