@@ -115,7 +115,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap"></noscript>
 
-  <link rel="stylesheet" href="style.css?v=20260730_v1785533204">
+  <link rel="stylesheet" href="style.css?v=20260730_v1785533599">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -745,13 +745,18 @@
           We have opened WhatsApp to let you send your payment screenshot. If WhatsApp did not open, tap the button below:
         </p>
 
-        <button class="dw-checkout" id="successWaBtn" style="width:100%;background:#25D366;border-color:#25D366;color:#FFFFFF;font-size:1.3rem;padding:14px;font-weight:800;margin-bottom:12px;">
-          Open WhatsApp to Confirm
+        <button class="dw-checkout" id="btnRequestWaBotInvoice" style="width:100%;background:#25D366;border-color:#25D366;color:#FFFFFF;font-size:1.3rem;padding:14px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
+          📱 Get Invoice & Photo Slip on WhatsApp
         </button>
 
-        <button id="successPdfBtn" style="width:100%;padding:12px;font-size:1.3rem;font-weight:700;background:#fff;border:1.5px solid var(--color-secondary);color:var(--color-secondary);border-radius:4px;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
-          📄 Download Invoice PDF
-        </button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <button id="btnDownloadPhotoSlip" style="width:100%;padding:12px;font-size:1.2rem;font-weight:700;background:#FFFDF0;border:1.5px solid #D4AF37;color:#121212;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+            📸 Photo Slip (PDF)
+          </button>
+          <button id="successPdfBtn" style="width:100%;padding:12px;font-size:1.2rem;font-weight:700;background:#fff;border:1.5px solid var(--color-secondary);color:var(--color-secondary);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+            📄 Tax Invoice (PDF)
+          </button>
+        </div>
 
         <button class="btn-primary" id="successCloseBtn" style="width:100%;padding:14px;font-size:1.3rem;justify-content:center;background:#121212;color:#FFFFFF;border:none;cursor:pointer;">
           Continue Shopping
@@ -1338,7 +1343,7 @@
 
   <!-- CDN libraries loaded last so they don't block page render -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="app.js?v=20260730_v1785533204" defer></script>
+  <script src="app.js?v=20260730_v1785533599" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

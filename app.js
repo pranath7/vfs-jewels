@@ -2632,34 +2632,53 @@ ${itemsSummaryText}
   $('#coStep2').style.display = 'none';
   $('#coStep3').style.display = 'block';
 
-  // Attach open link event to the success button
-  const waBtn = $('#successWaBtn');
-  const newWaBtn = waBtn.cloneNode(true);
-  waBtn.parentNode.replaceChild(newWaBtn, waBtn);
-  newWaBtn.addEventListener('click', () => {
-    window.open(waLink, '_blank');
-  });
+  // Store order ID clean
+  const orderIdClean = (activeCheckoutOrder.id || 'VF-0000').replace('#', '');
 
-  // Attach close listener to success close button
-  const closeBtn = $('#successCloseBtn');
-  const newCloseBtn = closeBtn.cloneNode(true);
-  closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
-  newCloseBtn.addEventListener('click', () => {
-    closeCheckout();
-    setTimeout(() => {
-      $('#coStep1').style.display = 'block';
-      $('#coStep2').style.display = 'none';
-      $('#coStep3').style.display = 'none';
-    }, 400);
-  });
+  // 1. WhatsApp Bot Request Button ("Get Invoice & Photo Slip on WhatsApp")
+  const waBotBtn = $('#btnRequestWaBotInvoice');
+  if (waBotBtn) {
+    const newWaBotBtn = waBotBtn.cloneNode(true);
+    waBotBtn.parentNode.replaceChild(newWaBotBtn, waBotBtn);
+    newWaBotBtn.addEventListener('click', () => {
+      const text = `Hi VFS Jewels! I just placed Order #${orderIdClean}. Please send me my official Tax Invoice & Product Photo Slip.`;
+      const url = `https://wa.me/919840757363?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+    });
+  }
 
-  // PDF Invoice Download button
+  // 2. Photo Slip Download Button
+  const photoSlipBtn = $('#btnDownloadPhotoSlip');
+  if (photoSlipBtn) {
+    const newPhotoSlipBtn = photoSlipBtn.cloneNode(true);
+    photoSlipBtn.parentNode.replaceChild(newPhotoSlipBtn, photoSlipBtn);
+    newPhotoSlipBtn.addEventListener('click', () => {
+      window.open(`/api/photo-slip?id=${orderIdClean}`, '_blank');
+    });
+  }
+
+  // 3. Tax Invoice Download button
   const pdfBtn = $('#successPdfBtn');
   if (pdfBtn) {
     const newPdfBtn = pdfBtn.cloneNode(true);
     pdfBtn.parentNode.replaceChild(newPdfBtn, pdfBtn);
     newPdfBtn.addEventListener('click', () => {
-      downloadInvoicePDF(activeCheckoutOrder);
+      window.open(`/api/invoice?id=${orderIdClean}`, '_blank');
+    });
+  }
+
+  // Attach close listener to success close button
+  const closeBtn = $('#successCloseBtn');
+  if (closeBtn) {
+    const newCloseBtn = closeBtn.cloneNode(true);
+    closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+    newCloseBtn.addEventListener('click', () => {
+      closeCheckout();
+      setTimeout(() => {
+        $('#coStep1').style.display = 'block';
+        $('#coStep2').style.display = 'none';
+        $('#coStep3').style.display = 'none';
+      }, 400);
     });
   }
 
