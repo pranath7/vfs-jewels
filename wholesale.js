@@ -2688,6 +2688,7 @@ document.addEventListener('keydown', (e) => {
 let currentPdpScrollListener = null;
 
 function openPDP(id) {
+  window.currentPdpProductId = id;
   const p = getFullCatalog().find(x => x.id === id);
   if (!p) return;
 
@@ -6662,3 +6663,60 @@ if (document.readyState === 'loading') {
 } else {
   initAllMasterModalListeners();
 }
+
+// ── Universal Keyboard Navigation (PDP & Tinder Swiper) ──
+document.addEventListener('keydown', (e) => {
+  const activeEl = document.activeElement;
+  if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable)) {
+    return;
+  }
+
+  const pdpOverlay = document.querySelector('#pdpOverlay');
+  const isPdpOpen = pdpOverlay && (pdpOverlay.classList.contains('active') || pdpOverlay.style.display === 'flex' || pdpOverlay.style.display === 'block');
+
+  if (isPdpOpen) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const addBtn = document.querySelector('#pdpBtnAdd');
+      if (addBtn) addBtn.click();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      // Left Arrow -> Next Product
+      if (typeof window.currentPdpProductId !== 'undefined' && typeof getFullCatalog === 'function') {
+        const catalog = getFullCatalog();
+        const currentIdx = catalog.findIndex(x => x.id === window.currentPdpProductId);
+        if (currentIdx !== -1 && catalog.length > 0) {
+          const nextIdx = (currentIdx + 1) % catalog.length;
+          openPDP(catalog[nextIdx].id);
+        }
+      }
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      // Right Arrow -> Previous Product
+      if (typeof window.currentPdpProductId !== 'undefined' && typeof getFullCatalog === 'function') {
+        const catalog = getFullCatalog();
+        const currentIdx = catalog.findIndex(x => x.id === window.currentPdpProductId);
+        if (currentIdx !== -1 && catalog.length > 0) {
+          const prevIdx = (currentIdx - 1 + catalog.length) % catalog.length;
+          openPDP(catalog[prevIdx].id);
+        }
+      }
+    }
+    return;
+  }
+
+  // Tinder Swiper Card Keyboard Navigation (when PDP is not open)
+  const tinderStack = document.querySelector('#tinderCardStack');
+  if (tinderStack) {
+    const cards = tinderStack.querySelectorAll('.tinder-card');
+    if (cards && cards.length > 0 && typeof window.executeSwipe === 'function') {
+      if (e.key === 'Enter' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        window.executeSwipe(true); // Like / Add to Cart
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        window.executeSwipe(false); // Dislike / Skip
+      }
+    }
+  }
+});
