@@ -456,27 +456,27 @@ const CATEGORY_BANNERS = {
   bracelets: { 
     title: "Bracelets Collection", 
     desc: "Elegant handcrafted anti-tarnish gold & CZ bracelets.", 
-    img: "" 
+    img: "assets/cat_preview_bracelets.png" 
   },
   necklaces: { 
     title: "Necklaces Collection", 
     desc: "Exquisite handcrafted gold & CZ necklace sets.", 
-    img: "" 
+    img: "assets/cat_preview_necklaces.png" 
   },
   kadas: { 
     title: "Kadas Collection", 
     desc: "Premium handcrafted daily-wear gold plated Kadas.", 
-    img: "" 
+    img: "assets/cat_preview_kadas.png" 
   },
   chains: { 
     title: "Chains Collection", 
     desc: "Classic and luxury gold-plated chains and necklaces.", 
-    img: "" 
+    img: "assets/cat_preview_chains.png" 
   },
   earrings: { 
     title: "Ear Rings Collection", 
     desc: "Dazzling handcrafted ear rings for every occasion.", 
-    img: "" 
+    img: "assets/cat_preview_earrings.png" 
   },
   rings: {
     title: "Rings Collection",
