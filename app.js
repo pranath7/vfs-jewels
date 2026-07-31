@@ -801,11 +801,29 @@ function getRetailPriceInfo(p) {
   };
 }
 
+function getWholesalePrice(p) {
+  if (p.wholesalePrice && typeof p.wholesalePrice === 'number' && p.wholesalePrice > 0) {
+    return p.wholesalePrice;
+  }
+  if (p.wholesale_price && typeof p.wholesale_price === 'number' && p.wholesale_price > 0) {
+    return p.wholesale_price;
+  }
+  const checkStr = `${p.name || ''} ${p.meta || ''} ${p.img || ''} ${p.sku || ''}`;
+  const match = checkStr.match(/VFS\s*(\d+)/i);
+  if (match && match[1]) {
+    const extractedPrice = parseInt(match[1], 10);
+    if (extractedPrice > 0 && extractedPrice < 10000) {
+      return extractedPrice;
+    }
+  }
+  return Math.round((p.price || 499) * 0.5);
+}
+
 function getCurrentProductPrice(p) {
   if (shoppingMode === 'retail') {
     return getRetailPriceInfo(p).price;
   } else {
-    return p.wholesalePrice || Math.round((p.price || 499) * 0.6);
+    return getWholesalePrice(p);
   }
 }
 
@@ -2803,12 +2821,12 @@ function openPDP(id) {
         </button>
       `;
     } else {
-      const wsPrice = p.wholesalePrice || Math.round((p.price || 499) * 0.6);
-      const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
+      const wsPrice = getWholesalePrice(p);
+      const retailMrp = p.mrp || Math.round(wsPrice * 2.5);
       const offPct = pct(wsPrice, retailMrp);
       
       priceHtml = `
-        <span class="pdp-price-now" style="color:var(--color-primary);">${fmt(wsPrice)} <span style="font-size:1.1rem;font-weight:400;color:#888;">(Wholesale Price)</span></span>
+        <span class="pdp-price-now" style="color:var(--color-primary); font-weight:800; font-size:1.8rem;">${fmt(wsPrice)} <span style="font-size:1.1rem;font-weight:400;color:#888;">(Wholesale Price)</span></span>
         <span class="pdp-price-was">${fmt(retailMrp)}</span>
         <span class="pdp-price-off">${offPct}% OFF</span>
       `;

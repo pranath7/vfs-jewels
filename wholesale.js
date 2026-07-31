@@ -803,11 +803,29 @@ function getRetailPriceInfo(p) {
   };
 }
 
+function getWholesalePrice(p) {
+  if (p.wholesalePrice && typeof p.wholesalePrice === 'number' && p.wholesalePrice > 0) {
+    return p.wholesalePrice;
+  }
+  if (p.wholesale_price && typeof p.wholesale_price === 'number' && p.wholesale_price > 0) {
+    return p.wholesale_price;
+  }
+  const checkStr = `${p.name || ''} ${p.meta || ''} ${p.img || ''} ${p.sku || ''}`;
+  const match = checkStr.match(/VFS\s*(\d+)/i);
+  if (match && match[1]) {
+    const extractedPrice = parseInt(match[1], 10);
+    if (extractedPrice > 0 && extractedPrice < 10000) {
+      return extractedPrice;
+    }
+  }
+  return Math.round((p.price || 499) * 0.5);
+}
+
 function getCurrentProductPrice(p) {
   if (shoppingMode === 'retail') {
     return getRetailPriceInfo(p).price;
   } else {
-    return p.wholesalePrice || Math.round((p.price || 499) * 0.6);
+    return getWholesalePrice(p);
   }
 }
 
@@ -855,9 +873,8 @@ function renderProducts(filter) {
 
     const bannerInfo = CATEGORY_BANNERS[cat] || { 
       title: cat.charAt(0).toUpperCase() + cat.slice(1) + " Collection", 
-      desc: "Premium handcrafted VFS creations.", 
-    let catProducts = fullCatalog.filter(p => p.cat === cat);
-    if (!catProducts.length) return;
+      desc: "Premium handcrafted VFS creations." 
+    };
 
     const section = document.createElement('section');
     section.className = 'cat-track-section';
@@ -875,15 +892,14 @@ function renderProducts(filter) {
       <div class="cat-track-slider-wrapper">
         <button class="track-nav-btn prev" aria-label="Previous">&lt;</button>
         <div class="cat-track-slider" id="track-${cat}">
-          ${catProducts.map(p => {
-            const sku = `ZU1-${p.id}`;
+          ${visibleList.map(p => {
             const isWL = wishlist.includes(p.id);
             const stockVal = window.VFS_STOCK_CACHE[p.id];
             const minQty = p.moq ? parseInt(p.moq) : 1;
             const isOOS = (stockVal !== undefined && (stockVal <= 0 || stockVal < minQty));
             
-            const wsPrice = p.wholesalePrice || p.wholesale_price || Math.round((p.price || 499) * 0.5);
-            const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
+            const wsPrice = getWholesalePrice(p);
+            const retailMrp = p.mrp || Math.round(wsPrice * 2.5);
             const off = pct(wsPrice, retailMrp);
             
             let priceHtml = `
@@ -921,7 +937,7 @@ function renderProducts(filter) {
         </div>
       </div>
     `;
-    container.insertAdjacentHTML('beforeend', trackHtml);
+    container.appendChild(section);
 
     // Attach horizontal scroll listener for lazy loading (infinite scroll)
     const scrollRow = document.getElementById(`scrollRow_${cat}`);
@@ -2700,12 +2716,12 @@ function openPDP(id) {
   let priceHtml = '';
   let qtyCartHtml = '';
   
-  const wsPrice = p.wholesalePrice || p.wholesale_price || Math.round((p.price || 499) * 0.5);
-  const retailMrp = p.mrp || Math.round((p.price || 499) * 1.5);
+  const wsPrice = getWholesalePrice(p);
+  const retailMrp = p.mrp || Math.round(wsPrice * 2.5);
   const offPct = pct(wsPrice, retailMrp);
   
   priceHtml = `
-    <span class="pdp-price-now" style="color:var(--color-primary); font-weight:800;">${fmt(wsPrice)} <span style="font-size:1.1rem;font-weight:400;color:#888;">(Wholesale Price)</span></span>
+    <span class="pdp-price-now" style="color:var(--color-primary); font-weight:800; font-size:1.8rem;">${fmt(wsPrice)} <span style="font-size:1.1rem;font-weight:400;color:#888;">(Wholesale Price)</span></span>
     <span class="pdp-price-was">${fmt(retailMrp)}</span>
     <span class="pdp-price-off">${offPct}% OFF</span>
   `;
