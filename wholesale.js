@@ -456,32 +456,32 @@ const CATEGORY_BANNERS = {
   bracelets: { 
     title: "Bracelets Collection", 
     desc: "Elegant handcrafted anti-tarnish gold & CZ bracelets.", 
-    img: "assets/banners/bracelets_banner.png" 
+    img: "" 
   },
   necklaces: { 
     title: "Necklaces Collection", 
     desc: "Exquisite handcrafted gold & CZ necklace sets.", 
-    img: "assets/banners/necklaces_banner.png" 
+    img: "" 
   },
   kadas: { 
     title: "Kadas Collection", 
     desc: "Premium handcrafted daily-wear gold plated Kadas.", 
-    img: "assets/banners/kadas_banner.png" 
+    img: "" 
   },
   chains: { 
     title: "Chains Collection", 
     desc: "Classic and luxury gold-plated chains and necklaces.", 
-    img: "assets/banners/chains_banner.png" 
+    img: "" 
   },
   earrings: { 
     title: "Ear Rings Collection", 
     desc: "Dazzling handcrafted ear rings for every occasion.", 
-    img: "assets/banners/earrings_banner.png" 
+    img: "" 
   },
   rings: {
     title: "Rings Collection",
     desc: "Stunning anti-tarnish gold & CZ designer rings.",
-    img: "assets/banners/bracelets_banner.png"
+    img: ""
   }
 };
 
@@ -1345,7 +1345,13 @@ function showCategoryPage(cat) {
   
   const heroBg = $('#catHeroBg');
   if (heroBg) {
-    heroBg.style.backgroundImage = `url('${clOpt(bannersInfo.img, 1200)}')`;
+    if (bannersInfo.img) {
+      heroBg.style.backgroundImage = `url('${clOpt(bannersInfo.img, 1200)}')`;
+      heroBg.style.display = 'block';
+    } else {
+      heroBg.style.backgroundImage = 'none';
+      heroBg.style.display = 'none';
+    }
   }
 
   const categoryProducts = getFullCatalog().filter(p => p.cat === cat && isProductVisible(p));

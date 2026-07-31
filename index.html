@@ -115,7 +115,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap"></noscript>
 
-  <link rel="stylesheet" href="style.css?v=20260730_v1785478154">
+  <link rel="stylesheet" href="style.css?v=20260730_v1785478797">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -203,12 +203,14 @@
         <span id="catBreadcrumb" style="color:var(--color-secondary); font-weight:700;">Collection</span>
       </div>
 
-      <!-- Category Hero Banner (Minimalist & High-Contrast) -->
+      <!-- Category Hero Banner (Minimalist & High-Contrast VFS Branding) -->
       <div id="catHeroBanner" class="category-hero" style="position:relative; border-radius:12px; overflow:hidden; margin-bottom: 30px; min-height: 240px; display: flex; align-items: center; padding: 32px 40px; background: linear-gradient(135deg, #0e1017 0%, #1c1815 45%, #2a2214 100%); border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 8px 30px rgba(0,0,0,0.25);">
-        <!-- Right side clean product image -->
-        <div id="catHeroBg" style="position:absolute; top:0; right:0; width:45%; height:100%; background-size:contain; background-position:center right; background-repeat:no-repeat; opacity:0.85; pointer-events:none; z-index:1; padding:10px;"></div>
+        <!-- Right side VFS Jewels Official Brand Watermark -->
+        <div id="catHeroBg" style="position:absolute; top:50%; right:40px; transform:translateY(-50%); opacity:0.18; pointer-events:none; z-index:1; display:flex; align-items:center; justify-content:center;">
+          <img src="https://res.cloudinary.com/cwx4zame/image/upload/f_auto,q_auto,w_300/v1783183759/el5a6iatxalzqaqr50dp.png" alt="VFS Jewels" style="height:130px; filter:brightness(0) invert(1); object-fit:contain;">
+        </div>
         <!-- Left-to-right dark gradient overlay for crystal clear text readability -->
-        <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(90deg, #0e1017 0%, rgba(14,16,23,0.95) 45%, rgba(14,16,23,0.4) 75%, transparent 100%); pointer-events:none; z-index:2;"></div>
+        <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(90deg, #0e1017 0%, rgba(14,16,23,0.95) 50%, rgba(14,16,23,0.4) 80%, transparent 100%); pointer-events:none; z-index:2;"></div>
         <!-- Bottom gold shimmer accent line -->
         <div style="position:absolute; bottom:0; left:0; width:100%; height:3px; background: linear-gradient(90deg, #D4AF37, transparent); z-index:3;"></div>
         
@@ -1317,7 +1319,7 @@
 
   <!-- CDN libraries loaded last so they don't block page render -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="app.js?v=20260730_v1785478154" defer></script>
+  <script src="app.js?v=20260730_v1785478797" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
