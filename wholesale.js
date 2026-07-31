@@ -1836,16 +1836,10 @@ function renderProfileHub() {
   if (modeBtn) {
     modeBtn.onclick = () => {
       closeDrawer('profile');
-      if (shoppingMode === 'wholesale' || window.location.pathname.includes('wholesale.html')) {
-        localStorage.setItem('vfs_user_mode', 'retail');
-        localStorage.setItem('vfs_shopping_mode', 'retail');
-        document.documentElement.setAttribute('data-shopping-mode', 'retail');
-        window.location.href = 'index.html';
-      } else {
-        localStorage.setItem('vfs_user_mode', 'wholesale');
-        localStorage.setItem('vfs_shopping_mode', 'wholesale');
-        document.documentElement.setAttribute('data-shopping-mode', 'wholesale');
-        window.location.href = 'wholesale.html';
+      if (typeof window.openWelcomeModeModal === 'function') {
+        window.openWelcomeModeModal();
+      } else if (typeof openWholesaleFunnel === 'function') {
+        openWholesaleFunnel();
       }
     };
   }
