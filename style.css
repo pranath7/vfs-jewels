@@ -4842,3 +4842,30 @@ a[href*="whatsapp"]:hover span,
 .floating-whatsapp-btn:hover span {
   color: #ffffff !important;
 }
+
+/* =========================================================
+   AUTOMATICALLY HIDE FLOATING BUTTONS WHEN DRAWERS/MODALS OPEN
+   ========================================================= */
+body:has(#cartDW.active) .floating-guide-btn,
+body:has(#wlDW.active) .floating-guide-btn,
+body:has(#cartBG.active) .floating-guide-btn,
+body:has(#wlBG.active) .floating-guide-btn,
+body:has(#checkoutModal.active) .floating-guide-btn,
+body:has(#pdpOverlay.active) .floating-guide-btn,
+body:has(.modal-backdrop.active) .floating-guide-btn,
+body:has(.modal-bg.active) .floating-guide-btn,
+body:has(.drawer.active) .floating-guide-btn,
+body:has(#cartDW.active) .floating-order-btn,
+body:has(#wlDW.active) .floating-order-btn,
+body:has(#cartBG.active) .floating-order-btn,
+body:has(#wlBG.active) .floating-order-btn,
+body:has(#checkoutModal.active) .floating-order-btn,
+body:has(#pdpOverlay.active) .floating-order-btn,
+body:has(.modal-backdrop.active) .floating-order-btn,
+body:has(.modal-bg.active) .floating-order-btn,
+body:has(.drawer.active) .floating-order-btn {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}

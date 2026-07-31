@@ -1765,6 +1765,8 @@ function openDrawer(type) {
     $('#wlBG').classList.add('active');
     $('#wlDW').classList.add('active');
   }
+  const guideBtn = $('#openGuideBtn') || document.querySelector('.floating-guide-btn');
+  if (guideBtn) guideBtn.style.display = 'none';
   document.body.style.overflow = 'hidden';
 }
 
@@ -1776,6 +1778,8 @@ function closeDrawer(type) {
     $('#wlBG').classList.remove('active');
     $('#wlDW').classList.remove('active');
   }
+  const guideBtn = $('#openGuideBtn') || document.querySelector('.floating-guide-btn');
+  if (guideBtn) guideBtn.style.display = '';
   document.body.style.overflow = '';
 }
 
