@@ -569,6 +569,57 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   object-fit: cover;
 }
 
+.hero-banner-wrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  display: block;
+}
+
+.hero-banner-wrap img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: auto !important;
+  display: block;
+  object-fit: contain;
+}
+
+.hero-shop-overlay-btn {
+  position: absolute;
+  z-index: 10;
+  cursor: pointer;
+  background: transparent;
+  border-radius: 4px;
+  transition: all 0.25s ease;
+  outline: none;
+}
+
+.btn-light-banner-shop {
+  left: 3.8%;
+  top: 74.5%;
+  width: 26.5%;
+  height: 17.5%;
+}
+
+.btn-light-banner-shop:hover,
+.btn-light-banner-shop:focus {
+  background: rgba(212, 175, 55, 0.18);
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+}
+
+.btn-dark-banner-shop {
+  left: 28.0%;
+  top: 71.5%;
+  width: 32.0%;
+  height: 14.5%;
+}
+
+.btn-dark-banner-shop:hover,
+.btn-dark-banner-shop:focus {
+  background: rgba(212, 175, 55, 0.18);
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+}
+
 .hero-overlay {
   position: absolute;
   inset: 0;
