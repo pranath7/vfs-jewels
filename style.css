@@ -4888,45 +4888,63 @@ body:has(.drawer.active) .floating-order-btn {
 }
 
 /* ── Customer Profile Hub & Drawer Styling ── */
+.profile-drawer {
+  background: var(--bg-primary, #ffffff) !important;
+  color: var(--color-text, #121212) !important;
+}
+
+[data-theme="dark"] .profile-menu-item {
+  background: #181c28 !important;
+  border-color: rgba(212, 175, 55, 0.3) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .profile-menu-item:hover {
+  border-color: #D4AF37 !important;
+  background: rgba(212, 175, 55, 0.14) !important;
+}
+
 .profile-hub-card {
-  background: var(--bg-secondary, #1a1e2b);
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #11141e 0%, #1e1b15 100%) !important;
+  border: 1px solid #D4AF37 !important;
+  border-radius: 14px !important;
+  padding: 18px !important;
+  margin-bottom: 14px !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
 }
 
 .profile-wallet-banner {
-  background: linear-gradient(135deg, #1e1b15 0%, #2a2214 100%);
-  border: 1px solid #D4AF37;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-  color: #ffffff;
+  background: linear-gradient(135deg, #181510 0%, #2b2212 100%) !important;
+  border: 1px solid #D4AF37 !important;
+  border-radius: 14px !important;
+  padding: 18px !important;
+  margin-bottom: 16px !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
 }
 
 .profile-menu-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  background: var(--bg-secondary, #ffffff);
-  border: 1px solid var(--border-color, #e0e0e0);
-  border-radius: 10px;
-  margin-bottom: 10px;
+  padding: 14px 18px;
+  background: var(--bg-secondary, #f8f9fa);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  margin-bottom: 12px;
   color: var(--color-text, #121212);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .profile-menu-item:hover {
-  border-color: #D4AF37;
-  background: rgba(212, 175, 55, 0.08);
-  transform: translateX(3px);
+  border-color: #D4AF37 !important;
+  background: rgba(212, 175, 55, 0.08) !important;
+  transform: translateX(4px);
 }
 
 body:has(#profileDW.active) .floating-guide-btn,

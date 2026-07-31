@@ -1834,68 +1834,68 @@ function renderProfileHub() {
 
   profileBody.innerHTML = `
     <!-- User Info Card -->
-    <div class="profile-hub-card" style="background:linear-gradient(135deg, #11141e 0%, #1e1b15 100%); color:#fff; border:1px solid #D4AF37;">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+    <div class="profile-hub-card" style="background:linear-gradient(135deg, #11141e 0%, #1e1b15 100%); color:#ffffff; border:1.5px solid #D4AF37; padding:18px; border-radius:14px; margin-bottom:14px; box-shadow:0 6px 20px rgba(0,0,0,0.25);">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <h4 style="margin:0; font-size:1.35rem; color:#ffffff; font-weight:700;">${userName}</h4>
-          ${userPhone ? `<p style="margin:4px 0 0 0; font-size:1.1rem; color:#aaa;">📞 ${userPhone}</p>` : ''}
-          ${shopName ? `<p style="margin:4px 0 0 0; font-size:1.1rem; color:#D4AF37; font-weight:600;">🏬 ${shopName}</p>` : ''}
+          <h4 style="margin:0; font-size:1.4rem; color:#ffffff; font-weight:800;">${userName}</h4>
+          ${userPhone ? `<p style="margin:4px 0 0 0; font-size:1.1rem; color:#e0e0e0; font-weight:500;">📞 ${userPhone}</p>` : ''}
+          ${shopName ? `<p style="margin:4px 0 0 0; font-size:1.1rem; color:#D4AF37; font-weight:700;">🏬 ${shopName}</p>` : ''}
         </div>
-        <span style="background:#D4AF37; color:#121212; font-size:0.85rem; font-weight:800; padding:4px 10px; border-radius:20px; text-transform:uppercase;">
+        <span style="background:#D4AF37; color:#121212; font-size:0.85rem; font-weight:900; padding:5px 12px; border-radius:20px; text-transform:uppercase; letter-spacing:0.04em;">
           ${isWholesale ? '👑 Wholesale' : '✨ Retail'}
         </span>
       </div>
     </div>
 
     <!-- Wallet Balance Banner -->
-    <div class="profile-wallet-banner">
+    <div class="profile-wallet-banner" style="background:linear-gradient(135deg, #181510 0%, #2b2212 100%); border:1.5px solid #D4AF37; padding:18px; border-radius:14px; margin-bottom:16px; color:#ffffff; box-shadow:0 6px 20px rgba(0,0,0,0.25);">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <span style="font-size:1.8rem;">👛</span>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:2rem;">👛</span>
           <div>
-            <div style="font-size:0.95rem; color:#D4AF37; font-weight:700; text-transform:uppercase;">VFS Customer Wallet</div>
-            <div style="font-size:1.8rem; font-weight:900; color:#ffffff;">₹${walletVal}</div>
+            <div style="font-size:0.9rem; color:#D4AF37; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;">VFS CUSTOMER WALLET</div>
+            <div style="font-size:2rem; font-weight:900; color:#ffffff;">₹${walletVal}</div>
           </div>
         </div>
-        <button id="pHubOpenWallet" style="background:#D4AF37; color:#121212; border:none; padding:8px 16px; border-radius:6px; font-weight:800; cursor:pointer; font-size:1.05rem;">
+        <button id="pHubOpenWallet" style="background:#D4AF37; color:#121212; border:none; padding:10px 18px; border-radius:8px; font-weight:900; cursor:pointer; font-size:1.05rem; box-shadow:0 4px 12px rgba(212,175,55,0.35);">
           Open Wallet
         </button>
       </div>
-      <p style="font-size:0.95rem; color:rgba(255,255,255,0.75); margin:0;">Includes Advance Credits &amp; Refund Balances.</p>
+      <p style="font-size:0.95rem; color:rgba(255,255,255,0.85); margin:0; font-weight:500;">Includes Advance Credits &amp; Refund Balances.</p>
     </div>
 
     <!-- Action Links -->
-    <div style="display:flex; flex-direction:column; gap:10px;">
+    <div style="display:flex; flex-direction:column; gap:12px;">
       <div class="profile-menu-item" id="pHubWishlist">
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; align-items:center; gap:12px;">
           <span style="font-size:1.4rem;">❤️</span>
           <span>My Saved Wishlist</span>
         </div>
-        <span style="background:var(--color-primary, #D4AF37); color:#121212; padding:2px 10px; border-radius:12px; font-weight:800; font-size:0.95rem;">${wlCount} items</span>
+        <span style="background:#D4AF37 !important; color:#121212 !important; padding:4px 14px !important; border-radius:20px !important; font-weight:900 !important; font-size:0.95rem !important;">${wlCount} items</span>
       </div>
 
       <div class="profile-menu-item" id="pHubTracking">
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; align-items:center; gap:12px;">
           <span style="font-size:1.4rem;">📦</span>
           <span>Track Order &amp; Shipments</span>
         </div>
-        <span>&rarr;</span>
+        <span style="color:#D4AF37; font-weight:800; font-size:1.2rem;">&rarr;</span>
       </div>
 
       <div class="profile-menu-item" id="pHubSwitchMode">
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; align-items:center; gap:12px;">
           <span style="font-size:1.4rem;">🔄</span>
           <span>Switch Mode (${isWholesale ? 'Wholesale' : 'Retail'})</span>
         </div>
-        <span>&rarr;</span>
+        <span style="color:#D4AF37; font-weight:800; font-size:1.2rem;">&rarr;</span>
       </div>
 
-      <a href="https://api.whatsapp.com/send?phone=919840757363&text=Hi%20VFS%20Jewels%2C%20I%20need%20assistance%20with%20my%20account." target="_blank" class="profile-menu-item" style="border-color:#25D366; color:#25D366;">
-        <div style="display:flex; align-items:center; gap:10px;">
+      <a href="https://api.whatsapp.com/send?phone=919840757363&text=Hi%20VFS%20Jewels%2C%20I%20need%20assistance%20with%20my%20account." target="_blank" class="profile-menu-item" style="border:1.5px solid #059669 !important; background:rgba(5,150,105,0.08) !important; text-decoration:none !important;">
+        <div style="display:flex; align-items:center; gap:12px;">
           <span style="font-size:1.4rem;">💬</span>
-          <span>Official WhatsApp VIP Support</span>
+          <span style="color:#059669 !important; font-weight:800 !important;">Official WhatsApp VIP Support</span>
         </div>
-        <span>&rarr;</span>
+        <span style="color:#059669 !important; font-weight:800 !important; font-size:1.2rem !important;">&rarr;</span>
       </a>
     </div>
   `;
