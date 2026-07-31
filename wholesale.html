@@ -102,7 +102,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&family=Outfit:wght@300;400;500;700;900&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&family=Outfit:wght@300;400;500;700;900"></noscript>
 
-  <link rel="stylesheet" href="style.css?v=20260730_v1785536430">
+  <link rel="stylesheet" href="style.css?v=20260730_v1785536718">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -168,9 +168,11 @@
           </button>
           <button class="icon-btn" id="openSearch" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button>
           <button class="icon-btn" id="openTracking" aria-label="Track Order" title="Track Order"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2" ry="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></button>
-          <button class="icon-btn profile-nav-btn" id="openProfileBtn" aria-label="Customer Profile" title="My Account & Customer Dashboard" style="font-size:1.1rem; padding:5px 12px; border-radius:20px; border:1px solid #D4AF37; background:rgba(212,175,55,0.1); color:var(--color-secondary); font-weight:700; display:inline-flex; align-items:center; gap:6px; cursor:pointer; position:relative;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            <span id="profileNavLabel" style="font-size:0.95rem;">Account</span>
+          <button class="icon-btn profile-nav-btn" id="openProfileBtn" aria-label="Customer Profile" title="My Account &amp; Customer Dashboard" style="width:36px; height:36px; border-radius:50%; border:1.5px solid #D4AF37; background:rgba(212,175,55,0.1); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; position:relative; padding:0; flex-shrink:0;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
           </button>
           <button class="icon-btn" id="openCart" aria-label="Cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="badge" id="cartCount">0</span></button>
         </div>
@@ -809,7 +811,7 @@
 
   <!-- CDN libraries & scripts -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="wholesale.js?v=20260730_v1785536430" defer></script>
+  <script src="wholesale.js?v=20260730_v1785536718" defer></script>
 
   <!-- DYNAMIC ORDER TRACKING OVERLAY -->
   <div class="pdp-overlay" id="trackingOverlay">
