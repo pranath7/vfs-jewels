@@ -3163,30 +3163,51 @@ function openPDP(id) {
     };
 
     window.executeSwipe = (isLike) => {
-      topCard.style.transition = 'transform 0.3s ease, opacity 0.3s';
-      const flyX = isLike ? 600 : -600;
-      topCard.style.transform = `translate(${flyX}px, ${currentY}px) rotate(${flyX / 15}deg)`;
-      topCard.style.opacity = '0';
+      const stack = $('#tinderCardStack');
+      if (!stack) return;
+      const cards = stack.querySelectorAll('.tinder-card');
+      if (!cards || !cards.length) return;
 
-      const topCardId = +topCard.dataset.id;
+      const currentTopCard = cards[cards.length - 1];
+      if (!currentTopCard || currentTopCard.dataset.swiping === 'true') return;
+
+      currentTopCard.dataset.swiping = 'true';
+      currentTopCard.style.pointerEvents = 'none';
+
+      const likeBadge = currentTopCard.querySelector('.tinder-badge.like');
+      const dislikeBadge = currentTopCard.querySelector('.tinder-badge.dislike');
+
+      if (isLike && likeBadge) {
+        likeBadge.style.opacity = '1';
+      } else if (!isLike && dislikeBadge) {
+        dislikeBadge.style.opacity = '1';
+      }
+
+      const flyX = isLike ? 750 : -750;
+      const rotateDeg = isLike ? 25 : -25;
+
+      currentTopCard.style.transition = 'transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease';
+      currentTopCard.style.transform = `translate(${flyX}px, -20px) rotate(${rotateDeg}deg)`;
+      currentTopCard.style.opacity = '0';
+
+      const topCardId = +currentTopCard.dataset.id;
 
       setTimeout(() => {
-        topCard.remove();
+        currentTopCard.remove();
         tinderDeckIndex++;
         swipeCount++;
 
-        if (isLike) {
+        if (isLike && topCardId) {
           hasRightSwiped = true;
           addToCart(topCardId);
         }
 
         initTinderSwiper();
 
-        // 20 Swipes Threshold Trigger
         if (swipeCount >= 20 && !hasRightSwiped) {
           triggerCategoryShiftPrompt();
         }
-      }, 220);
+      }, 320);
     };
 
     topCard.addEventListener('touchstart', (e) => {
@@ -3218,7 +3239,6 @@ function openPDP(id) {
     if (!modal) return;
     
     const optionsContainer = $('#catShiftOptions');
-    // Get unique categories and filter out current
     const standardCategories = ['kadas', 'chains', 'earrings'];
     const otherCats = standardCategories.filter(c => c !== swiperCategory);
     
@@ -3245,7 +3265,7 @@ function openPDP(id) {
   if (closeCatShiftBtn) {
     closeCatShiftBtn.addEventListener('click', () => {
       $('#categoryShiftModal').classList.remove('active');
-      swipeCount = 0; // reset count to allow next 20 swipes
+      swipeCount = 0;
     });
   }
 
@@ -3253,22 +3273,19 @@ function openPDP(id) {
   const dislikeBtn = $('#tinderDislikeBtn');
   const likeBtn = $('#tinderLikeBtn');
   
-  if (dislikeBtn && likeBtn) {
-    // Prevent duplicate triggers
+  if (dislikeBtn) {
     dislikeBtn.onclick = (e) => {
       e.preventDefault();
-      const topCard = $('#tinderCardStack .tinder-card');
-      if (topCard && topCard.style.pointerEvents !== 'none') {
-        window.executeSwipe(false);
-      }
+      e.stopPropagation();
+      if (typeof window.executeSwipe === 'function') window.executeSwipe(false);
     };
-    
+  }
+  
+  if (likeBtn) {
     likeBtn.onclick = (e) => {
       e.preventDefault();
-      const topCard = $('#tinderCardStack .tinder-card');
-      if (topCard && topCard.style.pointerEvents !== 'none') {
-        window.executeSwipe(true);
-      }
+      e.stopPropagation();
+      if (typeof window.executeSwipe === 'function') window.executeSwipe(true);
     };
   }
 
