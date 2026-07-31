@@ -3121,27 +3121,87 @@ window.cancelOrder = async function(orderId) {
   await loadDashboard();
 };
 
+// ── Customer Database Functions & Realtime Sync ──
+window.triggerClearCustomerDatabase = async function() {
+  if (!confirm("⚠️ Are you sure you want to CLEAR all Customer Database records from Firestore?\n\nThis will remove all wholesale customer records for a clean fresh start.")) {
+    return;
+  }
+  adminToast("Wiping Customer Database...", "info");
+  try {
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
+      const snap = await window.db.collection('wholesale_users').get();
+      const batch = window.db.batch();
+      snap.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+
+      const snapReg = await window.db.collection('wholesale_registrations').get();
+      const batchReg = window.db.batch();
+      snapReg.forEach(doc => batchReg.delete(doc.ref));
+      await batchReg.commit();
+    }
+    localStorage.removeItem('vfs_wholesale_users');
+    adminToast("Customer database completely cleared!", "success");
+    await loadCustomers();
+  } catch (err) {
+    console.error("Error clearing customers:", err);
+    adminToast("Clear error: " + err.message, "error");
+  }
+};
+
+window.triggerResetDatabase = async function() {
+  await window.triggerClearCustomerDatabase();
+};
+
+let _customerRealtimeSub = null;
+
 // ── Customer Database ──
 async function loadCustomers() {
   const custBody = $('#customerTableBody');
   const countEl = $('#countCustomers');
   if (!custBody) return;
- 
+
+  // Set up real-time listener if not already active
+  if (window.VFS_CLOUD_ACTIVE && window.db && !_customerRealtimeSub) {
+    try {
+      _customerRealtimeSub = window.db.collection('wholesale_users').onSnapshot(() => {
+        console.log("⚡ Real-time update detected in wholesale_users collection!");
+        loadCustomers();
+      }, err => console.warn("Customer real-time listener note:", err));
+    } catch(subErr) {
+      console.warn("Real-time snapshot error:", subErr);
+    }
+  }
+
   custBody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:#aaa;">Loading...</td></tr>';
- 
+
   try {
     // Get all customers from Firestore wholesale_users collection
-    let customers = await window.VFS_DB.getCustomers();
- 
+    let rawCustomers = await window.VFS_DB.getCustomers();
+
+    // Deduplicate by clean 10-digit phone number
+    const seenPhones = new Set();
+    let customers = [];
+    if (rawCustomers && rawCustomers.length > 0) {
+      rawCustomers.forEach(c => {
+        const cleanP = (c.phone || c.id || '').replace(/\D/g, '').slice(-10);
+        if (cleanP && !seenPhones.has(cleanP)) {
+          seenPhones.add(cleanP);
+          customers.push({ ...c, phone: cleanP });
+        } else if (!cleanP) {
+          customers.push(c);
+        }
+      });
+    }
+
     // If no Firestore data, fall back to reading localStorage wholesale customers
     if (!customers || customers.length === 0) {
       const local = localStorage.getItem('vfs_wholesale_users');
       customers = local ? Object.values(JSON.parse(local)) : [];
     }
- 
+
     // Get orders for spend calculation
     const orders = await window.VFS_DB.getOrders();
- 
+
     if (countEl) countEl.textContent = customers.length;
  
     const searchVal = ($('#custSearchInput')?.value || '').toLowerCase();
