@@ -286,28 +286,7 @@ window.VFS_DB = {
 
   // ── Product Stock ──
   getProductStock: async function(productId) {
-    const idStr = String(productId);
-    if (window.VFS_CLOUD_ACTIVE) {
-      try {
-        const doc = await window.db.collection('product_stock').doc(idStr).get();
-        if (doc.exists) {
-          const val = doc.data().stock;
-          return val !== undefined ? val : 5;
-        }
-      } catch(e) {
-        console.error("Firestore read stock error:", e);
-      }
-    }
-    const local = localStorage.getItem('vfs_product_stock');
-    const stockMap = local ? JSON.parse(local) : {};
-    if (stockMap[idStr] !== undefined) {
-      return stockMap[idStr];
-    }
-    // Default initial stock: product 401 has 1 stock for easy testing, others have 5
-    const initial = (productId === 401) ? 1 : 5;
-    stockMap[idStr] = initial;
-    localStorage.setItem('vfs_product_stock', JSON.stringify(stockMap));
-    return initial;
+    return 0; // All products out of stock for now per user request
   },
 
   saveProductStock: async function(productId, stock) {
@@ -1207,9 +1186,8 @@ function formatBdayDate(dateString) {
 // ── Category Routing & Page Handling ──
 function getProductCardHtml(p) {
   const isWL = wishlist.includes(p.id);
-  const stockVal = window.VFS_STOCK_CACHE[p.id];
   const minQty = p.moq ? parseInt(p.moq) : 1;
-  const isOOS = (stockVal !== undefined && (stockVal <= 0 || stockVal < minQty));
+  const isOOS = true; // All products out of stock per user request
   
   const wsPrice = getWholesalePrice(p);
   const retailMrp = p.mrp || Math.round(wsPrice * 2.5);
@@ -2927,15 +2905,12 @@ function openPDP(id) {
     </button>
   `;
 
-  const stock = window.VFS_STOCK_CACHE[p.id];
-  const isOutOfStock = (stock !== undefined && (stock <= 0 || (shoppingMode === 'wholesale' && stock < minQty)));
+  const isOutOfStock = true; // All products out of stock per user request
   if (isOutOfStock) {
-    const btnText = (stock !== undefined && stock > 0 && stock < minQty)
-      ? `INSUFFICIENT STOCK (Only ${stock} left, MOQ is ${minQty})`
-      : `SOLD OUT / OUT OF STOCK`;
+    const btnText = `OUT OF STOCK`;
 
     qtyCartHtml = `
-      <button class="pdp-btn-add-new" disabled style="width: 100%; background: #ccc; border-color: #ccc; color: #666; cursor: not-allowed; font-weight: 700;">
+      <button class="pdp-btn-add-new" disabled style="width: 100%; background: #555; border-color: #555; color: #ccc; cursor: not-allowed; font-weight: 800; font-size: 1.3rem; padding: 16px;">
         ${btnText}
       </button>
     `;
@@ -5566,10 +5541,10 @@ async function renderProductShelves() {
   function shelfCard(p, badge) {
     const wsPrice = getWholesalePrice(p);
     const retailMrp = p.mrp || Math.round(wsPrice * 2.5);
-    const badgeHtml = badge ? `<span class="sale-ribbon">${badge}</span>` : '';
+    const oosBadge = `<span class="sale-ribbon" style="background:#ff3b30;color:#fff;font-weight:800;">Out of Stock</span>`;
     return `
       <div class="p-card" style="cursor:pointer;position:relative;" onclick="openPDP(${p.id})">
-        ${badgeHtml}
+        ${oosBadge}
         <div class="p-img">
           <img src="${clOpt(p.img, 300)}" alt="${p.name}" loading="lazy" style="width:100%;height:220px;object-fit:contain;background:#fafafa;border-radius:8px 8px 0 0;">
         </div>
@@ -5589,7 +5564,6 @@ async function renderProductShelves() {
   const newArrivalsGrid = $('#shelfNewArrivalsGrid');
   if (newArrivalsSection && newArrivalsGrid) {
     const sorted = [...catalog]
-      .filter(p => window.VFS_STOCK_CACHE[p.id] === undefined || window.VFS_STOCK_CACHE[p.id] > 0)
       .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
       .slice(0, 8);
     if (sorted.length > 0) {
@@ -5617,11 +5591,11 @@ async function renderProductShelves() {
         .map(([id]) => Number(id));
       const topProducts = topIds
         .map(id => catalog.find(p => p.id === id))
-        .filter(Boolean)
-        .filter(p => window.VFS_STOCK_CACHE[p.id] === undefined || window.VFS_STOCK_CACHE[p.id] > 0);
+        .filter(Boolean);
       
-      if (topProducts.length > 0) {
-        bestSellersGrid.innerHTML = topProducts.map(p => shelfCard(p, '🏆')).join('');
+      const displayProducts = topProducts.length > 0 ? topProducts : catalog.slice(0, 8);
+      if (displayProducts.length > 0) {
+        bestSellersGrid.innerHTML = displayProducts.map(p => shelfCard(p, '🏆')).join('');
         bestSellersSection.style.display = 'block';
       }
     } catch(e) {
@@ -5638,7 +5612,6 @@ async function renderProductShelves() {
         const info = getRetailPriceInfo(p);
         return info && info.badge === '50% OFF';
       })
-      .filter(p => window.VFS_STOCK_CACHE[p.id] === undefined || window.VFS_STOCK_CACHE[p.id] > 0)
       .slice(0, 8);
     if (saleProducts.length > 0) {
       saleGrid.innerHTML = saleProducts.map(p => shelfCard(p, '50% OFF')).join('');
