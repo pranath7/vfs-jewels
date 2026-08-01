@@ -115,7 +115,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap"></noscript>
 
-  <link rel="stylesheet" href="style.css?v=20260730_v1785572071">
+  <link rel="stylesheet" href="style.css?v=20260730_v1785572563">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -1142,18 +1142,18 @@
       
       <div style="border:1px dashed #D4AF37;background:#FFFDF0;padding:16px;border-radius:8px;font-size:1.2rem;line-height:1.5;color:#6d5a15;margin-bottom:24px;">
         <strong>Advance Payment System Rules:</strong><br>
-        Wholesale members pay a small ₹1 portal fee to unlock reseller prices. This advance is automatically adjusted and deducted from your invoice.
+        Wholesale members pay a small portal fee (₹1,000 first order / ₹500 returning) to unlock reseller prices. This advance is automatically adjusted and deducted from your invoice.
       </div>
       
       <div style="text-align:center;margin-bottom:24px;">
         <div style="font-size:1.3rem;color:#555;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;">Payable Advance Amount</div>
-        <div style="font-size:3.8rem;font-weight:900;color:#D4AF37;" id="unlockAmountLabel">₹1</div>
+        <div style="font-size:3.8rem;font-weight:900;color:#D4AF37;" id="unlockAmountLabel">₹1,000</div>
       </div>
       
       <!-- Single Official Razorpay Secure Gateway Button -->
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
-        <button class="btn-primary" id="btnUnlockRazorpayPay" onclick="window.triggerRazorpayUnlock(1)" style="width:100%; padding:18px; background:#D4AF37 !important; color:#121212 !important; font-weight:900; font-size:1.4rem; border:none; border-radius:8px; cursor:pointer; box-shadow:0 6px 20px rgba(212,175,55,0.4); text-transform:uppercase; letter-spacing:0.04em;">
-          💳 PAY ₹1 SECURELY VIA RAZORPAY
+        <button class="btn-primary" id="btnUnlockRazorpayPay" onclick="window.triggerRazorpayUnlock(1000)" style="width:100%; padding:18px; background:#D4AF37 !important; color:#121212 !important; font-weight:900; font-size:1.4rem; border:none; border-radius:8px; cursor:pointer; box-shadow:0 6px 20px rgba(212,175,55,0.4); text-transform:uppercase; letter-spacing:0.04em;">
+          💳 PAY ₹1,000 SECURELY VIA RAZORPAY
         </button>
         <p style="text-align:center; font-size:1.1rem; color:#777; margin:0;">Supports Google Pay, PhonePe, Paytm, Cards, NetBanking &amp; UPI QR</p>
       </div>
@@ -1320,7 +1320,7 @@
 
   <!-- CDN libraries loaded last so they don't block page render -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="app.js?v=20260730_v1785572071" defer></script>
+  <script src="app.js?v=20260730_v1785572563" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {

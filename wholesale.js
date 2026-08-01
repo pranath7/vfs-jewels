@@ -5943,8 +5943,23 @@ function openWholesaleUnlockModal() {
   if (unlockModal) {
     const unlockAmountLabel = $('#unlockAmountLabel');
     const unlockPriceText = $('#unlockPriceText');
-    if (unlockAmountLabel) unlockAmountLabel.innerHTML = '₹1';
-    if (unlockPriceText) unlockPriceText.innerHTML = 'Pay ₹1 portal fee to unlock wholesale prices.';
+    const hasUnlockedBefore = (localStorage.getItem('vfs_wholesale_has_unlocked') === 'true');
+    const isFirstOrder = (!hasUnlockedBefore && (!wholesaleUser || !wholesaleUser.ordersCount || wholesaleUser.ordersCount === 0));
+    const feeAmount = isFirstOrder ? 1000 : 500;
+    
+    if (unlockAmountLabel) unlockAmountLabel.innerHTML = `₹${feeAmount.toLocaleString('en-IN')}`;
+    if (unlockPriceText) {
+      unlockPriceText.innerHTML = isFirstOrder
+        ? 'Pay ₹1,000 first order advance to unlock wholesale prices.'
+        : 'Pay ₹500 advance to unlock wholesale prices for your next order.';
+    }
+    
+    const payBtn = $('#btnUnlockRazorpayPay');
+    if (payBtn) {
+      payBtn.setAttribute('onclick', `window.triggerRazorpayUnlock(${feeAmount})`);
+      payBtn.innerHTML = `💳 PAY ₹${feeAmount.toLocaleString('en-IN')} SECURELY VIA RAZORPAY`;
+    }
+
     unlockModal.classList.add('active');
   } else {
     completeWholesaleUnlock();
