@@ -6114,8 +6114,9 @@ window.openWholesaleUnlockModal = function() {
   if (unlockModal) {
     const unlockAmountLabel = document.getElementById('unlockAmountLabel');
     const unlockPriceText = document.getElementById('unlockPriceText');
-    if (unlockAmountLabel) unlockAmountLabel.innerHTML = '₹1';
-    if (unlockPriceText) unlockPriceText.innerHTML = 'Pay ₹1 portal fee to unlock wholesale prices.';
+    const fee = typeof getWholesalePortalFee === 'function' ? getWholesalePortalFee() : 1000;
+    if (unlockAmountLabel) unlockAmountLabel.innerHTML = `₹${fee.toLocaleString('en-IN')}`;
+    if (unlockPriceText) unlockPriceText.innerHTML = `Pay ₹${fee.toLocaleString('en-IN')} portal fee to unlock wholesale prices.`;
     unlockModal.style.display = 'flex';
     unlockModal.classList.add('active');
     document.body.style.overflow = 'hidden';
