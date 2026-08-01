@@ -883,8 +883,7 @@ function renderProducts(filter) {
           ${visibleList.map(p => {
             const isWL = wishlist.includes(p.id);
             
-            const stockVal = window.VFS_STOCK_CACHE[p.id];
-            const isOOS = (stockVal !== undefined && stockVal <= 0);
+            const isOOS = true; // All products out of stock per user request
             
             let priceHtml = '';
             let quickActionHtml = '';

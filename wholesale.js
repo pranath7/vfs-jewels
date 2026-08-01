@@ -899,9 +899,8 @@ function renderProducts(filter) {
         <div class="cat-track-slider" id="track-${cat}">
           ${visibleList.map(p => {
             const isWL = wishlist.includes(p.id);
-            const stockVal = window.VFS_STOCK_CACHE[p.id];
             const minQty = p.moq ? parseInt(p.moq) : 1;
-            const isOOS = (stockVal !== undefined && (stockVal <= 0 || stockVal < minQty));
+            const isOOS = true; // All products out of stock per user request
             
             const wsPrice = getWholesalePrice(p);
             const retailMrp = p.mrp || Math.round(wsPrice * 2.5);
@@ -922,7 +921,7 @@ function renderProducts(filter) {
 
             return `
               <div class="p-card" data-id="${p.id}">
-                ${dynamicBadge ? `<span class="p-badge">${dynamicBadge}</span>` : ''}
+                ${isOOS ? `<span class="p-badge" style="background:#ff3b30;color:#fff;">Sold Out</span>` : (dynamicBadge ? `<span class="p-badge">${dynamicBadge}</span>` : '')}
                 <button class="p-wish ${isWL ? 'active' : ''}" data-wish="${p.id}">
                   <svg viewBox="0 0 24 24" fill="${isWL ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
                 </button>
