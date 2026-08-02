@@ -5116,3 +5116,42 @@ body:has(#profileBG.active) .floating-order-btn {
   color: #6d5a15 !important;
   text-align: left !important;
 }
+
+/* ── FLY-TO-CART ANIMATION & HEADER CART BOUNCE ── */
+.vfs-fly-to-cart-clone {
+  position: fixed !important;
+  z-index: 999999 !important;
+  pointer-events: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 36px rgba(212, 175, 55, 0.45) !important;
+  transition: top 0.75s cubic-bezier(0.2, 0.9, 0.3, 1.2),
+              left 0.75s cubic-bezier(0.2, 0.9, 0.3, 1.2),
+              width 0.75s ease,
+              height 0.75s ease,
+              transform 0.75s cubic-bezier(0.2, 0.9, 0.3, 1.2),
+              opacity 0.75s ease !important;
+  border: 2px solid #D4AF37 !important;
+  background: #ffffff !important;
+  object-fit: contain !important;
+}
+
+.vfs-cart-bounce {
+  animation: vfsCartBounceAnim 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+@keyframes vfsCartBounceAnim {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.45) rotate(-12deg); color: #D4AF37 !important; }
+  75% { transform: scale(1.2) rotate(12deg); }
+  100% { transform: scale(1); }
+}
+
+.vfs-badge-pulse {
+  animation: vfsBadgePulseAnim 0.4s ease-out !important;
+}
+
+@keyframes vfsBadgePulseAnim {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.6); background: #D4AF37 !important; color: #121212 !important; }
+  100% { transform: scale(1); }
+}
