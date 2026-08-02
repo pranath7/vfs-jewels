@@ -286,7 +286,8 @@ window.VFS_DB = {
 
   // ── Product Stock ──
   getProductStock: async function(productId) {
-    return 0; // All products out of stock for now per user request
+    if (productId === 201 || productId === '201' || productId === 1 || productId === '1') return 10;
+    return 0;
   },
 
   saveProductStock: async function(productId, stock) {
@@ -900,7 +901,7 @@ function renderProducts(filter) {
           ${visibleList.map(p => {
             const isWL = wishlist.includes(p.id);
             const minQty = p.moq ? parseInt(p.moq) : 1;
-            const isOOS = true; // All products out of stock per user request
+            const isOOS = !(p.id === 201 || p.id === '201' || p.id === 1 || p.id === '1');
             
             const wsPrice = getWholesalePrice(p);
             const retailMrp = p.mrp || Math.round(wsPrice * 2.5);
@@ -1186,7 +1187,7 @@ function formatBdayDate(dateString) {
 function getProductCardHtml(p) {
   const isWL = wishlist.includes(p.id);
   const minQty = p.moq ? parseInt(p.moq) : 1;
-  const isOOS = true; // All products out of stock per user request
+  const isOOS = !(p.id === 201 || p.id === '201' || p.id === 1 || p.id === '1');
   
   const wsPrice = getWholesalePrice(p);
   const retailMrp = p.mrp || Math.round(wsPrice * 2.5);
@@ -2979,7 +2980,7 @@ function openPDP(id) {
     </button>
   `;
 
-  const isOutOfStock = true; // All products out of stock per user request
+  const isOutOfStock = !(p.id === 201 || p.id === '201' || p.id === 1 || p.id === '1');
   if (isOutOfStock) {
     const btnText = `OUT OF STOCK`;
 
@@ -5615,10 +5616,13 @@ async function renderProductShelves() {
   function shelfCard(p, badge) {
     const wsPrice = getWholesalePrice(p);
     const retailMrp = p.mrp || Math.round(wsPrice * 2.5);
-    const oosBadge = `<span class="sale-ribbon" style="background:#ff3b30;color:#fff;font-weight:800;">Out of Stock</span>`;
+    const isOOS = !(p.id === 201 || p.id === '201' || p.id === 1 || p.id === '1');
+    const badgeHtml = isOOS 
+      ? `<span class="sale-ribbon" style="background:#ff3b30;color:#fff;font-weight:800;">Out of Stock</span>`
+      : (badge ? `<span class="sale-ribbon">${badge}</span>` : '');
     return `
       <div class="p-card" style="cursor:pointer;position:relative;" onclick="openPDP(${p.id})">
-        ${oosBadge}
+        ${badgeHtml}
         <div class="p-img">
           <img src="${clOpt(p.img, 300)}" alt="${p.name}" loading="lazy" style="width:100%;height:220px;object-fit:contain;background:#fafafa;border-radius:8px 8px 0 0;">
         </div>
