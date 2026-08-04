@@ -5315,7 +5315,8 @@ function setupShoppingMode() {
         if (wholesaleLoginModal) wholesaleLoginModal.classList.remove('active');
         if ($('#loginStepPhone')) $('#loginStepPhone').style.display = 'block';
         if ($('#loginStepRegister')) $('#loginStepRegister').style.display = 'none';
-        window.triggerRazorpayUnlock(1);
+        const fee = typeof getWholesalePortalFee === 'function' ? getWholesalePortalFee() : 1000;
+        window.triggerRazorpayUnlock(fee);
       }
     });
   }
@@ -6278,11 +6279,16 @@ window.handleUniversalGoogleSignIn = async function() {
   }
 };
 
-// 7. Razorpay ₹1 Advance Payment SDK Trigger
-// 7. Razorpay ₹1 Advance Payment SDK Trigger
-window.triggerRazorpayUnlock = async function(amt = 1) {
+// 7. Razorpay Membership Advance Payment SDK Trigger
+window.triggerRazorpayUnlock = async function(amt) {
   try {
-    if (typeof toast === 'function') toast("Opening Razorpay Secure Payment... 💳");
+    const defaultFee = typeof getWholesalePortalFee === 'function' ? getWholesalePortalFee() : 1000;
+    let numAmt = (amt !== undefined && amt !== null && Number(amt) > 1) ? Number(amt) : defaultFee;
+    if (!numAmt || isNaN(numAmt) || numAmt <= 0) {
+      numAmt = defaultFee;
+    }
+
+    if (typeof toast === 'function') toast(`Opening Razorpay Secure Payment for ₹${numAmt.toLocaleString('en-IN')}... 💳`);
 
     if (typeof window.Razorpay === 'undefined') {
       await new Promise((resolve, reject) => {
@@ -6338,8 +6344,7 @@ window.triggerRazorpayUnlock = async function(amt = 1) {
       localStorage.setItem('vfs_customer_name', savedName);
     }
 
-    const numAmt = Number(amt) || 1;
-    const amountInPaise = (numAmt >= 100 && Number.isInteger(numAmt)) ? numAmt : Math.round(numAmt * 100);
+    const amountInPaise = Math.round(numAmt * 100);
 
     let orderId = '';
     let keyId = window.VFS_CONFIG?.razorpay?.keyId || 'rzp_live_vfs_jewels';
@@ -6364,7 +6369,7 @@ window.triggerRazorpayUnlock = async function(amt = 1) {
       amount: amountInPaise,
       currency: "INR",
       name: "VFS JEWELS",
-      description: "Wholesale Portal Access ₹1 Advance",
+      description: `Wholesale Portal Access ₹${numAmt.toLocaleString('en-IN')} Advance`,
       image: "https://res.cloudinary.com/cwx4zame/image/upload/v1783183760/ze9xek1cled8puy6vfex.png",
       order_id: orderId || undefined,
       handler: async function (response) {
@@ -6705,7 +6710,8 @@ function initAllMasterModalListeners() {
       }
 
       window.openWholesaleUnlockModal();
-      if (typeof toast === 'function') toast("Registration saved! Proceeding to ₹1 Advance Payment 💳");
+      const fee = typeof getWholesalePortalFee === 'function' ? getWholesalePortalFee() : 1000;
+      if (typeof toast === 'function') toast(`Registration saved! Proceeding to ₹${fee.toLocaleString('en-IN')} Advance Payment 💳`);
     };
   }
 
@@ -6714,7 +6720,8 @@ function initAllMasterModalListeners() {
   if (razorpayUnlockBtn) {
     razorpayUnlockBtn.onclick = function(e) {
       if (e) e.preventDefault();
-      window.triggerRazorpayUnlock(1);
+      const fee = typeof getWholesalePortalFee === 'function' ? getWholesalePortalFee() : 1000;
+      window.triggerRazorpayUnlock(fee);
     };
   }
 

@@ -51,8 +51,8 @@ module.exports = async (req, res) => {
         'Authorization': `Basic ${auth}`
       },
       body: JSON.stringify({
-        // Intelligently handle amount passed in Rupees (e.g. 1 for ₹1) or Paise (e.g. 100 for ₹1)
-        amount: (amount >= 100 && Number.isInteger(amount)) ? amount : Math.round(amount * 100), // Convert ₹ rupees → paise (Razorpay requires paise)
+        // Convert ₹ rupees to paise for Razorpay API (e.g. ₹1000 => 100000 paise, ₹500 => 50000 paise)
+        amount: (amount >= 10000) ? amount : Math.round(amount * 100),
         currency: 'INR',
         receipt: receipt || `receipt_${Date.now()}`
       })

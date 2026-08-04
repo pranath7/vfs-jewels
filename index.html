@@ -115,7 +115,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap"></noscript>
 
-  <link rel="stylesheet" href="style.css?v=20260730_v1785657234">
+  <link rel="stylesheet" href="style.css?v=20260730_v1785845771">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -1140,7 +1140,7 @@
           <label style="display:block;font-size:1.1rem;font-weight:700;margin-bottom:4px;color:#121212;">Full Shipping Address</label>
           <textarea id="regAddressInput" placeholder="Enter detailed address for shipping" rows="2" style="width:100%;padding:8px;font-size:1.2rem;border:1px solid #ccc;border-radius:4px;resize:none;"></textarea>
         </div>
-        <button class="btn-primary" id="btnRegisterUser" style="width:100%;font-size:1.3rem;padding:12px;background:#D4AF37;color:#121212;border:none;cursor:pointer;border-radius:6px;font-weight:700;">Proceed to ₹1 Payment →</button>
+        <button class="btn-primary" id="btnRegisterUser" style="width:100%;font-size:1.3rem;padding:12px;background:#D4AF37;color:#121212;border:none;cursor:pointer;border-radius:6px;font-weight:700;">Proceed to ₹1,000 Payment →</button>
       </div>
 
       <button class="btn-primary" id="btnCancelLogin" onclick="window.closeWholesaleLoginModal()" style="width:100%;margin-top:12px;font-size:1.2rem;padding:8px;background:#eee;color:#333;border:none;cursor:pointer;">Cancel</button>
@@ -1151,11 +1151,11 @@
   <div class="modal-bg" id="wholesaleUnlockModal">
     <div class="pin-modal" style="max-width:480px;padding:32px;border-radius:14px;background:#ffffff;color:#121212;box-shadow:0 20px 60px rgba(0,0,0,0.35);border:1px solid #D4AF37;">
       <h3 style="font-size:2.2rem;margin-bottom:8px;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;text-align:center;color:#121212;">Unlock Prices 🔐</h3>
-      <p style="font-size:1.3rem;color:#666;margin-bottom:20px;text-align:center;" id="unlockPriceText">Pay ₹1 portal fee to unlock wholesale prices.</p>
+      <p style="font-size:1.3rem;color:#666;margin-bottom:20px;text-align:center;" id="unlockPriceText">Pay ₹1,000 portal fee to unlock wholesale prices.</p>
       
       <div style="border:1px dashed #D4AF37;background:#FFFDF0;padding:16px;border-radius:8px;font-size:1.2rem;line-height:1.5;color:#6d5a15;margin-bottom:24px;">
         <strong>Advance Payment System Rules:</strong><br>
-        Wholesale members pay a small portal fee (₹1,000 first order / ₹500 returning) to unlock reseller prices. This advance is automatically adjusted and deducted from your invoice.
+        Wholesale members pay a small portal fee (₹1,000 first order / ₹500 returning) to unlock reseller prices. This advance is automatically adjusted and credited to your wallet.
       </div>
       
       <div style="text-align:center;margin-bottom:24px;">
@@ -1165,7 +1165,7 @@
       
       <!-- Single Official Razorpay Secure Gateway Button -->
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
-        <button class="btn-primary" id="btnUnlockRazorpayPay" onclick="window.triggerRazorpayUnlock(1000)" style="width:100%; padding:18px; background:#D4AF37 !important; color:#121212 !important; font-weight:900; font-size:1.4rem; border:none; border-radius:8px; cursor:pointer; box-shadow:0 6px 20px rgba(212,175,55,0.4); text-transform:uppercase; letter-spacing:0.04em;">
+        <button class="btn-primary" id="btnUnlockRazorpayPay" onclick="window.triggerRazorpayUnlock()" style="width:100%; padding:18px; background:#D4AF37 !important; color:#121212 !important; font-weight:900; font-size:1.4rem; border:none; border-radius:8px; cursor:pointer; box-shadow:0 6px 20px rgba(212,175,55,0.4); text-transform:uppercase; letter-spacing:0.04em;">
           💳 PAY ₹1,000 SECURELY VIA RAZORPAY
         </button>
         <p style="text-align:center; font-size:1.1rem; color:#777; margin:0;">Supports Google Pay, PhonePe, Paytm, Cards, NetBanking &amp; UPI QR</p>
@@ -1333,7 +1333,7 @@
 
   <!-- CDN libraries loaded last so they don't block page render -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="app.js?v=20260730_v1785657234" defer></script>
+  <script src="app.js?v=20260730_v1785845771" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {
