@@ -464,8 +464,8 @@ const CATEGORY_BANNERS = {
     img: "assets/cat_preview_chains.png" 
   },
   earrings: { 
-    title: "Ear Rings Collection", 
-    desc: "Dazzling handcrafted ear rings for every occasion.", 
+    title: "Earings Collection", 
+    desc: "Dazzling handcrafted earings for every occasion.", 
     img: "assets/cat_preview_earrings.png" 
   },
   rings: {
@@ -1632,8 +1632,13 @@ function addToCart(id, qty = 1, sourceImg = null) {
     saveState();
     updateCounts();
     renderCart();
-    openDrawer('cart');
-    toast('Added to cart ✓');
+    const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
+    const fullCat = getFullCatalog();
+    const totalPrice = cart.reduce((sum, item) => {
+      const itemP = fullCat.find(x => x.id === item.id);
+      return sum + (itemP ? getCurrentProductPrice(itemP) * item.qty : 0);
+    }, 0);
+    toast(`<strong>${p.name || 'Item'}</strong> added to cart ✓ &nbsp;•&nbsp; ${totalCount} item${totalCount > 1 ? 's' : ''} (${fmt(totalPrice)})`);
   });
 }
 
