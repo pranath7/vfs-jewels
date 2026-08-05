@@ -3182,8 +3182,11 @@ function openPDP(id) {
 
     const isDiscounted = product.mrp && product.mrp > product.price;
     const off = isDiscounted ? pct(product.price, product.mrp) : 0;
+    const stockVal = window.VFS_STOCK_CACHE[product.id];
+    const isOOS = (stockVal !== undefined && stockVal <= 0);
 
     card.innerHTML = `
+      ${isOOS ? `<div style="position:absolute;top:14px;left:14px;background:#e74c3c;color:#fff;font-weight:800;padding:6px 14px;border-radius:6px;font-size:1.15rem;z-index:15;box-shadow:0 2px 8px rgba(0,0,0,0.3);letter-spacing:0.5px;">OUT OF STOCK</div>` : ''}
       <div class="tinder-badge dislike">NOPE</div>
       <div class="tinder-badge like">LIKE</div>
       <div class="tinder-img-box">
@@ -3230,7 +3233,12 @@ function openPDP(id) {
     stack.innerHTML = "";
 
     const fullCatalog = getFullCatalog();
-    const deckProducts = fullCatalog.filter(x => x.cat === swiperCategory && x.id !== p.id);
+    const deckProducts = fullCatalog.filter(x => {
+      if (x.cat !== swiperCategory || x.id === p.id) return false;
+      const s = window.VFS_STOCK_CACHE[x.id];
+      if (s !== undefined && s <= 0) return false;
+      return true;
+    });
 
     if (deckProducts.length === 0) {
       stack.innerHTML = `
@@ -3357,8 +3365,13 @@ function openPDP(id) {
         swipeCount++;
 
         if (isLike && topCardId) {
-          hasRightSwiped = true;
-          addToCart(topCardId);
+          const s = window.VFS_STOCK_CACHE[topCardId];
+          if (s !== undefined && s <= 0) {
+            toast('⚠️ Sorry, this item is Out of Stock!');
+          } else {
+            hasRightSwiped = true;
+            addToCart(topCardId);
+          }
         }
 
         initTinderSwiper();
