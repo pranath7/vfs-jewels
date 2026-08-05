@@ -886,7 +886,7 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .product-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-sm);
+  gap: 18px;
 }
 
 .p-card {
@@ -938,23 +938,22 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .p-wish svg { width: 16px; height: 16px; }
 
 .p-img {
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
-  background: #ffffff;
+  background: #f8f8f8;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
-  border-radius: var(--rounded-md);
+  padding: 0;
+  border-radius: var(--rounded-md) var(--rounded-md) 0 0;
 }
 
 .p-img img {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain !important;
+  width: 100%;
+  height: 100%;
+  object-fit: cover !important;
+  object-position: center top;
   transition: transform 0.4s ease;
 }
 .p-card:hover .p-img img { transform: scale(1.05); }
@@ -976,7 +975,7 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 }
 .p-card:hover .p-quick { transform: translateY(0); }
 
-.p-info { padding: 14px; }
+.p-info { padding: 10px 12px 12px; }
 
 .p-meta {
   font-size: 1rem;
@@ -1465,7 +1464,7 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
    RESPONSIVE
    ========================================================= */
 @media (max-width: 1024px) {
-  .product-grid { grid-template-columns: repeat(3, 1fr); }
+  .product-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; }
   .trust-grid { grid-template-columns: repeat(2, 1fr); }
   .footer-grid { grid-template-columns: repeat(2, 1fr); }
   .test-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1573,11 +1572,12 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 
   /* Product Grid and Card Mobile Clean up */
   .product-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .p-info { padding: 10px; }
-  .p-name { font-size: 1.25rem; margin-bottom: 4px; }
-  .price-now { font-size: 1.35rem; }
-  .price-was { font-size: 1.15rem; }
-  .price-off { font-size: 0.9rem; padding: 1px 4px; }
+  .p-img { aspect-ratio: 3 / 4; }
+  .p-info { padding: 8px 10px 10px; }
+  .p-name { font-size: 1.2rem; margin-bottom: 3px; }
+  .price-now { font-size: 1.3rem; }
+  .price-was { font-size: 1.1rem; }
+  .price-off { font-size: 0.85rem; padding: 1px 4px; }
 
   /* Banners, Trust, Footer & Drawer Mobile */
   .banners-grid { grid-template-columns: 1fr; }
