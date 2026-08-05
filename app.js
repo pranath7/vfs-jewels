@@ -3347,8 +3347,13 @@ function openPDP(id) {
     const fullCatalog = getFullCatalog();
     const deckProducts = fullCatalog.filter(x => {
       if (x.cat !== swiperCategory || x.id === p.id) return false;
-      const s = window.VFS_STOCK_CACHE[x.id];
-      if (s !== undefined && s <= 0) return false;
+      const cachedS = window.VFS_STOCK_CACHE[x.id] !== undefined
+        ? window.VFS_STOCK_CACHE[x.id]
+        : window.VFS_STOCK_CACHE[String(x.id)];
+      const stockVal = (cachedS !== undefined && cachedS !== null)
+        ? Number(cachedS)
+        : (x.stock !== undefined ? Number(x.stock) : 99);
+      if (stockVal <= 0) return false;
       return true;
     });
 
