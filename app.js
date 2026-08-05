@@ -3450,6 +3450,32 @@ function openPDP(id) {
       const currentTopCard = cards[cards.length - 1];
       if (!currentTopCard || currentTopCard.dataset.swiping === 'true') return;
 
+      const topCardId = +currentTopCard.dataset.id;
+
+      // --- STOCK CHECK BEFORE ANIMATION ---
+      if (isLike && topCardId) {
+        const cachedS = window.VFS_STOCK_CACHE[topCardId] !== undefined
+          ? window.VFS_STOCK_CACHE[topCardId]
+          : window.VFS_STOCK_CACHE[String(topCardId)];
+        const topP = getFullCatalog().find(x => x.id === topCardId || String(x.id) === String(topCardId));
+        const stockVal = (cachedS !== undefined && cachedS !== null)
+          ? Number(cachedS)
+          : (topP && topP.stock !== undefined ? Number(topP.stock) : 99);
+
+        if (stockVal <= 0) {
+          // Reset card position — don't fly it away
+          currentTopCard.style.transition = 'transform 0.3s ease-out';
+          currentTopCard.style.transform = '';
+          const lb = currentTopCard.querySelector('.tinder-badge.like');
+          const db = currentTopCard.querySelector('.tinder-badge.dislike');
+          if (lb) lb.style.opacity = 0;
+          if (db) db.style.opacity = 0;
+          const pName = topP ? topP.name : 'This item';
+          toast(`⚠️ "${pName}" is Out of Stock!`);
+          return; // DO NOT proceed with swipe
+        }
+      }
+
       currentTopCard.dataset.swiping = 'true';
       currentTopCard.style.pointerEvents = 'none';
 
@@ -3469,21 +3495,14 @@ function openPDP(id) {
       currentTopCard.style.transform = `translate(${flyX}px, -20px) rotate(${rotateDeg}deg)`;
       currentTopCard.style.opacity = '0';
 
-      const topCardId = +currentTopCard.dataset.id;
-
       setTimeout(() => {
         currentTopCard.remove();
         tinderDeckIndex++;
         swipeCount++;
 
         if (isLike && topCardId) {
-          const s = window.VFS_STOCK_CACHE[topCardId];
-          if (s !== undefined && s <= 0) {
-            toast('⚠️ Sorry, this item is Out of Stock!');
-          } else {
-            hasRightSwiped = true;
-            addToCart(topCardId);
-          }
+          hasRightSwiped = true;
+          addToCart(topCardId);
         }
 
         initTinderSwiper();
