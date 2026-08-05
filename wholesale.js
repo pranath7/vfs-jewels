@@ -1537,7 +1537,7 @@ function addToCart(id, qty = 1, sourceImg = null) {
       const itemP = fullCat.find(x => x.id === item.id);
       return sum + (itemP ? getCurrentProductPrice(itemP) * item.qty : 0);
     }, 0);
-    toast(`<strong>${p.name || 'Item'}</strong> added to cart ✓ &nbsp;•&nbsp; ${totalCount} item${totalCount > 1 ? 's' : ''} (${fmt(totalPrice)})`);
+    toast(`Added to cart ✓ &nbsp;•&nbsp; ${fmt(totalPrice)}`);
   });
 }
 
