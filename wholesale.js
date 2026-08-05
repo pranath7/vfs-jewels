@@ -1577,11 +1577,11 @@ function renderCart() {
   const moqWarning = $('#cartMoqWarning');
   const checkoutBtn = $('#checkoutBtn');
   if (shoppingMode === 'wholesale') {
-    const minOrder = 4000;
+    const minOrder = 2000;
     if (total < minOrder) {
       const remaining = minOrder - total;
       if (moqWarning) {
-        moqWarning.textContent = `Wholesale MOQ is ₹4,000. Add ${fmt(remaining)} more to proceed.`;
+        moqWarning.textContent = `Wholesale MOQ is ₹2,000. Add ${fmt(remaining)} more to proceed.`;
         moqWarning.style.display = 'block';
       }
       checkoutBtn.style.opacity = '0.5';
@@ -2083,8 +2083,8 @@ function openCheckout() {
       return sum + (price * item.qty);
     }, 0);
     
-    if (subtotal < 4000) {
-      toast(`Wholesale MOQ is ₹4,000. Add ${fmt(4000 - subtotal)} more to proceed.`);
+    if (subtotal < 2000) {
+      toast(`Wholesale MOQ is ₹2,000. Add ${fmt(2000 - subtotal)} more to proceed.`);
       return;
     }
   }
