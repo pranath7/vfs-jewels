@@ -4457,7 +4457,7 @@ async function initApp() {
   // Fast instant local stock cache init (sub-100ms load)
   const catalog = getFullCatalog();
   catalog.forEach(p => {
-    window.VFS_STOCK_CACHE[p.id] = p.stock || 6;
+    window.VFS_STOCK_CACHE[p.id] = (p.stock !== undefined && p.stock !== null) ? Number(p.stock) : 6;
   });
 
   // Execute 24-hour expiration and out of stock cart pruning
