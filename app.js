@@ -1596,20 +1596,21 @@ function addToCart(id, qty = 1, sourceImg = null) {
     if (pdpImg) flyImg = pdpImg;
   }
 
-  const stock = window.VFS_STOCK_CACHE[id];
-  const existing = cart.find(c => c.id === id);
+  const cachedStock = window.VFS_STOCK_CACHE[id] !== undefined ? window.VFS_STOCK_CACHE[id] : window.VFS_STOCK_CACHE[String(id)];
+  const stock = (cachedStock !== undefined && cachedStock !== null) ? Number(cachedStock) : (p.stock !== undefined ? Number(p.stock) : 99);
+
+  if (stock <= 0) {
+    toast(`⚠️ "${p.name || 'Item'}" is sold out!`);
+    return;
+  }
+
+  const existing = cart.find(c => c.id === id || String(c.id) === String(id));
   const currentQty = existing ? existing.qty : 0;
   const newQty = currentQty + qty;
 
-  if (stock !== undefined) {
-    if (stock <= 0) {
-      toast('Sorry, this item is sold out!');
-      return;
-    }
-    if (newQty > stock) {
-      toast(`Only ${stock} pcs available in stock.`);
-      return;
-    }
+  if (newQty > stock) {
+    toast(`Only ${stock} pcs available in stock.`);
+    return;
   }
 
   const minQty = (p && p.moq) ? parseInt(p.moq) : 1;
@@ -1618,14 +1619,14 @@ function addToCart(id, qty = 1, sourceImg = null) {
     existing.addedAt = Date.now();
   } else {
     const finalQty = Math.max(newQty, minQty);
-    if (stock !== undefined && finalQty > stock) {
+    if (finalQty > stock) {
       if (stock < minQty) {
         toast(`Cannot add: Stock is ${stock} pcs, but Minimum Order Quantity (MOQ) is ${minQty} pcs.`);
         return;
       }
-      cart.push({ id, qty: stock, addedAt: Date.now() });
+      cart.push({ id: p.id, qty: stock, addedAt: Date.now() });
     } else {
-      cart.push({ id, qty: finalQty, addedAt: Date.now() });
+      cart.push({ id: p.id, qty: finalQty, addedAt: Date.now() });
     }
   }
   animateFlyToCart(flyImg, () => {
@@ -4568,7 +4569,9 @@ async function initApp() {
   // Fast instant local stock cache init (sub-100ms load)
   const catalog = getFullCatalog();
   catalog.forEach(p => {
-    window.VFS_STOCK_CACHE[p.id] = (p.stock !== undefined && p.stock !== null) ? Number(p.stock) : 6;
+    const s = (p.stock !== undefined && p.stock !== null) ? Number(p.stock) : 6;
+    window.VFS_STOCK_CACHE[p.id] = s;
+    window.VFS_STOCK_CACHE[String(p.id)] = s;
   });
 
   // Execute 24-hour expiration and out of stock cart pruning
