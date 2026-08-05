@@ -2771,8 +2771,9 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 }
 
 .product-row-scroll .p-card {
-    width: 280px;
-    flex-shrink: 0;
+    flex: 0 0 calc((100% - 48px) / 4);
+    min-width: calc((100% - 48px) / 4);
+    max-width: calc((100% - 48px) / 4);
     scroll-snap-align: start;
     margin-bottom: 0;
 }
@@ -3910,9 +3911,10 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 .shelf-scroll::-webkit-scrollbar-thumb { background: var(--color-secondary); border-radius: 2px; }
 
 .shelf-scroll .p-card {
-  flex: 0 0 180px;
+  flex: 0 0 calc((100% - 48px) / 4);
+  min-width: calc((100% - 48px) / 4);
+  max-width: calc((100% - 48px) / 4);
   scroll-snap-align: start;
-  min-width: 180px;
 }
 
 .shelf-scroll .p-card .sale-ribbon {
@@ -4681,14 +4683,17 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
 }
 
 .product-row-scroll .p-card {
-  flex: 0 0 240px;
-  max-width: 240px;
+  flex: 0 0 calc((100% - 48px) / 4);
+  min-width: calc((100% - 48px) / 4);
+  max-width: calc((100% - 48px) / 4);
 }
 
 @media (max-width: 768px) {
-  .product-row-scroll .p-card {
-    flex: 0 0 170px;
-    max-width: 170px;
+  .product-row-scroll .p-card,
+  .shelf-scroll .p-card {
+    flex: 0 0 calc((100% - 10px) / 2);
+    min-width: calc((100% - 10px) / 2);
+    max-width: calc((100% - 10px) / 2);
   }
   .category-banner {
     min-height: 150px;
