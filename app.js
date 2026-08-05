@@ -4590,10 +4590,11 @@ async function initApp() {
     console.error("Failed to load products from live catalog:", e);
   }
 
-  // Fast instant local stock cache init (sub-100ms load)
-  const catalog = getFullCatalog();
-  catalog.forEach(p => {
-    const s = (p.stock !== undefined && p.stock !== null) ? Number(p.stock) : 6;
+  // Build stock cache from vfs-products.json PRODUCTS array (authoritative stock source).
+  // NOTE: Do NOT use getFullCatalog() here — it may return Firestore products which can have
+  // missing or incorrect stock values. PRODUCTS is always from vfs-products.json.
+  PRODUCTS.forEach(p => {
+    const s = (p.stock !== undefined && p.stock !== null) ? Number(p.stock) : 0;
     window.VFS_STOCK_CACHE[p.id] = s;
     window.VFS_STOCK_CACHE[String(p.id)] = s;
   });
