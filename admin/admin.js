@@ -931,17 +931,21 @@ window.saveProductInline = async function(id) {
       products[index].cat = newCat;
       products[index].badge = newBadge;
       
-      // Save Product Details to Firestore & LocalStorage
-      await window.VFS_DB.saveProductsList(products);
+      // Update local memory and cache INSTANTLY
       window.VFS_PRODUCTS_CACHE = products;
-
-      // Save Stock details
-      await window.VFS_DB.saveProductStock(id, newStock);
       window.VFS_STOCK_CACHE[id] = newStock;
       window.VFS_STOCK_CACHE[String(id)] = newStock;
       
-      adminToast('Product updated successfully! 🌸');
-      await renderSearchCatalog();
+      try {
+        localStorage.setItem('vfs_custom_products', JSON.stringify(products));
+      } catch(e) {}
+
+      adminToast('Product updated instantly! 🌸');
+      renderSearchCatalog();
+
+      // Background Async Cloud Save (Non-blocking!)
+      window.VFS_DB.saveProductsList(products);
+      window.VFS_DB.saveProductStock(id, newStock);
     } else {
       adminToast('Product not found in catalog cache!', 'error');
     }
@@ -959,6 +963,13 @@ window.saveProductInline = async function(id) {
 window.deleteProductFromCatalog = async function(id) {
   if (!confirm('Are you sure you want to delete this product from the catalog?')) return;
   
+  // 1. Remove element from DOM INSTANTLY
+  const cardElement = document.getElementById(`prodCard_${id}`) || document.querySelector(`[data-product-id="${id}"]`);
+  if (cardElement) {
+    cardElement.remove();
+  }
+
+  // 2. Filter cache instantly
   let products = (window.VFS_PRODUCTS_CACHE && window.VFS_PRODUCTS_CACHE.length > 0)
     ? window.VFS_PRODUCTS_CACHE
     : getAdminCatalog();
@@ -969,11 +980,17 @@ window.deleteProductFromCatalog = async function(id) {
   delete window.VFS_STOCK_CACHE[id];
   delete window.VFS_STOCK_CACHE[idStr];
   
-  await window.VFS_DB.deleteProduct(id);
-  await window.VFS_DB.saveProductsList(filtered);
   window.VFS_PRODUCTS_CACHE = filtered;
-  adminToast('Product deleted successfully! 🗑️');
-  await renderSearchCatalog();
+  try {
+    localStorage.setItem('vfs_custom_products', JSON.stringify(filtered));
+  } catch(e) {}
+
+  adminToast('Product deleted instantly! 🗑️');
+  renderSearchCatalog();
+
+  // 3. Background Async Cloud Deletion (Non-blocking!)
+  window.VFS_DB.deleteProduct(id);
+  window.VFS_DB.saveProductsList(filtered);
 };
 
 
