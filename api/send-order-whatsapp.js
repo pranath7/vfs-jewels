@@ -279,6 +279,37 @@ _Thank you for shopping with VFS Jewels!_
       console.warn('⚠️ PDF Photo Slip sending warning:', psErr.message || psErr);
     }
 
+    // Dispatch Instant Telegram Alert + PDF Invoice & Photo Slip
+    try {
+      const { sendTelegramMessage, sendTelegramDocumentUrl } = require('./lib/telegram');
+      const itemsListStr = (order.items || []).map(i => `• ${i.name || ('Item #' + i.id)} × ${i.qty || 1} — ₹${(i.price || 0) * (i.qty || 1)}`).join('\n');
+      
+      const telegramText = `
+🎉 <b>NEW ORDER RECEIVED — VFS JEWELS</b>
+
+📦 <b>Order ID:</b> ${order.id}
+👤 <b>Customer:</b> ${order.name || 'Valued Customer'}
+📞 <b>Phone:</b> +${customerPhone}
+📍 <b>Address:</b> ${order.address || 'N/A'}, ${order.city || ''} (${order.pincode || ''})
+💳 <b>Payment Mode:</b> ${order.paymentMethod || 'Online / Razorpay'}
+💰 <b>Total Amount:</b> ₹${order.total || order.amount || 0}
+
+🛍️ <b>Items Ordered:</b>
+${itemsListStr}
+
+📄 <b>Attached Documents:</b>
+1. Tax Invoice PDF
+2. Photo Packing Slip PDF
+      `.trim();
+
+      await sendTelegramMessage(telegramText, 'HTML');
+      await sendTelegramDocumentUrl(invoiceUrl, `📄 Tax Invoice PDF — Order ${order.id}`);
+      await sendTelegramDocumentUrl(photoSlipUrl, `🖼️ Packing Photo Slip PDF — Order ${order.id}`);
+      console.log(`✈️ Telegram order notification & PDFs dispatched for ${order.id}`);
+    } catch(telegramErr) {
+      console.warn('⚠️ Telegram notification warning:', telegramErr.message || telegramErr);
+    }
+
     return res.status(200).json({
       success: true,
       orderId: order.id,

@@ -243,6 +243,26 @@ Thank you for choosing VFS Jewels! 💎
       sendWhatsAppText(ADMIN_PHONE, adminMsg)
     ]);
 
+    // Dispatch Instant Telegram Alert to VFS Admin
+    try {
+      const { sendTelegramMessage } = require('./lib/telegram');
+      const telegramText = `
+👑 <b>${isPaid ? 'NEW WHOLESALE MEMBER PAID! 💰' : 'NEW WHOLESALE REGISTRATION 📝'}</b>
+
+👤 <b>Name:</b> ${displayName}
+🏪 <b>Business:</b> ${displayBiz}
+📱 <b>Phone:</b> +${cleanPhone}
+📧 <b>Email:</b> ${email || 'Not provided'}
+📍 <b>Address:</b> ${address || 'Not provided'}
+💳 <b>Payment Status:</b> ${isPaid ? 'PAID ✅ | Txn: ' + (paymentId || 'Verified') : 'PENDING'}
+      `.trim();
+
+      await sendTelegramMessage(telegramText, 'HTML');
+      console.log(`✈️ Telegram wholesale alert dispatched for ${displayName}`);
+    } catch(telegramErr) {
+      console.warn('⚠️ Telegram wholesale alert warning:', telegramErr.message || telegramErr);
+    }
+
     const welcomeId = welcomeResult.value?.messages?.[0]?.id || null;
     const adminId = adminResult.value?.messages?.[0]?.id || null;
 
