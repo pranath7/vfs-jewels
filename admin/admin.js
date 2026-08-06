@@ -4153,7 +4153,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSendChat.style.opacity = '0.6';
 
       try {
-        const res = await fetch('/api/send-custom-whatsapp', {
+        const res = await fetch('/api/send-order-whatsapp?action=custom', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

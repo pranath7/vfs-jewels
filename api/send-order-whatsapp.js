@@ -142,8 +142,34 @@ module.exports = async (req, res) => {
   }
 
   try {
-    if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
-      return res.status(500).json({ error: 'WhatsApp API credentials not configured in Vercel.' });
+    // Custom Direct Message Handler (Consolidated to keep Serverless Functions <= 12)
+    if (req.query.action === 'custom' || req.body.message) {
+      const { phone, message, recipientName, orderId } = req.body;
+      if (!phone || !message) {
+        return res.status(400).json({ error: 'Missing required fields: phone, message' });
+      }
+      let cleanPhone = phone.toString().replace(/\D/g, '');
+      if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
+
+      const whatsappRes = await sendWhatsAppPayload({
+        messaging_product: 'whatsapp',
+        to: cleanPhone,
+        type: 'text',
+        text: { body: message }
+      });
+
+      const msgId = whatsappRes?.messages?.[0]?.id || '';
+      await logToFirestore({
+        recipient: recipientName || 'Customer',
+        phone: cleanPhone,
+        type: 'Custom Message',
+        orderId: orderId || '',
+        status: 'SENT',
+        messageId: msgId,
+        preview: message
+      });
+
+      return res.status(200).json({ success: true, messageId: msgId });
     }
 
     const order = req.body;
