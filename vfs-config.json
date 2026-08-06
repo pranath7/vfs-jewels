@@ -16,6 +16,10 @@
     "keySecret": "YOUR_RAZORPAY_KEY_SECRET",
     "webhookSecret": "YOUR_WEBHOOK_SECRET"
   },
+  "telegram": {
+    "botToken": "8868419611:AAHDfN0KMVcyGqbiNu8qV8x-t0UkN0sUzzg",
+    "chatId": ""
+  },
   "removeBg": {
     "apiKey": "f1b1sd5rBBEz2xyJ9ubJBwB5"
   }
