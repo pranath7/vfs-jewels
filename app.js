@@ -30,10 +30,13 @@ async function initCloudConfig() {
         window.VFS_CLOUD_ACTIVE = true;
         console.log("🔥 VFS Cloud: Connected to Firebase Firestore.");
         
-        // Sync catalog from Firestore
+        // Sync catalog from Firestore by merging with vfs-products.json catalog
         const dbProducts = await window.VFS_DB.getProducts();
         if (dbProducts && dbProducts.length > 0) {
-          window.VFS_PRODUCTS_CACHE = dbProducts;
+          const map = new Map();
+          PRODUCTS.forEach(p => map.set(String(p.id), p));
+          dbProducts.forEach(p => map.set(String(p.id), { ...(map.get(String(p.id)) || {}), ...p }));
+          window.VFS_PRODUCTS_CACHE = Array.from(map.values());
           renderProducts(null);
         }
       }
