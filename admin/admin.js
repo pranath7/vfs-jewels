@@ -337,10 +337,13 @@ window.VFS_DB = {
   },
 
   updateOrder: async function(orderId, updates) {
+    const cleanId = String(orderId).replace('#', '').trim();
+    const hashId = '#' + cleanId;
+
     if (window.VFS_CLOUD_ACTIVE) {
       try {
-        await window.db.collection('orders').doc(orderId).update(updates);
-        return;
+        await window.db.collection('orders').doc(cleanId).set(updates, { merge: true });
+        await window.db.collection('orders').doc(hashId).set(updates, { merge: true });
       } catch(e) {
         console.error("Firestore update error:", e);
       }
@@ -348,7 +351,7 @@ window.VFS_DB = {
     const local = localStorage.getItem('vfs_orders');
     if (local) {
       const list = JSON.parse(local);
-      const idx = list.findIndex(o => o.id === orderId);
+      const idx = list.findIndex(o => String(o.id).replace('#', '') === cleanId);
       if (idx !== -1) {
         list[idx] = { ...list[idx], ...updates };
         localStorage.setItem('vfs_orders', JSON.stringify(list));
@@ -1218,33 +1221,36 @@ async function loadDashboard() {
   if (cancelledContainer) cancelledContainer.innerHTML = '';
   
   filteredOrders.forEach(order => {
-    if (order.status === 'unpaid') {
+    const rawStatus = (order.status || '').trim().toLowerCase();
+    const status = rawStatus || 'paid';
+
+    if (status === 'unpaid') {
       unpaidCount++;
       if (unpaidContainer) renderOrderCard(order, unpaidContainer);
-    } else if (order.status === 'paid' || order.status === 'CONFIRMED' || order.status === 'processing' || order.paymentMethod === 'Wallet Credit' || order.paymentMethod === 'Wallet') {
+    } else if (status === 'paid' || status === 'confirmed' || status === 'processing') {
       totalSales += (order.total || 0) + (order.advanceAdjusted || 0);
       paidCount++;
       if (paidContainer) renderOrderCard(order, paidContainer);
-    } else if (order.status === 'preparing') {
+    } else if (status === 'preparing') {
       totalSales += (order.total || 0) + (order.advanceAdjusted || 0);
       preparingCount++;
       if (preparingContainer) renderOrderCard(order, preparingContainer);
-    } else if (order.status === 'ready') {
+    } else if (status === 'ready') {
       totalSales += (order.total || 0) + (order.advanceAdjusted || 0);
       readyCount++;
       if (readyContainer) renderOrderCard(order, readyContainer);
-    } else if (order.status === 'dispatched' || order.status === 'delivered') {
+    } else if (status === 'dispatched' || status === 'shipped') {
       totalSales += (order.total || 0) + (order.advanceAdjusted || 0);
       shippedCount++;
       if (shippedContainer) renderOrderCard(order, shippedContainer);
-    } else if (order.status === 'completed') {
+    } else if (status === 'completed' || status === 'delivered' || status === 'satisfied') {
       totalSales += (order.total || 0) + (order.advanceAdjusted || 0);
       completedCount++;
       if (completedContainer) renderOrderCard(order, completedContainer);
-    } else if (order.status === 'cancelled') {
+    } else if (status === 'cancelled') {
       cancelledCount++;
       if (cancelledContainer) renderOrderCard(order, cancelledContainer);
-    } else if (order.status === 'returned') {
+    } else if (status === 'returned') {
       if (shippedContainer) renderOrderCard(order, shippedContainer);
     }
   });
