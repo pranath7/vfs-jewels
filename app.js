@@ -64,7 +64,16 @@ window.uploadToCloudinary = async function(file) {
   }
   const data = await res.json();
   return data.secure_url;
-};
+function getStockForProduct(p) {
+  if (!p) return 0;
+  const id = p.id;
+  const cachedS = (window.VFS_STOCK_CACHE && window.VFS_STOCK_CACHE[id] !== undefined)
+    ? window.VFS_STOCK_CACHE[id]
+    : (window.VFS_STOCK_CACHE && window.VFS_STOCK_CACHE[String(id)] !== undefined ? window.VFS_STOCK_CACHE[String(id)] : undefined);
+  if (cachedS !== undefined && cachedS !== null) return Number(cachedS);
+  if (p.stock !== undefined && p.stock !== null) return Number(p.stock);
+  return 0;
+}
 
 window.VFS_DB = {
   // ── Orders ──
@@ -279,21 +288,9 @@ window.VFS_DB = {
       } catch(e) {
         console.error("Firestore read products error:", e);
       }
-    }
     const local = localStorage.getItem('vfs_custom_products');
     return local ? JSON.parse(local) : null;
   },
-
-function getStockForProduct(p) {
-  if (!p) return 0;
-  const id = p.id;
-  const cachedS = (window.VFS_STOCK_CACHE && window.VFS_STOCK_CACHE[id] !== undefined)
-    ? window.VFS_STOCK_CACHE[id]
-    : (window.VFS_STOCK_CACHE && window.VFS_STOCK_CACHE[String(id)] !== undefined ? window.VFS_STOCK_CACHE[String(id)] : undefined);
-  if (cachedS !== undefined && cachedS !== null) return Number(cachedS);
-  if (p.stock !== undefined && p.stock !== null) return Number(p.stock);
-  return 0;
-}
 
   // ── Product Stock ──
   getProductStock: async function(productId) {
