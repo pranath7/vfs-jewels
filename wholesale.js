@@ -2326,7 +2326,9 @@ $('#coForm').addEventListener('submit', async (e) => {
   const itemsList = await Promise.all(stockPromises);
   
   const gstAmount = Math.round(subtotal * 0.03);
-  const shippingCost = 90;
+  const isDemoCart = cart.some(ci => String(ci.id) === '999' || ci.id === 999 || String(ci.id) === '1' || ci.id === 1);
+  const hasFreeShippingItem = itemsList.some(i => i.freeShipping || i.price === 1 || String(i.id) === '999');
+  const shippingCost = (isDemoCart || hasFreeShippingItem) ? 0 : 90;
   
   // Calculate Wholesale Advance Deduction if applicable
   let advanceDeduction = 0;

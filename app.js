@@ -2393,9 +2393,10 @@ $('#coForm').addEventListener('submit', async (e) => {
   const itemsList = await Promise.all(stockPromises);
   
   const gstAmount = Math.round(subtotal * 0.03);
-  // Dynamic tiered delivery charges (₹0 for demo product)
-  const isDemoCart = cart.length === 1 && cart[0].id === 1;
-  const shippingCost = isDemoCart ? 0 : (subtotal > 10000 ? 190 : subtotal > 5000 ? 120 : 90);
+  // Dynamic delivery charges (₹0 for ₹1 demo product or freeShipping items)
+  const isDemoCart = cart.some(ci => String(ci.id) === '999' || ci.id === 999 || String(ci.id) === '1' || ci.id === 1);
+  const hasFreeShippingItem = itemsList.some(i => i.freeShipping || i.price === 1 || String(i.id) === '999');
+  const shippingCost = (isDemoCart || hasFreeShippingItem) ? 0 : (subtotal > 10000 ? 190 : subtotal > 5000 ? 120 : 90);
   
   // Calculate Wholesale Advance Deduction if applicable
   let advanceDeduction = 0;

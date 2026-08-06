@@ -1,5 +1,23 @@
 [
   {
+    "id": 999,
+    "sku": "DEMO-001",
+    "name": "VFS ₹1 Trial Demo Product",
+    "cat": "kadas",
+    "meta": "Demo Trial Piece — Free Shipping",
+    "price": 1,
+    "mrp": 99,
+    "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg",
+    "rating": "5.0",
+    "reviews": 100,
+    "badge": "Demo Item",
+    "priceOnRequest": false,
+    "wholesalePrice": 1,
+    "moq": 1,
+    "stock": 100,
+    "freeShipping": true
+  },
+  {
     "id": 201,
     "sku": "SN-K001",
     "name": "VFS Designer Kada #01",
