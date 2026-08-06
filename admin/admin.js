@@ -190,6 +190,13 @@ async function refreshCloudData() {
     } catch (e) {
       console.warn("⚠️ VFS Admin: Firestore product sync failed", e);
     }
+  window.VFS_STOCK_CACHE = {};
+  if (Array.isArray(window.VFS_PRODUCTS_CACHE)) {
+    for (const p of window.VFS_PRODUCTS_CACHE) {
+      const s = (p.stock !== undefined && p.stock !== null) ? Number(p.stock) : 0;
+      window.VFS_STOCK_CACHE[p.id] = s;
+      window.VFS_STOCK_CACHE[String(p.id)] = s;
+    }
   }
 
   if (typeof loadDashboard === 'function') {
@@ -506,28 +513,39 @@ window.VFS_DB = {
   },
 
   saveProductsList: async function(productsList) {
-    if (window.VFS_CLOUD_ACTIVE) {
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
         for (const p of productsList) {
           await window.db.collection('products').doc(p.id.toString()).set(p);
         }
-        return;
       } catch(e) {
         console.error("Firestore write products error:", e);
       }
     }
-    localStorage.setItem('vfs_custom_products', JSON.stringify(productsList));
+    try {
+      localStorage.setItem('vfs_custom_products', JSON.stringify(productsList));
+      localStorage.setItem('vfs_products', JSON.stringify(productsList));
+    } catch(e) {}
   },
 
   deleteProduct: async function(productId) {
-    if (window.VFS_CLOUD_ACTIVE) {
+    const idStr = String(productId);
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
-        await window.db.collection('products').doc(productId.toString()).delete();
-        return;
+        await window.db.collection('products').doc(idStr).delete();
       } catch(e) {
         console.error("Firestore delete product error:", e);
       }
     }
+    try {
+      const stored = localStorage.getItem('vfs_custom_products') || localStorage.getItem('vfs_products');
+      if (stored) {
+        const list = JSON.parse(stored);
+        const filtered = list.filter(p => String(p.id) !== idStr && String(p.sku) !== idStr);
+        localStorage.setItem('vfs_custom_products', JSON.stringify(filtered));
+        localStorage.setItem('vfs_products', JSON.stringify(filtered));
+      }
+    } catch(e) {}
   },
 
   // ── Customers (Wholesale) ──
@@ -595,12 +613,14 @@ window.VFS_DB = {
   // ── Product Stock ──
   getProductStock: async function(productId) {
     const idStr = String(productId);
-    if (window.VFS_CLOUD_ACTIVE) {
+    if (window.VFS_STOCK_CACHE && window.VFS_STOCK_CACHE[idStr] !== undefined) {
+      return Number(window.VFS_STOCK_CACHE[idStr]);
+    }
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
         const doc = await window.db.collection('product_stock').doc(idStr).get();
-        if (doc.exists) {
-          const val = doc.data().stock;
-          return val !== undefined ? val : 5;
+        if (doc.exists && doc.data().stock !== undefined) {
+          return Number(doc.data().stock);
         }
       } catch(e) {
         console.error("Firestore read stock error:", e);
@@ -609,28 +629,31 @@ window.VFS_DB = {
     const local = localStorage.getItem('vfs_product_stock');
     const stockMap = local ? JSON.parse(local) : {};
     if (stockMap[idStr] !== undefined) {
-      return stockMap[idStr];
+      return Number(stockMap[idStr]);
     }
-    const initial = (productId === 401) ? 1 : 5;
-    stockMap[idStr] = initial;
-    localStorage.setItem('vfs_product_stock', JSON.stringify(stockMap));
-    return initial;
+    return 0;
   },
 
   saveProductStock: async function(productId, stock) {
     const idStr = String(productId);
-    if (window.VFS_CLOUD_ACTIVE) {
+    const numStock = isNaN(parseInt(stock)) ? 0 : parseInt(stock);
+    if (window.VFS_STOCK_CACHE) {
+      window.VFS_STOCK_CACHE[idStr] = numStock;
+      window.VFS_STOCK_CACHE[productId] = numStock;
+    }
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
-        await window.db.collection('product_stock').doc(idStr).set({ stock: parseInt(stock) });
-        return;
+        await window.db.collection('product_stock').doc(idStr).set({ stock: numStock });
       } catch(e) {
         console.error("Firestore write stock error:", e);
       }
     }
-    const local = localStorage.getItem('vfs_product_stock');
-    const stockMap = local ? JSON.parse(local) : {};
-    stockMap[idStr] = parseInt(stock);
-    localStorage.setItem('vfs_product_stock', JSON.stringify(stockMap));
+    try {
+      const local = localStorage.getItem('vfs_product_stock');
+      const stockMap = local ? JSON.parse(local) : {};
+      stockMap[idStr] = numStock;
+      localStorage.setItem('vfs_product_stock', JSON.stringify(stockMap));
+    } catch(e) {}
   },
 
   // ── Instagram Reels / Settings ──
@@ -758,7 +781,7 @@ window.renderSearchCatalog = async function() {
         <h3 style="color: var(--color-secondary); font-size: 1.45rem; text-transform: uppercase; margin-bottom: 12px; border-bottom: 1px solid var(--color-border); padding-bottom: 6px; font-family: var(--font-heading);">${catName} (${list.length})</h3>
         <div class="category-products-list">
           ${list.map(p => {
-            const stockVal = window.VFS_STOCK_CACHE[p.id] !== undefined ? window.VFS_STOCK_CACHE[p.id] : 5;
+            const stockVal = (window.VFS_STOCK_CACHE[p.id] !== undefined ? window.VFS_STOCK_CACHE[p.id] : (window.VFS_STOCK_CACHE[String(p.id)] !== undefined ? window.VFS_STOCK_CACHE[String(p.id)] : (p.stock !== undefined ? p.stock : 0)));
             const wsPriceVal = p.wholesalePrice || Math.round(p.price * 0.6);
             const moqVal = p.moq || 1;
             
@@ -771,11 +794,11 @@ window.renderSearchCatalog = async function() {
                     <span class="prod-sku">${p.sku || 'No SKU'}</span>
                     <h4 class="prod-title">${p.name}</h4>
                     <p class="prod-meta" style="line-height:1.4; font-size:1.15rem;">
-                      ${p.cat.toUpperCase()}<br>
+                      ${(p.cat || 'uncategorized').toUpperCase()}<br>
                       Retail: <strong>${fmt(p.price)}</strong> &bull; 
                       Wholesale: <strong>${fmt(wsPriceVal)}</strong><br>
                       MOQ: <strong>${moqVal} pcs</strong> &bull; 
-                      Stock: <strong style="color:${stockVal > 0 ? '#27ae60' : '#e74c3c'};">${stockVal} left</strong>
+                      Stock: <strong style="color:${stockVal > 0 ? '#27ae60' : '#e74c3c'};">${stockVal > 0 ? stockVal + ' left' : 'Out of Stock'}</strong>
                     </p>
                   </div>
                   <div class="prod-actions">
@@ -813,7 +836,7 @@ window.renderSearchCatalog = async function() {
                         <option value="chains" ${p.cat === 'chains' ? 'selected' : ''}>Chains</option>
                         <option value="necklaces" ${p.cat === 'necklaces' ? 'selected' : ''}>Necklaces</option>
                         <option value="bracelets" ${p.cat === 'bracelets' ? 'selected' : ''}>Bracelets</option>
-                        <option value="earrings" ${p.cat === 'earrings' ? 'selected' : ''}>Ear Rings</option>
+                        <option value="earrings" ${p.cat === 'earrings' ? 'selected' : ''}>Earings</option>
                         <option value="rings" ${p.cat === 'rings' ? 'selected' : ''}>Rings</option>
                       </select>
                     </div>
@@ -875,7 +898,8 @@ window.saveProductInline = async function(id) {
     const newPrice = parseFloat(document.getElementById(`editPrice_${id}`).value);
     const newWsPrice = parseFloat(document.getElementById(`editWsPrice_${id}`).value);
     const newMoq = parseInt(document.getElementById(`editMoq_${id}`).value) || 1;
-    const newStock = parseInt(document.getElementById(`editStock_${id}`).value) || 0;
+    const rawStock = document.getElementById(`editStock_${id}`).value;
+    const newStock = isNaN(parseInt(rawStock)) ? 0 : parseInt(rawStock);
     const newCat = document.getElementById(`editCat_${id}`).value;
     const newBadge = document.getElementById(`editBadge_${id}`) ? document.getElementById(`editBadge_${id}`).value : '';
     
@@ -892,7 +916,6 @@ window.saveProductInline = async function(id) {
     let index = products.findIndex(p => String(p.id) === String(id) || String(p.sku) === String(id));
 
     if (index === -1) {
-      // Fallback search in DEFAULT_PRODUCTS
       products = [...getAdminCatalog()];
       index = products.findIndex(p => String(p.id) === String(id) || String(p.sku) === String(id));
     }
@@ -903,6 +926,7 @@ window.saveProductInline = async function(id) {
       products[index].mrp = newPrice;
       products[index].wholesalePrice = newWsPrice;
       products[index].moq = newMoq;
+      products[index].stock = newStock;
       products[index].cat = newCat;
       products[index].badge = newBadge;
       
@@ -910,9 +934,10 @@ window.saveProductInline = async function(id) {
       await window.VFS_DB.saveProductsList(products);
       window.VFS_PRODUCTS_CACHE = products;
 
-      // Save Stock details directly to Firestore
+      // Save Stock details
       await window.VFS_DB.saveProductStock(id, newStock);
       window.VFS_STOCK_CACHE[id] = newStock;
+      window.VFS_STOCK_CACHE[String(id)] = newStock;
       
       adminToast('Product updated successfully! 🌸');
       await renderSearchCatalog();
@@ -933,14 +958,21 @@ window.saveProductInline = async function(id) {
 window.deleteProductFromCatalog = async function(id) {
   if (!confirm('Are you sure you want to delete this product from the catalog?')) return;
   
-  const products = getAdminCatalog();
-  const filtered = products.filter(p => String(p.id) !== String(id));
+  let products = (window.VFS_PRODUCTS_CACHE && window.VFS_PRODUCTS_CACHE.length > 0)
+    ? window.VFS_PRODUCTS_CACHE
+    : getAdminCatalog();
+
+  const idStr = String(id);
+  const filtered = products.filter(p => String(p.id) !== idStr && String(p.sku) !== idStr);
   
-  await window.VFS_DB.saveProductsList(filtered);
+  delete window.VFS_STOCK_CACHE[id];
+  delete window.VFS_STOCK_CACHE[idStr];
+  
   await window.VFS_DB.deleteProduct(id);
+  await window.VFS_DB.saveProductsList(filtered);
   window.VFS_PRODUCTS_CACHE = filtered;
   adminToast('Product deleted successfully! 🗑️');
-  renderSearchCatalog();
+  await renderSearchCatalog();
 };
 
 

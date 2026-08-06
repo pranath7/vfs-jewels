@@ -284,10 +284,30 @@ window.VFS_DB = {
     return local ? JSON.parse(local) : null;
   },
 
+function getStockForProduct(p) {
+  if (!p) return 0;
+  const id = p.id;
+  const cachedS = (window.VFS_STOCK_CACHE && window.VFS_STOCK_CACHE[id] !== undefined)
+    ? window.VFS_STOCK_CACHE[id]
+    : (window.VFS_STOCK_CACHE && window.VFS_STOCK_CACHE[String(id)] !== undefined ? window.VFS_STOCK_CACHE[String(id)] : undefined);
+  if (cachedS !== undefined && cachedS !== null) return Number(cachedS);
+  if (p.stock !== undefined && p.stock !== null) return Number(p.stock);
+  return 0;
+}
+
   // ── Product Stock ──
   getProductStock: async function(productId) {
-    if (productId === 201 || productId === '201' || productId === 1 || productId === '1') return 10;
-    return 0;
+    const idStr = String(productId);
+    const cached = window.VFS_STOCK_CACHE[idStr] !== undefined ? window.VFS_STOCK_CACHE[idStr] : window.VFS_STOCK_CACHE[productId];
+    if (cached !== undefined && cached !== null) return Number(cached);
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
+      try {
+        const doc = await window.db.collection('product_stock').doc(idStr).get();
+        if (doc.exists && doc.data().stock !== undefined) return Number(doc.data().stock);
+      } catch(e) {}
+    }
+    const p = getFullCatalog().find(x => String(x.id) === idStr);
+    return (p && p.stock !== undefined && p.stock !== null) ? Number(p.stock) : 0;
   },
 
   saveProductStock: async function(productId, stock) {
@@ -901,7 +921,7 @@ function renderProducts(filter) {
           ${visibleList.map(p => {
             const isWL = wishlist.includes(p.id);
             const minQty = p.moq ? parseInt(p.moq) : 1;
-            const isOOS = !(p.id === 201 || p.id === '201' || p.id === 1 || p.id === '1');
+            const isOOS = getStockForProduct(p) <= 0;
             
             const wsPrice = getWholesalePrice(p);
             const retailMrp = p.mrp || Math.round(wsPrice * 2.5);
@@ -1187,7 +1207,7 @@ function formatBdayDate(dateString) {
 function getProductCardHtml(p) {
   const isWL = wishlist.includes(p.id);
   const minQty = p.moq ? parseInt(p.moq) : 1;
-  const isOOS = !(p.id === 201 || p.id === '201' || p.id === 1 || p.id === '1');
+  const isOOS = getStockForProduct(p) <= 0;
   
   const wsPrice = getWholesalePrice(p);
   const retailMrp = p.mrp || Math.round(wsPrice * 2.5);
@@ -2986,7 +3006,7 @@ function openPDP(id) {
     </button>
   `;
 
-  const isOutOfStock = !(p.id === 201 || p.id === '201' || p.id === 1 || p.id === '1');
+  const isOutOfStock = getStockForProduct(p) <= 0;
   if (isOutOfStock) {
     const btnText = `OUT OF STOCK`;
 
@@ -5663,7 +5683,7 @@ async function renderProductShelves() {
   function shelfCard(p, badge) {
     const wsPrice = getWholesalePrice(p);
     const retailMrp = p.mrp || Math.round(wsPrice * 2.5);
-    const isOOS = !(p.id === 201 || p.id === '201' || p.id === 1 || p.id === '1');
+    const isOOS = getStockForProduct(p) <= 0;
     const badgeHtml = isOOS 
       ? `<span class="sale-ribbon" style="background:#ff3b30;color:#fff;font-weight:800;">Out of Stock</span>`
       : (badge ? `<span class="sale-ribbon">${badge}</span>` : '');
