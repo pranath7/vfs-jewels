@@ -7,6 +7,26 @@
 const https = require('https');
 const { sendTelegramMessage } = require('./lib/telegram');
 
+function parseFirestoreField(field) {
+  if (!field) return null;
+  if (field.stringValue !== undefined) return field.stringValue;
+  if (field.integerValue !== undefined) return parseInt(field.integerValue);
+  if (field.doubleValue !== undefined) return parseFloat(field.doubleValue);
+  if (field.booleanValue !== undefined) return field.booleanValue;
+  if (field.timestampValue !== undefined) return field.timestampValue;
+  if (field.mapValue !== undefined) {
+    const mapObj = {};
+    const mapFields = field.mapValue.fields || {};
+    for (let k in mapFields) mapObj[k] = parseFirestoreField(mapFields[k]);
+    return mapObj;
+  }
+  if (field.arrayValue !== undefined) {
+    const arr = field.arrayValue.values || [];
+    return arr.map(v => parseFirestoreField(v));
+  }
+  return null;
+}
+
 function fetchFirestoreCollection(collectionName) {
   return new Promise((resolve) => {
     const url = `https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/${collectionName}?pageSize=300`;
@@ -21,12 +41,7 @@ function fetchFirestoreCollection(collectionName) {
             const fields = doc.fields || {};
             const obj = { _id: doc.name.split('/').pop() };
             for (let k in fields) {
-              const field = fields[k];
-              if (field.stringValue !== undefined) obj[k] = field.stringValue;
-              else if (field.integerValue !== undefined) obj[k] = parseInt(field.integerValue);
-              else if (field.doubleValue !== undefined) obj[k] = parseFloat(field.doubleValue);
-              else if (field.booleanValue !== undefined) obj[k] = field.booleanValue;
-              else if (field.arrayValue !== undefined) obj[k] = field.arrayValue.values || [];
+              obj[k] = parseFirestoreField(fields[k]);
             }
             return obj;
           });
