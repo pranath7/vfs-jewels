@@ -4589,27 +4589,29 @@ async function initApp() {
     toast('🎉 Special 1% WhatsApp Discount Activated!');
   }
 
-  // Ensure Cloud configuration (Firebase Firestore connection) resolves before loading storefront data
-  await initCloudConfig();
-
   // Clear any legacy client-side products caching to avoid conflicts
   try {
     localStorage.removeItem('vfs_products');
     localStorage.removeItem('vfs_custom_products');
   } catch (e) {}
 
+  // 1. Load full live catalog (281 items) from vfs-products.json FIRST
   try {
     const res = await fetch(`vfs-products.json?t=${Date.now()}`);
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) {
-        PRODUCTS.length = 0; // Clear
+        PRODUCTS.length = 0;
         PRODUCTS.push(...data);
+        window.VFS_PRODUCTS_CACHE = [...PRODUCTS];
       }
     }
   } catch (e) {
     console.error("Failed to load products from live catalog:", e);
   }
+
+  // 2. Ensure Cloud configuration (Firebase Firestore connection) merges on top
+  await initCloudConfig();
 
   // Build stock cache from vfs-products.json PRODUCTS array (authoritative stock source).
   // NOTE: Do NOT use getFullCatalog() here — it may return Firestore products which can have
