@@ -12,7 +12,7 @@ try {
 
 function getTelegramCredentials() {
   const token = process.env.TELEGRAM_BOT_TOKEN || config.telegram?.botToken || '8868419611:AAHDfN0KMVcyGqbiNu8qV8x-t0UkN0sUzzg';
-  const chatId = process.env.TELEGRAM_CHAT_ID || config.telegram?.chatId || '';
+  const chatId = process.env.TELEGRAM_CHAT_ID || config.telegram?.chatId || '5181139033';
   return { token, chatId };
 }
 
