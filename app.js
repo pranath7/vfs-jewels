@@ -67,6 +67,8 @@ window.uploadToCloudinary = async function(file) {
   }
   const data = await res.json();
   return data.secure_url;
+};
+
 function getStockForProduct(p) {
   if (!p) return 0;
   const id = p.id;
@@ -291,6 +293,7 @@ window.VFS_DB = {
       } catch(e) {
         console.error("Firestore read products error:", e);
       }
+    }
     const local = localStorage.getItem('vfs_custom_products');
     return local ? JSON.parse(local) : null;
   },

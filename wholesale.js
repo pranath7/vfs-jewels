@@ -67,6 +67,8 @@ window.uploadToCloudinary = async function(file) {
   }
   const data = await res.json();
   return data.secure_url;
+};
+
 function getStockForProduct(p) {
   if (!p) return 0;
   const id = p.id;
