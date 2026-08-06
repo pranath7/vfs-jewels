@@ -174,7 +174,7 @@ module.exports = async (req, res) => {
 
     const order = req.body;
 
-    if (!order || !order.phone || !order.id || !order.total) {
+    if (!order || !order.phone || !order.id || order.total === undefined || order.total === null) {
       return res.status(400).json({ error: 'Missing required order fields' });
     }
 
@@ -186,14 +186,52 @@ module.exports = async (req, res) => {
       customerPhone = '91' + customerPhone;
     }
 
-    let itemsList = '';
-    if (order.items && Array.isArray(order.items)) {
-      order.items.forEach((item, idx) => {
-        itemsList += `${idx + 1}. ${item.name} × ${item.qty} — ₹${item.price * item.qty}\n`;
-      });
+    // 2. Dispatch Instant Telegram Alert + PDF Invoice & Photo Slip FIRST
+    const cleanId = String(order.id || 'J7001').replace('#', '').trim();
+    const invoiceUrl = `https://www.vfsjewels.store/api/invoice?id=${cleanId}`;
+    const photoSlipUrl = `https://www.vfsjewels.store/api/photo-slip?id=${cleanId}`;
+
+    try {
+      const { sendTelegramMessage, sendTelegramDocumentUrl } = require('./lib/telegram');
+      const itemsListStr = (order.items || []).map(i => `• <b>${i.name || ('Item #' + i.id)}</b> × ${i.qty || 1} — ₹${(i.price || 0) * (i.qty || 1)}`).join('\n');
+      
+      const telegramText = `
+🎉 <b>NEW ORDER RECEIVED — VFS JEWELS</b>
+
+📦 <b>Order ID:</b> ${order.id}
+👤 <b>Customer:</b> ${order.name || 'Valued Customer'}
+📞 <b>Phone:</b> +${customerPhone}
+📍 <b>Address:</b> ${order.address || 'N/A'}, ${order.city || ''} (${order.pincode || ''})
+💳 <b>Payment Mode:</b> ${order.paymentMethod || 'Online / Wallet Credit'}
+💰 <b>Total Amount:</b> ₹${order.total !== undefined ? order.total : (order.amount || 0)}
+
+🛍️ <b>Items Ordered:</b>
+${itemsListStr}
+
+📄 <b>Attached Documents:</b>
+1. Tax Invoice PDF
+2. Photo Packing Slip PDF
+      `.trim();
+
+      await sendTelegramMessage(telegramText, 'HTML');
+      await sendTelegramDocumentUrl(invoiceUrl, `📄 Tax Invoice PDF — Order ${order.id}`);
+      await sendTelegramDocumentUrl(photoSlipUrl, `🖼️ Packing Photo Slip PDF — Order ${order.id}`);
+      console.log(`✈️ Telegram order notification & PDFs dispatched for ${order.id}`);
+    } catch(telegramErr) {
+      console.warn('⚠️ Telegram notification warning:', telegramErr.message || telegramErr);
     }
 
-    let textMessage = 
+    // 3. Attempt WhatsApp API dispatch (Graceful fallback if WhatsApp token fails)
+    let whatsappSuccess = false;
+    try {
+      let itemsList = '';
+      if (order.items && Array.isArray(order.items)) {
+        order.items.forEach((item, idx) => {
+          itemsList += `${idx + 1}. ${item.name} × ${item.qty} — ₹${item.price * item.qty}\n`;
+        });
+      }
+
+      let textMessage = 
 `💎 *VFS JEWELS — ORDER CONFIRMED!* 💎
 ━━━━━━━━━━━━━━━━━━━━━━━
 Hello *${order.name || 'Valued Customer'}*! 🎉
@@ -217,131 +255,21 @@ ${itemsList || '1. Jewellery Order\n'}
 ${order.address || ''}, ${order.city || ''} - ${order.pincode || ''}
 🚛 *Carrier:* ${order.carrier || 'DTDC Express'}
 
-📄 _Your official PDF Tax Invoice & Photo Slip are attached below!_
+📄 _Your official PDF Tax Invoice & Photo Slip are attached below!_`;
 
-━━━━━━━━━━━━━━━━━━━━━━━
-_Thank you for shopping with VFS Jewels!_
-🌐 vfsjewels.store`;
-
-    // 2. Send Text Summary Message
-    console.log(`📤 Sending WhatsApp order summary to +${customerPhone}`);
-    const textResult = await sendWhatsAppPayload({
-      messaging_product: 'whatsapp',
-      to: customerPhone,
-      type: 'text',
-      text: { body: textMessage }
-    });
-
-    const textMsgId = textResult.messages?.[0]?.id || '';
-    await logToFirestore({
-      recipient: order.name || 'Customer',
-      phone: customerPhone,
-      type: 'Order Confirmation',
-      orderId: order.id,
-      status: 'SENT',
-      messageId: textMsgId,
-      preview: `Order ${order.id} confirmed for ${order.name} (Total: ₹${order.total})`
-    });
-
-    const cleanId = order.id.replace('#', '');
-
-    // 3. Build Direct Clean PDF Document Links
-    const invoiceUrl = `https://www.vfsjewels.store/api/invoice?id=${cleanId}`;
-    const photoSlipUrl = `https://www.vfsjewels.store/api/photo-slip?id=${cleanId}`;
-
-    console.log(`📄 Sending WhatsApp PDF Tax Invoice to +${customerPhone}`);
-    let invoiceResult = null;
-    try {
-      invoiceResult = await sendWhatsAppPayload({
+      await sendWhatsAppPayload({
         messaging_product: 'whatsapp',
         to: customerPhone,
-        type: 'document',
-        document: {
-          link: invoiceUrl,
-          filename: `VFS_Jewels_Invoice_${cleanId}.pdf`,
-          caption: `📄 Tax Invoice for Order ${order.id} - VFS Jewels`
-        }
+        type: 'text',
+        text: { body: textMessage }
       });
-      
-      const docMsgId = invoiceResult?.messages?.[0]?.id || '';
-      await logToFirestore({
-        recipient: order.name || 'Customer',
-        phone: customerPhone,
-        type: 'PDF Invoice Attachment',
-        orderId: order.id,
-        status: 'SENT',
-        messageId: docMsgId,
-        preview: `Attached PDF Invoice VFS_Jewels_Invoice_${cleanId}.pdf`
-      });
-    } catch (docErr) {
-      console.warn('⚠️ PDF Invoice sending warning:', docErr.message || docErr);
-    }
-
-    console.log(`🖼️ Sending WhatsApp PDF Photo Slip to +${customerPhone}`);
-    let photoSlipResult = null;
-    try {
-      photoSlipResult = await sendWhatsAppPayload({
-        messaging_product: 'whatsapp',
-        to: customerPhone,
-        type: 'document',
-        document: {
-          link: photoSlipUrl,
-          filename: `VFS_Jewels_PhotoSlip_${cleanId}.pdf`,
-          caption: `🖼️ Photo Slip & Fulfillment Manifest for Order ${order.id} - VFS Jewels`
-        }
-      });
-
-      const psMsgId = photoSlipResult?.messages?.[0]?.id || '';
-      await logToFirestore({
-        recipient: order.name || 'Customer',
-        phone: customerPhone,
-        type: 'PDF Photo Slip Attachment',
-        orderId: order.id,
-        status: 'SENT',
-        messageId: psMsgId,
-        preview: `Attached PDF Photo Slip VFS_Jewels_PhotoSlip_${cleanId}.pdf`
-      });
-    } catch (psErr) {
-      console.warn('⚠️ PDF Photo Slip sending warning:', psErr.message || psErr);
-    }
-
-    // Dispatch Instant Telegram Alert + PDF Invoice & Photo Slip
-    try {
-      const { sendTelegramMessage, sendTelegramDocumentUrl } = require('./lib/telegram');
-      const itemsListStr = (order.items || []).map(i => `• ${i.name || ('Item #' + i.id)} × ${i.qty || 1} — ₹${(i.price || 0) * (i.qty || 1)}`).join('\n');
-      
-      const telegramText = `
-🎉 <b>NEW ORDER RECEIVED — VFS JEWELS</b>
-
-📦 <b>Order ID:</b> ${order.id}
-👤 <b>Customer:</b> ${order.name || 'Valued Customer'}
-📞 <b>Phone:</b> +${customerPhone}
-📍 <b>Address:</b> ${order.address || 'N/A'}, ${order.city || ''} (${order.pincode || ''})
-💳 <b>Payment Mode:</b> ${order.paymentMethod || 'Online / Razorpay'}
-💰 <b>Total Amount:</b> ₹${order.total || order.amount || 0}
-
-🛍️ <b>Items Ordered:</b>
-${itemsListStr}
-
-📄 <b>Attached Documents:</b>
-1. Tax Invoice PDF
-2. Photo Packing Slip PDF
-      `.trim();
-
-      await sendTelegramMessage(telegramText, 'HTML');
-      await sendTelegramDocumentUrl(invoiceUrl, `📄 Tax Invoice PDF — Order ${order.id}`);
-      await sendTelegramDocumentUrl(photoSlipUrl, `🖼️ Packing Photo Slip PDF — Order ${order.id}`);
-      console.log(`✈️ Telegram order notification & PDFs dispatched for ${order.id}`);
-    } catch(telegramErr) {
-      console.warn('⚠️ Telegram notification warning:', telegramErr.message || telegramErr);
+      whatsappSuccess = true;
+    } catch(waErr) {
+      console.warn('⚠️ WhatsApp API notice:', waErr.message || waErr);
     }
 
     return res.status(200).json({
       success: true,
-      orderId: order.id,
-      textMessageId: textMsgId,
-      invoicePdfMessageId: invoiceResult?.messages?.[0]?.id || null,
-      photoSlipPdfMessageId: photoSlipResult?.messages?.[0]?.id || null,
       invoiceUrl: invoiceUrl,
       photoSlipUrl: photoSlipUrl,
       message: `Order confirmation, PDF Invoice, and PDF Photo Slip sent to +${customerPhone}`

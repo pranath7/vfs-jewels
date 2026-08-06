@@ -190,6 +190,7 @@ async function refreshCloudData() {
     } catch (e) {
       console.warn("⚠️ VFS Admin: Firestore product sync failed", e);
     }
+  }
   window.VFS_STOCK_CACHE = {};
   if (Array.isArray(window.VFS_PRODUCTS_CACHE)) {
     for (const p of window.VFS_PRODUCTS_CACHE) {

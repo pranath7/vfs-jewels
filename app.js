@@ -2600,7 +2600,7 @@ async function finalizeOrderAndProceed(paymentMethod, transactionId = '') {
 
     // ── AUTO SEND WHATSAPP ORDER CONFIRMATION TO CUSTOMER ──
     try {
-      const waResponse = await fetch('https://www.vfsjewels.store/api/send-order-whatsapp', {
+      const waResponse = await fetch('/api/send-order-whatsapp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(activeCheckoutOrder)

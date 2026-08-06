@@ -290,9 +290,9 @@ module.exports = async (req, res) => {
       date: orderPayload.date || query.date || new Date().toLocaleDateString('en-IN'),
       carrier: orderPayload.carrier || query.carrier || 'DTDC Express Air',
       trackingId: orderPayload.trackingId || query.trackingId || '',
-      total: orderPayload.total || query.total || 91,
-      subtotal: orderPayload.subtotal || query.subtotal || 1,
-      shipping: orderPayload.shipping || query.shipping || 90
+      total: orderPayload.total !== undefined ? orderPayload.total : (query.total !== undefined ? query.total : 0),
+      subtotal: orderPayload.subtotal !== undefined ? orderPayload.subtotal : (query.subtotal !== undefined ? query.subtotal : 0),
+      shipping: orderPayload.shipping !== undefined ? orderPayload.shipping : (query.shipping !== undefined ? query.shipping : 90)
     };
 
     const pdfBuffer = await createPhotoSlipPDF(fullOrder, items);

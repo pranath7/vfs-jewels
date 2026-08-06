@@ -71,18 +71,19 @@ function createPDF(order) {
   const trackingId = order.trackingId || `TRK${id.replace('#', '')}VFS`;
   const paymentMethod = order.paymentMethod || 'Razorpay Online';
 
-  const items = Array.isArray(order.items) && order.items.length ? order.items : [{ name: 'Imitation Fashion Jewellery Item', qty: 1, price: Number(order.total || 0), sku: `ZU1-${id.replace('#', '')}` }];
+  const items = Array.isArray(order.items) && order.items.length ? order.items : [{ name: 'Imitation Fashion Jewellery Item', qty: 1, price: Number(order.subtotal || order.total || 0), sku: `ZU1-${id.replace('#', '')}` }];
 
-  const subtotal = Number(order.subtotal || order.total || 0);
-  const shipping = Number(order.shipping || 90);
-  const gstTotal = order.gstAmount ? Number(order.gstAmount) : Math.round(subtotal * 0.03);
+  const calculatedSubtotal = items.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.qty || 1)), 0);
+  const subtotal = (order.subtotal !== undefined && order.subtotal !== null && order.subtotal !== '') ? Number(order.subtotal) : calculatedSubtotal;
+  const shipping = (order.shipping !== undefined && order.shipping !== null && order.shipping !== '') ? Number(order.shipping) : 90;
+  const gstTotal = (order.gstAmount !== undefined && order.gstAmount !== null && order.gstAmount !== '') ? Number(order.gstAmount) : Math.round(subtotal * 0.03);
   const cgst = Math.round(gstTotal / 2);
   const sgst = gstTotal - cgst;
 
   const couponAmount = Number(order.couponDiscount || 0);
   const walletAmount = Number(order.walletDiscount || 0);
   const advanceAmount = Number(order.advanceAdjusted || order.advanceDeducted || 0);
-  const total = Number(order.total || (subtotal + shipping + gstTotal - couponAmount - walletAmount - advanceAmount));
+  const total = (order.total !== undefined && order.total !== null && order.total !== '') ? Number(order.total) : Math.max(0, subtotal + shipping + gstTotal - couponAmount - walletAmount - advanceAmount);
 
   const content = [];
 
@@ -308,13 +309,13 @@ module.exports = async (req, res) => {
       trackingId: orderPayload.trackingId || query.trackingId || '',
       paymentMethod: orderPayload.paymentMethod || query.paymentMethod || 'Razorpay Online',
       status: orderPayload.status || query.status || 'CONFIRMED',
-      total: orderPayload.total || query.total || '0',
-      subtotal: orderPayload.subtotal || query.subtotal || query.total || '0',
-      gstAmount: orderPayload.gstAmount || query.gstAmount || '0',
-      shipping: orderPayload.shipping || query.shipping || '90',
-      couponDiscount: orderPayload.couponDiscount || query.couponDiscount || '0',
-      walletDiscount: orderPayload.walletDiscount || query.walletDiscount || '0',
-      advanceAdjusted: orderPayload.advanceAdjusted || query.advanceAdjusted || '0',
+      total: orderPayload.total !== undefined ? orderPayload.total : (query.total !== undefined ? query.total : 0),
+      subtotal: orderPayload.subtotal !== undefined ? orderPayload.subtotal : (query.subtotal !== undefined ? query.subtotal : undefined),
+      gstAmount: orderPayload.gstAmount !== undefined ? orderPayload.gstAmount : (query.gstAmount !== undefined ? query.gstAmount : undefined),
+      shipping: orderPayload.shipping !== undefined ? orderPayload.shipping : (query.shipping !== undefined ? query.shipping : 90),
+      couponDiscount: orderPayload.couponDiscount !== undefined ? orderPayload.couponDiscount : (query.couponDiscount !== undefined ? query.couponDiscount : 0),
+      walletDiscount: orderPayload.walletDiscount !== undefined ? orderPayload.walletDiscount : (query.walletDiscount !== undefined ? query.walletDiscount : 0),
+      advanceAdjusted: orderPayload.advanceAdjusted !== undefined ? orderPayload.advanceAdjusted : (query.advanceAdjusted !== undefined ? query.advanceAdjusted : 0),
       items: items
     });
 
