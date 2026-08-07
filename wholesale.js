@@ -489,7 +489,7 @@ const CATEGORY_BANNERS = {
   earrings: { 
     title: "Earings Collection", 
     desc: "Dazzling handcrafted earings for every occasion.", 
-    img: "assets/cat_preview_earrings.png" 
+    img: "assets/cat_preview_earrings.png?v=20260807_v1" 
   },
   rings: {
     title: "Rings Collection",
