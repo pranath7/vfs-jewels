@@ -1,3 +1,7 @@
 chat_history.md
 .vercel
 .env*
+node_modules/
+vfs-config.json
+.DS_Store
+Thumbs.db
