@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Frequently Asked Questions (FAQ) | VFS Jewels Sowcarpet</title>
+  <meta name="description" content="Find instant answers to questions about anti-tarnish jewelry, kada & ring sizing, shipping timelines, wholesale MOQ, and payment options at VFS Jewels.">
+  <link rel="canonical" href="https://vfsjewels.store/faq.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --faq-gold: #D4AF37;
+      --faq-dark: #11141E;
+      --faq-bg: #FDFBF7;
+      --faq-card: #FFFFFF;
+      --faq-text: #2D3748;
+      --faq-muted: #718096;
+      --faq-border: rgba(212,175,55,0.25);
+    }
+    body {
+      background-color: var(--faq-bg);
+      color: var(--faq-text);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      padding: 0;
+      line-height: 1.7;
+    }
+    .faq-nav-bar {
+      background: var(--faq-dark);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(212,175,55,0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .faq-nav-logo { height: 38px; }
+    .faq-back-btn {
+      color: var(--faq-gold);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid rgba(212,175,55,0.4);
+      transition: all 0.2s ease;
+    }
+    .faq-back-btn:hover {
+      background: rgba(212,175,55,0.15);
+      color: #fff;
+    }
+    .faq-hero {
+      background: linear-gradient(135deg, #11141E 0%, #1e1b15 100%);
+      color: #FFFFFF;
+      padding: 60px 24px 45px;
+      text-align: center;
+      border-bottom: 1px solid rgba(212,175,55,0.2);
+    }
+    .faq-hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(212,175,55,0.15);
+      border: 1px solid var(--faq-gold);
+      color: var(--faq-gold);
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+    .faq-hero h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 38px;
+      color: #FFFFFF;
+      margin: 0 0 14px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .faq-hero p {
+      font-size: 15px;
+      color: #CBD5E1;
+      max-width: 620px;
+      margin: 0 auto 28px;
+    }
+    .faq-search-wrapper {
+      max-width: 600px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .faq-search-input {
+      width: 100%;
+      padding: 16px 20px 16px 50px;
+      font-size: 15px;
+      border-radius: 30px;
+      border: 2px solid rgba(212,175,55,0.4);
+      background: #FFFFFF;
+      color: #121212;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+      outline: none;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    .faq-search-input:focus {
+      border-color: var(--faq-gold);
+      box-shadow: 0 8px 30px rgba(212,175,55,0.3);
+    }
+    .faq-search-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--faq-gold);
+      width: 20px;
+      height: 20px;
+    }
+    .faq-container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+    /* Topic Navigation / Table of Contents */
+    .faq-topics-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 40px;
+    }
+    .faq-topic-pill {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      color: #4A5568;
+      padding: 10px 18px;
+      border-radius: 25px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .faq-topic-pill:hover, .faq-topic-pill.active {
+      background: var(--faq-dark);
+      color: #FFFFFF;
+      border-color: var(--faq-dark);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    }
+    .faq-topic-pill.active {
+      border-color: var(--faq-gold);
+      color: var(--faq-gold);
+    }
+    /* Section Group */
+    .faq-group {
+      margin-bottom: 40px;
+    }
+    .faq-group-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid rgba(212,175,55,0.25);
+    }
+    .faq-group-icon {
+      font-size: 24px;
+    }
+    .faq-group-title {
+      font-family: 'Cinzel', serif;
+      font-size: 22px;
+      color: var(--faq-dark);
+      margin: 0;
+      font-weight: 700;
+    }
+    /* Accordion Item */
+    .faq-item {
+      background: var(--faq-card);
+      border: 1px solid #E2E8F0;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      transition: all 0.25s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .faq-item:hover {
+      border-color: rgba(212,175,55,0.5);
+      box-shadow: 0 4px 16px rgba(212,175,55,0.08);
+    }
+    .faq-item.open {
+      border-color: var(--faq-gold);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    .faq-question {
+      padding: 18px 22px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--faq-dark);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      user-select: none;
+    }
+    .faq-question:hover {
+      color: #996e00;
+    }
+    .faq-toggle-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--faq-gold);
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+    }
+    .faq-item.open .faq-toggle-icon {
+      transform: rotate(180deg);
+    }
+    .faq-answer {
+      display: none;
+      padding: 0 22px 20px;
+      font-size: 14px;
+      color: #4A5568;
+      line-height: 1.75;
+      border-top: 1px solid #F7FAFC;
+    }
+    .faq-item.open .faq-answer {
+      display: block;
+    }
+    .faq-answer p { margin: 12px 0 0; }
+    .faq-answer ul { margin: 8px 0 0; padding-left: 20px; }
+    .faq-answer li { margin-bottom: 4px; }
+    .faq-highlight {
+      background: #FEF08A;
+      color: #121212;
+      padding: 0 3px;
+      border-radius: 2px;
+    }
+    /* Feedback Buttons */
+    .faq-feedback {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px dashed #E2E8F0;
+      font-size: 12px;
+      color: var(--faq-muted);
+    }
+    .faq-feedback-btn {
+      background: #F8FAFC;
+      border: 1px solid #CBD5E1;
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 11.5px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #475569;
+    }
+    .faq-feedback-btn:hover {
+      background: #E2E8F0;
+    }
+    /* Contact Section ordered by accessibility */
+    .faq-contact-section {
+      background: #FFFFFF;
+      border: 1.5px solid rgba(212,175,55,0.3);
+      border-radius: 16px;
+      padding: 36px 28px;
+      text-align: center;
+      margin-top: 60px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.03);
+    }
+    .faq-contact-section h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 24px;
+      color: var(--faq-dark);
+      margin: 0 0 8px;
+    }
+    .faq-contact-section p {
+      font-size: 14px;
+      color: var(--faq-muted);
+      margin: 0 0 28px;
+    }
+    .faq-contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      text-align: left;
+    }
+    .faq-contact-card {
+      background: #FDFBF7;
+      border: 1px solid #E2E8F0;
+      border-radius: 10px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+    .faq-contact-card:hover {
+      border-color: var(--faq-gold);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(212,175,55,0.12);
+    }
+    .faq-contact-priority {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      width: fit-content;
+      margin-bottom: 10px;
+    }
+    .p-fastest { background: #DCFCE7; color: #166534; }
+    .p-instant { background: #FEF3C7; color: #92400E; }
+    .p-standard { background: #E0E7FF; color: #3730A3; }
+    .p-inperson { background: #F3E8FF; color: #6B21A8; }
+    .faq-contact-title {
+      font-weight: 800;
+      font-size: 15px;
+      color: var(--faq-dark);
+      margin-bottom: 4px;
+    }
+    .faq-contact-desc {
+      font-size: 12.5px;
+      color: var(--faq-muted);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .faq-contact-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      text-align: center;
+    }
+    .btn-wa { background: #25D366; color: #FFFFFF; }
+    .btn-call { background: #121212; color: #FFFFFF; }
+    .btn-email { background: #F1F5F9; color: #1E293B; border: 1px solid #CBD5E1; }
+    .btn-visit { background: #FFFDF0; color: #996e00; border: 1px solid #D4AF37; }
+    .no-results-box {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+      background: #FFFFFF;
+      border-radius: 12px;
+      border: 1px dashed #CBD5E1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="faq-nav-bar">
+    <a href="index.html" style="display:flex; align-items:center; gap:10px; text-decoration:none;">
+      <img src="https://res.cloudinary.com/cwx4zame/image/upload/v1783183760/ze9xek1cled8puy6vfex.png" alt="VFS Jewels" class="faq-nav-logo">
+    </a>
+    <a href="index.html" class="faq-back-btn">← Back to Shop</a>
+  </header>
+
+  <!-- Hero Header -->
+  <section class="faq-hero">
+    <div class="faq-hero-badge">💡 Self-Service Help Center</div>
+    <h1>Frequently Asked Questions</h1>
+    <p>Everything you need to know about our anti-tarnish jewelry, sizing, express pan-India dispatch, and wholesale orders.</p>
+    
+    <!-- Search Functionality (Checklist #4) -->
+    <div class="faq-search-wrapper">
+      <svg class="faq-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="faqSearchInput" class="faq-search-input" placeholder="Search keywords (e.g. anti-tarnish, kada size, shipping, returns, wholesale)..." oninput="filterFaqs()">
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="faq-container">
+
+    <!-- Table of Contents / Navigate by Topic (Checklist #3 & #5) -->
+    <nav class="faq-topics-nav" aria-label="Topic navigation">
+      <button class="faq-topic-pill active" onclick="filterByTopic('all', this)">✨ All Questions</button>
+      <button class="faq-topic-pill" onclick="filterByTopic('quality', this)">💎 Anti-Tarnish &amp; Quality</button>
+      <button class="faq-topic-pill" onclick="filterByTopic('sizing', this)">📏 Ring &amp; Kada Sizing</button>
+      <button class="faq-topic-pill" onclick="filterByTopic('shipping', this)">🚚 Shipping &amp; Delivery</button>
+      <button class="faq-topic-pill" onclick="filterByTopic('payments', this)">💳 Payments &amp; Invoicing</button>
+      <button class="faq-topic-pill" onclick="filterByTopic('wholesale', this)">📦 Wholesale &amp; Bulk Orders</button>
+      <button class="faq-topic-pill" onclick="filterByTopic('returns', this)">🔄 Returns &amp; Care</button>
+    </nav>
+
+    <div id="noResults" class="no-results-box">
+      <div style="font-size:32px; margin-bottom:10px;">🔍</div>
+      <h3 style="margin:0 0 6px; font-size:18px; color:var(--faq-dark);">No matching questions found</h3>
+      <p style="margin:0 0 16px; font-size:14px; color:var(--faq-muted);">Try different keywords or contact our showroom concierge directly via WhatsApp.</p>
+      <button onclick="resetFaqSearch()" style="padding:8px 16px; background:var(--faq-dark); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:700;">Reset Search</button>
+    </div>
+
+    <!-- TOPIC 1: ANTI-TARNISH & QUALITY -->
+    <div class="faq-group" data-topic="quality">
+      <div class="faq-group-header">
+        <span class="faq-group-icon">💎</span>
+        <h2 class="faq-group-title">Anti-Tarnish Shield &amp; Quality</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>What makes VFS Jewels jewelry anti-tarnish and sweat-proof?</span>
+          <svg class="faq-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>
+            Every piece at VFS Jewels is crafted with high-purity brass alloy coated with our signature <strong>18K Real Gold Electroplating + Anti-Tarnish PVD Nanoshield</strong>. This barrier shields against moisture, skin acidity, and oxidation, preserving its brilliant golden luster without fading or turning green.
+          </p>
+          <div class="faq-feedback">
+            <span>Was this helpful?</span>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, true)">👍 Yes</button>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, false)">👎 No</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>Is your jewelry skin-friendly and hypoallergenic?</span>
+          <svg class="faq-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>
+            Yes, 100%! All our products are completely <strong>lead-free, nickel-free, and cadmium-free</strong>. They are specifically tested to be gentle on sensitive skin and safe for continuous daily wear.
+          </p>
+          <div class="faq-feedback">
+            <span>Was this helpful?</span>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, true)">👍 Yes</button>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, false)">👎 No</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOPIC 2: SIZING & MEASUREMENTS -->
+    <div class="faq-group" data-topic="sizing">
+      <div class="faq-group-header">
+        <span class="faq-group-icon">📏</span>
+        <h2 class="faq-group-title">Ring &amp; Kada Sizing Guide</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>How do I know my correct Kada or Bangle size (2.4, 2.6, 2.8)?</span>
+          <svg class="faq-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>You can easily measure an existing well-fitting bangle using a standard ruler across its inner diameter:</p>
+          <ul>
+            <li><strong>Size 2.4 (Small):</strong> Inner diameter of 2.25 inches (57 mm)</li>
+            <li><strong>Size 2.6 (Medium — Most Common):</strong> Inner diameter of 2.375 inches (60 mm)</li>
+            <li><strong>Size 2.8 (Large):</strong> Inner diameter of 2.5 inches (64 mm)</li>
+          </ul>
+          <p>Many of our kadas also come with an <em>openable lock clasp</em> or <em>free-size open-cuff design</em> that comfortably fits all wrists.</p>
+          <div class="faq-feedback">
+            <span>Was this helpful?</span>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, true)">👍 Yes</button>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, false)">👎 No</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>Are your rings fixed size or adjustable?</span>
+          <svg class="faq-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>
+            Over 80% of our cocktail and solitaire CZ rings feature an <strong>invisible comfort-fit adjustable band</strong> that smoothly adjusts between Indian ring sizes 6 through 10. For fixed-size rings, specific measurements are explicitly mentioned in the title and description.
+          </p>
+          <div class="faq-feedback">
+            <span>Was this helpful?</span>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, true)">👍 Yes</button>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, false)">👎 No</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOPIC 3: SHIPPING & DELIVERY -->
+    <div class="faq-group" data-topic="shipping">
+      <div class="faq-group-header">
+        <span class="faq-group-icon">🚚</span>
+        <h2 class="faq-group-title">Shipping &amp; Pan-India Delivery</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>How long does delivery take and which couriers do you use?</span>
+          <svg class="faq-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>All orders are packed and dispatched directly from our Sowcarpet, Chennai fulfillment hub:</p>
+          <ul>
+            <li><strong>Tamil Nadu &amp; South India:</strong> 1 to 2 business days (via ST Courier / DTDC Express).</li>
+            <li><strong>Metro Cities (Mumbai, Delhi, Bengaluru, Hyderabad):</strong> 2 to 4 business days (via FedEx / DTDC Air).</li>
+            <li><strong>Rest of India:</strong> 3 to 5 business days.</li>
+          </ul>
+          <p>You will receive an automated tracking link &amp; parcel photo slip on WhatsApp as soon as your parcel is handed to the courier.</p>
+          <div class="faq-feedback">
+            <span>Was this helpful?</span>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, true)">👍 Yes</button>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, false)">👎 No</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>Can I pick up my order directly from your Sowcarpet showroom?</span>
+          <svg class="faq-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>
+            Yes! You are always welcome to select <strong>Store Pickup</strong> at checkout. Your order will be prepared within 2 hours at our showroom: <em>42, 2nd Floor, Natwar Kurpa Complex, Narayana Mudali Street, Sowcarpet, Chennai</em>.
+          </p>
+          <div class="faq-feedback">
+            <span>Was this helpful?</span>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, true)">👍 Yes</button>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, false)">👎 No</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOPIC 4: PAYMENTS & INVOICING -->
+    <div class="faq-group" data-topic="payments">
+      <div class="faq-group-header">
+        <span class="faq-group-icon">💳</span>
+        <h2 class="faq-group-title">Payments &amp; Invoicing</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>What payment modes are accepted on VFS Jewels?</span>
+          <svg class="faq-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>We support 100% secure, verified payment channels:</p>
+          <ul>
+            <li><strong>UPI &amp; QR:</strong> Google Pay, PhonePe, Paytm, BHIM, Amazon Pay.</li>
+            <li><strong>Credit &amp; Debit Cards:</strong> Visa, MasterCard, RuPay, Maestro.</li>
+            <li><strong>Net Banking:</strong> Over 50+ supported Indian banks.</li>
+          </ul>
+          <div class="faq-feedback">
+            <span>Was this helpful?</span>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, true)">👍 Yes</button>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, false)">👎 No</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>Will I get a proper GST tax invoice?</span>
+          <svg class="faq-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>
+            Yes. Every order is accompanied by a computer-generated GST tax invoice sent instantly to your WhatsApp and downloadable as a PDF. You can also input your business GSTIN during checkout for Input Tax Credit (ITC).
+          </p>
+          <div class="faq-feedback">
+            <span>Was this helpful?</span>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, true)">👍 Yes</button>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, false)">👎 No</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOPIC 5: WHOLESALE & BULK ORDERS -->
+    <div class="faq-group" data-topic="wholesale">
+      <div class="faq-group-header">
+        <span class="faq-group-icon">📦</span>
+        <h2 class="faq-group-title">Wholesale &amp; Reseller Orders</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>How does Wholesale Mode work and what is the MOQ?</span>
+          <svg class="faq-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>
+            You can toggle <strong>"Wholesale Mode"</strong> at the top of our store to reveal tiered wholesale pricing. The Minimum Order Quantity (MOQ) for wholesale billing is <strong>₹4,000</strong> per order. You can mix and match any designs across kadas, chains, earrings, and rings.
+          </p>
+          <div class="faq-feedback">
+            <span>Was this helpful?</span>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, true)">👍 Yes</button>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, false)">👎 No</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOPIC 6: RETURNS & CARE -->
+    <div class="faq-group" data-topic="returns">
+      <div class="faq-group-header">
+        <span class="faq-group-icon">🔄</span>
+        <h2 class="faq-group-title">Returns, Exchanges &amp; Care</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>What is your policy for damaged items or incorrect sizes?</span>
+          <svg class="faq-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>
+            If your piece arrives damaged in transit or does not fit, simply share a quick unboxing video or photo with our WhatsApp desk (+91 90253 27860) within 48 hours of delivery. We will immediately arrange a <strong>free replacement or refund</strong>.
+          </p>
+          <div class="faq-feedback">
+            <span>Was this helpful?</span>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, true)">👍 Yes</button>
+            <button class="faq-feedback-btn" onclick="rateFaq(this, false)">👎 No</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Options Ordered by Accessibility (Checklist #2) -->
+    <section class="faq-contact-section">
+      <h3>Still Have Questions?</h3>
+      <p>Our dedicated Sowcarpet showroom team is here to assist you across all channels:</p>
+
+      <div class="faq-contact-grid">
+        <!-- Option 1: WhatsApp (Easiest / Lowest effort) -->
+        <div class="faq-contact-card">
+          <div>
+            <span class="faq-contact-priority p-fastest">⚡ 1. Fastest Response</span>
+            <div class="faq-contact-title">WhatsApp Concierge</div>
+            <div class="faq-contact-desc">Instant reply on stock availability, sizing videos, and custom requests.</div>
+          </div>
+          <a href="https://wa.me/919025327860?text=Hi%20VFS%20Jewels%2C%20I%20have%20a%20question" target="_blank" class="faq-contact-action btn-wa">
+            💬 Chat on WhatsApp
+          </a>
+        </div>
+
+        <!-- Option 2: Phone Call -->
+        <div class="faq-contact-card">
+          <div>
+            <span class="faq-contact-priority p-instant">📞 2. Direct Call</span>
+            <div class="faq-contact-title">Showroom Desk</div>
+            <div class="faq-contact-desc">Speak directly with our jewellery manager (10:00 AM – 8:30 PM IST).</div>
+          </div>
+          <a href="tel:+919840757363" class="faq-contact-action btn-call">
+            📞 +91 98407 57363
+          </a>
+        </div>
+
+        <!-- Option 3: Email Support -->
+        <div class="faq-contact-card">
+          <div>
+            <span class="faq-contact-priority p-standard">📧 3. Email Inquiries</span>
+            <div class="faq-contact-title">Official Maildesk</div>
+            <div class="faq-contact-desc">Best for bulk catalogs, GST quotes, and detailed legal/warranty inquiries.</div>
+          </div>
+          <a href="mailto:vfsjewels@gmail.com" class="faq-contact-action btn-email">
+            📧 vfsjewels@gmail.com
+          </a>
+        </div>
+
+        <!-- Option 4: In-person Showroom Visit -->
+        <div class="faq-contact-card">
+          <div>
+            <span class="faq-contact-priority p-inperson">🏬 4. In-Person Visit</span>
+            <div class="faq-contact-title">Sowcarpet Store</div>
+            <div class="faq-contact-desc">Natwar Kurpa Complex, Narayana Mudali St, Sowcarpet, Chennai.</div>
+          </div>
+          <a href="index.html#storeOverlay" class="faq-contact-action btn-visit">
+            📍 View Store Map
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer" style="background:#11141E; color:#999; padding:30px 20px; text-align:center; font-size:13px; border-top:1px solid rgba(212,175,55,0.2);">
+    <div style="max-width:1040px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <span>&copy; 2026 VFS Jewels Sowcarpet. All rights reserved.</span>
+      <div style="display:flex; gap:16px;">
+        <a href="faq.html" style="color:var(--faq-gold); text-decoration:none; font-weight:700;">FAQ Center</a>
+        <a href="privacy.html" style="color:#aaa; text-decoration:none;">Privacy &amp; Terms</a>
+        <a href="index.html" style="color:#aaa; text-decoration:none;">Store Catalog</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleFaq(header) {
+      const item = header.closest('.faq-item');
+      const wasOpen = item.classList.contains('open');
+      
+      // Toggle
+      if (wasOpen) {
+        item.classList.remove('open');
+      } else {
+        item.classList.add('open');
+      }
+    }
+
+    function filterByTopic(topic, btn) {
+      document.querySelectorAll('.faq-topic-pill').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      const groups = document.querySelectorAll('.faq-group');
+      let visibleCount = 0;
+
+      groups.forEach(g => {
+        if (topic === 'all' || g.dataset.topic === topic) {
+          g.style.display = 'block';
+          visibleCount++;
+        } else {
+          g.style.display = 'none';
+        }
+      });
+
+      document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    function filterFaqs() {
+      const query = document.getElementById('faqSearchInput').value.trim().toLowerCase();
+      const items = document.querySelectorAll('.faq-item');
+      const groups = document.querySelectorAll('.faq-group');
+      let matches = 0;
+
+      if (!query) {
+        // Reset view
+        items.forEach(i => {
+          i.style.display = 'block';
+          i.classList.remove('open');
+        });
+        groups.forEach(g => g.style.display = 'block');
+        document.getElementById('noResults').style.display = 'none';
+        return;
+      }
+
+      groups.forEach(group => {
+        let groupHasMatch = false;
+        const groupItems = group.querySelectorAll('.faq-item');
+        
+        groupItems.forEach(item => {
+          const qText = item.querySelector('.faq-question span').textContent.toLowerCase();
+          const aText = item.querySelector('.faq-answer').textContent.toLowerCase();
+          
+          if (qText.includes(query) || aText.includes(query)) {
+            item.style.display = 'block';
+            item.classList.add('open'); // Auto open matching FAQ
+            groupHasMatch = true;
+            matches++;
+          } else {
+            item.style.display = 'none';
+            item.classList.remove('open');
+          }
+        });
+
+        group.style.display = groupHasMatch ? 'block' : 'none';
+      });
+
+      document.getElementById('noResults').style.display = matches === 0 ? 'block' : 'none';
+    }
+
+    function resetFaqSearch() {
+      document.getElementById('faqSearchInput').value = '';
+      filterFaqs();
+      filterByTopic('all', document.querySelector('.faq-topic-pill'));
+    }
+
+    function rateFaq(btn, isHelpful) {
+      const parent = btn.closest('.faq-feedback');
+      parent.innerHTML = `<span style="color:#16A34A; font-weight:700;">✓ Thanks for your feedback!</span>`;
+    }
+  </script>
+</body>
+</html>

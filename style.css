@@ -1431,9 +1431,245 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   text-transform: uppercase; letter-spacing: 0.08em;
   padding: 14px;
   border-radius: var(--rounded-md);
-  transition: background var(--transition);
+  transition: all var(--transition);
 }
-.dw-checkout:hover { background: var(--color-primary-70); }
+.dw-checkout:hover { background: var(--color-primary-80); box-shadow: var(--shadow-medium); transform: translateY(-1px); }
+
+/* ─── VFS Cart Item Variant Tags (#3) ─── */
+.vfs-cart-variant-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(212, 175, 55, 0.12);
+  color: #a67c00;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-top: 3px;
+}
+
+/* ─── VFS Suggested Add-ons (#8) ─── */
+.vfs-cart-addons {
+  margin-bottom: 12px;
+  padding: 12px;
+  background: #fbf9f4;
+  border: 1px solid #efe8d8;
+  border-radius: 8px;
+}
+.vfs-cart-addons-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #a67c00;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.vfs-cart-addons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.vfs-cart-addon-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: #fff;
+  border: 1px solid #e8e2d4;
+  border-radius: 6px;
+}
+.vfs-cart-addon-img {
+  width: 38px;
+  height: 38px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #eee;
+  flex-shrink: 0;
+}
+.vfs-cart-addon-info {
+  flex: 1;
+  min-width: 0;
+}
+.vfs-cart-addon-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #121212;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vfs-cart-addon-price {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #a67c00;
+}
+.vfs-cart-addon-btn {
+  padding: 4px 10px;
+  background: rgba(212, 175, 55, 0.15);
+  color: #a67c00;
+  border: 1px solid #d4af37;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+.vfs-cart-addon-btn:hover {
+  background: #d4af37;
+  color: #121212;
+}
+
+/* ─── VFS Promo / Discount Code (#4) ─── */
+.vfs-cart-promo-section {
+  margin-bottom: 12px;
+}
+.vfs-cart-promo-row {
+  display: flex;
+  gap: 6px;
+}
+.vfs-cart-promo-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 6px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #fff;
+  color: #121212;
+  outline: none;
+}
+.vfs-cart-promo-input:focus {
+  border-color: var(--color-secondary);
+}
+.vfs-cart-promo-btn {
+  padding: 8px 14px;
+  background: #121212;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.vfs-cart-promo-btn:hover {
+  background: var(--color-secondary);
+  color: #121212;
+}
+.vfs-cart-promo-status {
+  font-size: 1.1rem;
+  margin-top: 4px;
+  display: none;
+}
+.vfs-cart-promo-status.success {
+  display: block;
+  color: #27ae60;
+  font-weight: 700;
+}
+.vfs-cart-promo-status.error {
+  display: block;
+  color: #e74c3c;
+  font-weight: 700;
+}
+
+/* ─── VFS Support Concierge Card (#6) ─── */
+.vfs-cart-support-card {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: rgba(37, 211, 102, 0.06);
+  border: 1px dashed rgba(37, 211, 102, 0.5);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.vfs-cart-support-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+.vfs-cart-support-text {
+  flex: 1;
+  font-size: 1.05rem;
+  color: #666;
+  line-height: 1.35;
+}
+.vfs-cart-support-text strong {
+  display: block;
+  color: #121212;
+  font-size: 1.15rem;
+  margin-bottom: 1px;
+}
+.vfs-cart-support-btn {
+  padding: 5px 10px;
+  background: #25D366;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ─── VFS Accepted Payment Methods Badges (#5) ─── */
+.vfs-cart-payment-methods {
+  margin-bottom: 12px;
+  text-align: center;
+}
+.vfs-cart-payment-label {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  display: block;
+}
+.vfs-cart-payment-badges {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.vfs-pay-badge {
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #fff;
+  border: 1px solid #ddd;
+  color: #444;
+}
+.vfs-pay-badge.upi {
+  border-color: #5f259f;
+  color: #5f259f;
+  background: rgba(95, 37, 159, 0.05);
+}
+.vfs-pay-badge.phonepe {
+  border-color: #6739b7;
+  color: #6739b7;
+  background: rgba(103, 57, 183, 0.05);
+}
+.vfs-pay-badge.paytm {
+  border-color: #00b9f1;
+  color: #0087b0;
+  background: rgba(0, 185, 241, 0.05);
+}
+.vfs-pay-badge.cards {
+  border-color: #1a1f71;
+  color: #1a1f71;
+  background: rgba(26, 31, 113, 0.05);
+}
+.vfs-pay-badge.cod {
+  border-color: #d4af37;
+  color: #a67c00;
+  background: rgba(212, 175, 55, 0.05);
+}
 
 /* =========================================================
    TOAST

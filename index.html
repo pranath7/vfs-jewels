@@ -166,6 +166,8 @@
             </li>
             <li class="header-nav-item"><a href="#products" data-filter="bestsellers">Bestsellers</a></li>
             <li class="header-nav-item"><a href="#products" data-filter="offer_stock" class="offer-stock-nav-link">🔥 Offer Stock</a></li>
+            <li class="header-nav-item"><a href="testimonials.html">Reviews</a></li>
+            <li class="header-nav-item"><a href="faq.html">FAQ</a></li>
           </ul>
         </nav>
         <button class="mobile-menu-toggle" id="openMobileNav" aria-label="Menu">
@@ -567,18 +569,25 @@
         </div>
         
         <div class="footer-col">
-          <h3>Customer Help</h3>
+          <h3>Customer Help &amp; Legal</h3>
           <ul>
+            <li><a href="security.html" style="color:var(--color-secondary); font-weight:700;">Security &amp; Compliance Center</a></li>
+            <li><a href="testimonials.html">Customer Reviews (303 Reviews)</a></li>
+            <li><a href="faq.html">Frequently Asked Questions (FAQ)</a></li>
+            <li><a href="privacy.html#privacy">Privacy Policy</a></li>
+            <li><a href="privacy.html#terms">Terms of Service</a></li>
+            <li><a href="privacy.html#cookies">Cookie Policy</a></li>
+            <li><a href="privacy.html#changelog">Version History &amp; Changelog</a></li>
+            <li><a href="privacy.html#contact">Legal Inquiries &amp; Deletion</a></li>
             <li><a href="#trust">Anti-Tarnish Shield Care</a></li>
             <li><a href="#shipping-policy" id="footerShippingPolicy">Shipping Rates &amp; Policies</a></li>
-            <li><a href="#returns-policy" id="footerReturnsPolicy">Returns &amp; Exchanges</a></li>
             <li><a href="#track-order" id="footerTrackOrder">Track Your Order</a></li>
-            <li><a href="#categories">Browse Catalog</a></li>
           </ul>
         </div>
         <div class="footer-col footer-newsletter">
           <h3>Contact &amp; Newsletter</h3>
           <p style="margin-bottom:10px;">📧 vfsjewels@gmail.com | 📞 +91 98407 57363</p>
+          <p style="margin-bottom:10px; font-size:1.2rem; color:#aaa;">🏬 Sowcarpet, Chennai — 600001</p>
           <form class="nl-form" id="nlForm">
             <input type="email" placeholder="Your email address" required>
             <button type="submit">Join</button>
@@ -586,7 +595,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <span>&copy; 2026 VFS Imitation Jewels. All rights reserved.</span>
+        <span>&copy; 2026 VFS Imitation Jewels. All rights reserved. &nbsp;•&nbsp; <a href="privacy.html" style="color:var(--color-secondary); text-decoration:underline;">Privacy &amp; Terms</a></span>
         <span style="display:flex;align-items:center;gap:12px;">
           <span style="font-weight:700;color:var(--color-secondary);">UPI / GPay</span> • 
           <span style="font-weight:700;color:var(--color-secondary);">Prepaid Online Payment (UPI / Cards / QR)</span> • 
@@ -853,15 +862,64 @@
     </div>
   </div>
 
-  <!-- CART DRAWER -->
+  <!-- CART DRAWER (8-Point Cart Checklist) -->
   <div class="dw-bg" id="cartBG"></div>
   <div class="dw" id="cartDW">
-    <div class="dw-head"><h3>Cart (<span id="cartCT">0</span>)</h3><button class="dw-close" id="closeCartDW"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+    <div class="dw-head">
+      <h3 style="display:flex; align-items:center; gap:8px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        Your Bag (<span id="cartCT">0</span>)
+      </h3>
+      <button class="dw-close" id="closeCartDW"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+
+    <!-- Scrollable Cart Body -->
     <div class="dw-body" id="cartBody"></div>
+
+    <!-- Sticky Cart Foot -->
     <div class="dw-foot" id="cartFoot" style="display:none">
+      <!-- Suggested Add-ons Shelf (Checklist #8) -->
+      <div class="vfs-cart-addons" id="vfsCartAddons" style="display:none;">
+        <div class="vfs-cart-addons-title">✨ Recommended Jewellery Add-Ons</div>
+        <div class="vfs-cart-addons-list" id="vfsCartAddonsList"></div>
+      </div>
+
+
+
+      <!-- Accepted Payment Methods Badges (Checklist #5) -->
+      <div class="vfs-cart-payment-methods">
+        <div class="vfs-cart-payment-label">🔒 100% Safe &amp; Anti-Tarnish Guaranteed</div>
+        <div class="vfs-cart-payment-badges">
+          <span class="vfs-pay-badge upi">⚡ UPI / GPay</span>
+          <span class="vfs-pay-badge phonepe">PhonePe</span>
+          <span class="vfs-pay-badge paytm">Paytm</span>
+          <span class="vfs-pay-badge cards">💳 Cards</span>
+          <span class="vfs-pay-badge cod">🏬 Sowcarpet Store</span>
+        </div>
+      </div>
+
       <div id="cartMoqWarning" style="display:none; padding: 10px 14px; background: rgba(234, 67, 53, 0.1); border: 1px solid rgba(234, 67, 53, 0.3); border-radius: 8px; color: #EA4335; font-size: 13px; font-weight: 500; margin-bottom: 12px; line-height: 1.4; text-align: center;"></div>
-      <div class="dw-total"><span>Total</span><span id="cartTotal">₹0</span></div>
-      <button class="dw-checkout" id="checkoutBtn">Proceed to Checkout</button>
+
+      <div class="dw-total-rows" style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; font-size:1.3rem; color:#666;">
+          <span>Subtotal</span>
+          <span id="vfsCartSubtotal">₹0</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; font-size:1.3rem; color:#27ae60; font-weight:600;">
+          <span>Shipping</span>
+          <span id="vfsCartShipping">FREE</span>
+        </div>
+        <div class="dw-total" style="border-top:1px solid rgba(0,0,0,0.08); padding-top:8px; margin-top:4px;">
+          <span>Grand Total</span>
+          <span id="cartTotal">₹0</span>
+        </div>
+      </div>
+
+      <!-- Prominent Checkout Button (Checklist #7) -->
+      <button class="dw-checkout" id="checkoutBtn" style="background:linear-gradient(135deg, #121212, #2a2a2a); color:#fff; font-weight:800; font-size:1.4rem; padding:15px; border-radius:8px; border:none; box-shadow:0 4px 16px rgba(0,0,0,0.2); cursor:pointer;">
+        Proceed to Checkout • <span id="vfsCartBtnTotal">₹0</span>
+      </button>
     </div>
   </div>
 

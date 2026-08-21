@@ -1666,6 +1666,49 @@ function addToCart(id, qty = 1, sourceImg = null) {
   });
 }
 
+
+
+function renderVfsCartAddons() {
+  const container = document.getElementById("vfsCartAddons");
+  const listEl = document.getElementById("vfsCartAddonsList");
+  if (!container || !listEl) return;
+
+  if (cart.length === 0) {
+    container.style.display = "none";
+    return;
+  }
+
+  const cartIds = cart.map(i => i.id);
+  const fullCatalog = getFullCatalog();
+  // Filter items not in cart
+  const candidateAddons = fullCatalog.filter(p => !cartIds.includes(p.id) && p.id !== 99);
+
+  if (candidateAddons.length === 0) {
+    container.style.display = "none";
+    return;
+  }
+
+  // Pick top 2 complementary products
+  const selected = candidateAddons.slice(0, 2);
+
+  listEl.innerHTML = selected.map(p => `
+    <div class="vfs-cart-addon-item">
+      <img src="${clOpt(p.img, 100)}" alt="${p.name}" class="vfs-cart-addon-img">
+      <div class="vfs-cart-addon-info">
+        <div class="vfs-cart-addon-name">${p.name}</div>
+        <div class="vfs-cart-addon-price">${fmt(getCurrentProductPrice(p))}</div>
+      </div>
+      <button type="button" class="vfs-cart-addon-btn" onclick="addVfsAddonToCart(${p.id})">+ Add</button>
+    </div>
+  `).join("");
+
+  container.style.display = "block";
+}
+
+function addVfsAddonToCart(id) {
+  addToCart(id, 1);
+}
+
 function renderCart() {
   const body = $('#cartBody');
   const foot = $('#cartFoot');
@@ -1673,43 +1716,62 @@ function renderCart() {
   if (!cart.length) {
     body.innerHTML = `<div class="dw-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><p>Your cart is empty</p></div>`;
     foot.style.display = 'none';
+    renderVfsCartAddons();
     return;
   }
 
   foot.style.display = '';
-  let total = 0;
+  let subtotal = 0;
   const fullCatalog = getFullCatalog();
 
   body.innerHTML = cart.map(ci => {
     const p = fullCatalog.find(x => x.id === ci.id);
     if (!p) return '';
     const unitPrice = getCurrentProductPrice(p);
-    total += unitPrice * ci.qty;
+    subtotal += unitPrice * ci.qty;
+
+    const variantTag = (ci.selectedSize || p.size) 
+      ? `<div class="vfs-cart-variant-tag">📏 Size: ${ci.selectedSize || p.size}</div>`
+      : (p.meta ? `<div class="vfs-cart-variant-tag">✨ ${p.meta}</div>` : "");
+
     return `
       <div class="dw-item" data-id="${p.id}">
         <img class="dw-item-img dw-pdp-link" src="${clOpt(p.img, 150)}" alt="${p.name}" style="cursor:pointer">
         <div>
-          <div class="dw-item-meta">${p.meta}</div>
+          <div class="dw-item-meta">${p.meta || '18K Anti-Tarnish'}</div>
           <div class="dw-item-name dw-pdp-link" style="cursor:pointer">${p.name}</div>
-          <div class="dw-item-price">${fmt(unitPrice)}</div>
+          ${variantTag}
+          <div class="dw-item-price" style="margin-top:2px;">${fmt(unitPrice)}</div>
           <div class="qty-ctrl">
-            <button data-qty="${p.id}" data-d="-1">−</button>
+            <button data-qty="${p.id}" data-d="-1" title="Decrease quantity">−</button>
             <span>${ci.qty}</span>
-            <button data-qty="${p.id}" data-d="1">+</button>
+            <button data-qty="${p.id}" data-d="1" title="Increase quantity">+</button>
           </div>
         </div>
-        <button class="dw-rm" data-rm="${p.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+        <button class="dw-rm" data-rm="${p.id}" title="Remove item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       </div>`;
   }).join('');
 
-  $('#cartTotal').textContent = fmt(total);
+  // Render suggested add-ons (Checklist #8)
+  renderVfsCartAddons();
+
+  const grandTotal = subtotal;
+
+  // Update summary fields
+  const subtotalEl = document.getElementById("vfsCartSubtotal");
+  const grandTotalEl = document.getElementById("cartTotal");
+  const btnTotalEl = document.getElementById("vfsCartBtnTotal");
+
+  if (subtotalEl) subtotalEl.textContent = fmt(subtotal);
+  if (grandTotalEl) grandTotalEl.textContent = fmt(grandTotal);
+  if (btnTotalEl) btnTotalEl.textContent = fmt(grandTotal);
 
   const moqWarning = $('#cartMoqWarning');
   const checkoutBtn = $('#checkoutBtn');
   if (shoppingMode === 'wholesale') {
     const minOrder = 4000;
-    if (total < minOrder) {
-      const remaining = minOrder - total;
+    if (grandTotal < minOrder) {
+      const remaining = minOrder - grandTotal;
       if (moqWarning) {
         moqWarning.textContent = `Wholesale MOQ is ₹4,000. Add ${fmt(remaining)} more to proceed.`;
         moqWarning.style.display = 'block';
