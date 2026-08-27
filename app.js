@@ -2122,6 +2122,9 @@ function openDrawer(type) {
     $('#wlBG').classList.add('active');
     $('#wlDW').classList.add('active');
   }
+  if (window.VFSGestures && typeof window.VFSGestures.onModalOpen === 'function') {
+    window.VFSGestures.onModalOpen('drawer-' + type);
+  }
   const guideBtn = $('#openGuideBtn') || document.querySelector('.floating-guide-btn');
   if (guideBtn) guideBtn.style.display = 'none';
   document.body.style.overflow = 'hidden';
@@ -2139,6 +2142,9 @@ function closeDrawer(type) {
   } else {
     $('#wlBG').classList.remove('active');
     $('#wlDW').classList.remove('active');
+  }
+  if (window.VFSGestures && typeof window.VFSGestures.onModalClose === 'function') {
+    window.VFSGestures.onModalClose('drawer-' + type);
   }
   const guideBtn = $('#openGuideBtn') || document.querySelector('.floating-guide-btn');
   if (guideBtn) guideBtn.style.display = '';
@@ -3693,6 +3699,9 @@ function openPDP(id) {
 
   overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
+  if (window.VFSGestures && typeof window.VFSGestures.onModalOpen === 'function') {
+    window.VFSGestures.onModalOpen('pdp', id);
+  }
 
   // Swipe / Drag product navigation below the image area
   const infoEl = $('#pdpInfo');
@@ -3728,6 +3737,9 @@ function closePDP() {
   const overlay = $('#pdpOverlay');
   overlay.classList.remove('active');
   document.body.style.overflow = '';
+  if (window.VFSGestures && typeof window.VFSGestures.onModalClose === 'function') {
+    window.VFSGestures.onModalClose('pdp');
+  }
   if (currentPdpScrollListener) {
     overlay.removeEventListener('scroll', currentPdpScrollListener);
     currentPdpScrollListener = null;
@@ -3747,6 +3759,12 @@ function handlePdpSwipe(startX, endX, startY, endY, currentProductId) {
   const diffY = endY - startY;
   
   if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 40) {
+    if (diffX > 50) {
+      // Swipe RIGHT -> Go back to catalog
+      closePDP();
+      return;
+    }
+    
     const p = getFullCatalog().find(x => x.id === currentProductId);
     if (!p) return;
     
