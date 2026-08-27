@@ -1,0 +1,582 @@
+/* ==========================================================================
+   VFS JEWELS — MOBILE GESTURE NAVIGATION SUITE
+   8 / 8 Interaction Patterns:
+   1. Swipe to Go Back (Edge Swipe & Sheet Dismiss)
+   2. List Item Swipe Actions (Delete, Wishlist, Quick Add)
+   3. Pull to Refresh (Elastic Pull & Gold Jewel Spinner)
+   4. Long Press Menus (Glassmorphic Context Menu)
+   5. Pinch to Zoom (1x–4x Multi-touch Pan & Zoom)
+   6. Drag to Reorder (Long-press Lift & Vertical Reordering)
+   7. Gesture Hints (Subtle Animated Micro-tooltips)
+   8. Haptic Feedback (Tactile Cues & Visual Wave)
+   ========================================================================== */
+
+:root {
+  --gesture-gold: #D4AF37;
+  --gesture-gold-dark: #AA7C11;
+  --gesture-gold-glow: rgba(212, 175, 55, 0.35);
+  --gesture-crimson: #E74C3C;
+  --gesture-crimson-dark: #C0392B;
+  --gesture-emerald: #2ECC71;
+  --gesture-emerald-dark: #27AE60;
+  --gesture-navy: #11141e;
+  --gesture-navy-card: rgba(22, 27, 38, 0.94);
+  --gesture-backdrop: rgba(10, 12, 18, 0.72);
+  --gesture-radius-sm: 8px;
+  --gesture-radius-md: 14px;
+  --gesture-radius-lg: 20px;
+  --gesture-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --gesture-smooth: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* ==========================================================================
+   1. SWIPE TO GO BACK & EDGE-SWIPE INDICATOR
+   ========================================================================== */
+.vfs-edge-swipe-indicator {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%) translateX(-100%);
+  width: 44px;
+  height: 64px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.95), rgba(170, 124, 17, 0.95));
+  border-radius: 0 32px 32px 0;
+  box-shadow: 0 4px 20px var(--gesture-gold-glow), 0 0 10px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #11141e;
+  z-index: 100010;
+  pointer-events: none;
+  transition: transform 0.15s var(--gesture-smooth), opacity 0.2s ease;
+  opacity: 0;
+}
+
+.vfs-edge-swipe-indicator svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+  transform: translateX(-3px);
+  animation: vfsPulseArrow 1.2s infinite alternate ease-in-out;
+}
+
+@keyframes vfsPulseArrow {
+  0% { transform: translateX(-4px); }
+  100% { transform: translateX(2px); }
+}
+
+.vfs-edge-swipe-active {
+  transition: transform 0.05s ease-out !important;
+}
+
+/* Edge swipe barrier for carousels */
+[data-gesture-no-edge-swipe] {
+  touch-action: pan-y pinch-zoom;
+}
+
+/* ==========================================================================
+   2. LIST ITEM SWIPE ACTIONS (Cart / Wishlist / Lists)
+   ========================================================================== */
+.vfs-swipe-item-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--gesture-radius-sm);
+  margin-bottom: 12px;
+  background: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Underlay action buttons container */
+.vfs-swipe-actions {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: stretch;
+  z-index: 1;
+  border-radius: var(--gesture-radius-sm);
+  overflow: hidden;
+}
+
+.vfs-swipe-actions-right {
+  right: 0;
+  justify-content: flex-end;
+}
+
+.vfs-swipe-actions-left {
+  left: 0;
+  justify-content: flex-start;
+}
+
+.vfs-swipe-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 68px;
+  padding: 0 10px;
+  border: none;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  gap: 4px;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.vfs-swipe-btn:active {
+  transform: scale(0.96);
+}
+
+.vfs-swipe-btn-delete {
+  background: linear-gradient(135deg, var(--gesture-crimson), var(--gesture-crimson-dark));
+}
+
+.vfs-swipe-btn-wishlist {
+  background: linear-gradient(135deg, var(--gesture-gold), var(--gesture-gold-dark));
+  color: #11141e !important;
+}
+
+.vfs-swipe-btn-add {
+  background: linear-gradient(135deg, var(--gesture-emerald), var(--gesture-emerald-dark));
+}
+
+.vfs-swipe-btn-share {
+  background: linear-gradient(135deg, #25D366, #128C7E);
+}
+
+.vfs-swipe-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.2;
+}
+
+/* Foreground sliding item content */
+.vfs-swipe-content {
+  position: relative;
+  z-index: 2;
+  background: var(--bg-card, #ffffff);
+  border-radius: var(--gesture-radius-sm);
+  transition: transform 0.25s var(--gesture-smooth);
+  touch-action: pan-y;
+  will-change: transform;
+}
+
+.vfs-swipe-content.is-swiping {
+  transition: none;
+}
+
+.vfs-swipe-content.swiped-left {
+  transform: translateX(-140px);
+}
+
+.vfs-swipe-content.swiped-right {
+  transform: translateX(72px);
+}
+
+/* ==========================================================================
+   3. PULL TO REFRESH (Rotating Gold Jewel & Elastic Resistance)
+   ========================================================================== */
+.vfs-ptr-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  pointer-events: none;
+  z-index: 99990;
+  overflow: visible;
+}
+
+.vfs-ptr-badge {
+  transform: translateY(-80px) scale(0.8);
+  opacity: 0;
+  background: linear-gradient(135deg, #11141e 0%, #1e1b15 100%);
+  border: 1.5px solid var(--gesture-gold);
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 30px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 15px var(--gesture-gold-glow);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  transition: transform 0.15s ease-out, opacity 0.2s ease;
+}
+
+.vfs-ptr-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--gesture-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s linear;
+}
+
+.vfs-ptr-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke-width: 2.2;
+}
+
+.vfs-ptr-spinning .vfs-ptr-icon svg {
+  animation: vfsPtrSpin 0.75s linear infinite;
+}
+
+@keyframes vfsPtrSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.vfs-ptr-text {
+  font-size: 1.15rem;
+  color: #fff;
+}
+
+.vfs-ptr-text span {
+  color: var(--gesture-gold);
+}
+
+/* ==========================================================================
+   4. LONG PRESS MENUS (Context Menu for Products & Cards)
+   ========================================================================== */
+.vfs-longpress-active {
+  animation: vfsLongPressPulse 0.5s ease-in-out forwards;
+}
+
+@keyframes vfsLongPressPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.97); }
+  100% { transform: scale(1.02); box-shadow: 0 10px 30px var(--gesture-gold-glow); }
+}
+
+/* Context Menu Modal Backdrop */
+.vfs-context-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--gesture-backdrop);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 100050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  padding: 20px;
+}
+
+.vfs-context-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.vfs-context-menu {
+  background: var(--gesture-navy-card);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: var(--gesture-radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 25px var(--gesture-gold-glow);
+  width: 100%;
+  max-width: 380px;
+  overflow: hidden;
+  transform: scale(0.85) translateY(20px);
+  opacity: 0;
+  transition: transform 0.3s var(--gesture-spring), opacity 0.25s ease;
+}
+
+.vfs-context-backdrop.active .vfs-context-menu {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.vfs-context-header {
+  padding: 16px 20px;
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.15), transparent);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.vfs-context-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--gesture-radius-sm);
+  object-fit: cover;
+  border: 1px solid var(--gesture-gold);
+  background: #000;
+  flex-shrink: 0;
+}
+
+.vfs-context-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.vfs-context-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 4px 0;
+}
+
+.vfs-context-price {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--gesture-gold);
+  margin: 0;
+}
+
+.vfs-context-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vfs-context-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--gesture-radius-sm);
+  color: #e6e6e6;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s;
+}
+
+.vfs-context-item:hover, .vfs-context-item:active {
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--gesture-gold);
+  transform: translateX(4px);
+}
+
+.vfs-context-item svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+  color: var(--gesture-gold);
+  flex-shrink: 0;
+}
+
+.vfs-context-item-danger {
+  color: #ff7675;
+}
+.vfs-context-item-danger svg {
+  color: #ff7675;
+}
+.vfs-context-item-danger:hover {
+  background: rgba(231, 76, 60, 0.15);
+  color: #ff7675;
+}
+
+/* ==========================================================================
+   5. PINCH TO ZOOM & PAN VIEWPORT
+   ========================================================================== */
+.vfs-pinch-zoomable {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transform-origin: center center;
+  transition: transform 0.1s ease-out;
+  cursor: zoom-in;
+  will-change: transform;
+}
+
+.vfs-pinch-zoomable.is-zoomed {
+  cursor: grab;
+}
+
+.vfs-pinch-zoomable.is-panning {
+  cursor: grabbing;
+  transition: none;
+}
+
+.vfs-zoom-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(17, 20, 30, 0.85);
+  border: 1px solid var(--gesture-gold);
+  color: var(--gesture-gold);
+  font-size: 1.1rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 10;
+}
+
+.vfs-zoom-badge.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Double-tap ripple effect */
+.vfs-doubletap-ripple {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.4);
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+  animation: vfsRippleAnim 0.4s ease-out forwards;
+  z-index: 15;
+}
+
+@keyframes vfsRippleAnim {
+  0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}
+
+/* ==========================================================================
+   6. DRAG TO REORDER (Lists & Cart items)
+   ========================================================================== */
+.vfs-reorderable-list {
+  position: relative;
+}
+
+.vfs-reorder-item {
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vfs-reorder-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  color: rgba(212, 175, 55, 0.6);
+  cursor: grab;
+  touch-action: none;
+  flex-shrink: 0;
+}
+
+.vfs-reorder-handle:active {
+  cursor: grabbing;
+  color: var(--gesture-gold);
+}
+
+.vfs-reorder-handle svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.2;
+}
+
+.vfs-reorder-dragging {
+  opacity: 0.95;
+  transform: scale(1.03) rotate(1.2deg) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 20px var(--gesture-gold-glow) !important;
+  z-index: 1000 !important;
+  pointer-events: none;
+  background: var(--gesture-navy, #11141e) !important;
+  border: 1.5px solid var(--gesture-gold) !important;
+  border-radius: var(--gesture-radius-sm) !important;
+}
+
+.vfs-reorder-placeholder {
+  background: rgba(212, 175, 55, 0.08) !important;
+  border: 2px dashed var(--gesture-gold) !important;
+  border-radius: var(--gesture-radius-sm) !important;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   7. GESTURE HINTS (Micro-tooltips & Learning Aids)
+   ========================================================================== */
+.vfs-gesture-hint {
+  position: absolute;
+  background: linear-gradient(135deg, #11141e 0%, #1e1b15 100%);
+  border: 1px solid var(--gesture-gold);
+  color: #ffffff;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 15px var(--gesture-gold-glow);
+  z-index: 100;
+  pointer-events: auto;
+  animation: vfsHintFloat 2s ease-in-out infinite alternate;
+}
+
+@keyframes vfsHintFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-5px); }
+}
+
+.vfs-gesture-hint-icon {
+  font-size: 1.4rem;
+  display: inline-block;
+  animation: vfsHandSwipe 1.5s ease-in-out infinite;
+}
+
+@keyframes vfsHandSwipe {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(-8px); }
+  100% { transform: translateX(0); }
+}
+
+.vfs-gesture-hint-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 0 0 0 6px;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.vfs-gesture-hint-close:hover {
+  color: var(--gesture-gold);
+}
+
+/* ==========================================================================
+   8. HAPTIC VISUAL FEEDBACK WAVE
+   ========================================================================== */
+.vfs-haptic-wave {
+  position: fixed;
+  pointer-events: none;
+  border-radius: 50%;
+  border: 2px solid var(--gesture-gold);
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.3) 0%, transparent 70%);
+  transform: translate(-50%, -50%) scale(0);
+  animation: vfsHapticWaveAnim 0.35s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+  z-index: 100099;
+}
+
+@keyframes vfsHapticWaveAnim {
+  0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
+}

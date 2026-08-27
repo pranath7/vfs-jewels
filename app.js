@@ -1755,6 +1755,14 @@ function renderCart() {
   // Render suggested add-ons (Checklist #8)
   renderVfsCartAddons();
 
+<<<<<<< HEAD
+=======
+  // Mobile Gesture Navigation: enhance cart items with swipe actions & reorder handles
+  if (window.VFSGestures && typeof window.VFSGestures.enhanceCartItems === 'function') {
+    try { window.VFSGestures.enhanceCartItems(); } catch(e) {}
+  }
+
+>>>>>>> 100a181 (feat: implement mobile gesture navigation (8/8 touch interactions))
   const grandTotal = subtotal;
 
   // Update summary fields

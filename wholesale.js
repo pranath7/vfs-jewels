@@ -1601,6 +1601,14 @@ function renderCart() {
       </div>`;
   }).join('');
 
+<<<<<<< HEAD
+=======
+  // Mobile Gesture Navigation: enhance wholesale cart items with swipe actions & reorder handles
+  if (window.VFSGestures && typeof window.VFSGestures.enhanceCartItems === 'function') {
+    try { window.VFSGestures.enhanceCartItems(); } catch(e) {}
+  }
+
+>>>>>>> 100a181 (feat: implement mobile gesture navigation (8/8 touch interactions))
   $('#cartTotal').textContent = fmt(total);
 
   const moqWarning = $('#cartMoqWarning');
