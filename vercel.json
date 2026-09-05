@@ -17,11 +17,5 @@
         }
       ]
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/telegram-daily-report",
-      "schedule": "30 15 * * *"
-    }
   ]
 }

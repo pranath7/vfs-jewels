@@ -65,6 +65,12 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // Telegram 9 PM daily summary report has been disabled per user request
+    return res.status(200).json({
+      success: true,
+      message: "Telegram daily summary report is disabled."
+    });
+
     const now = new Date();
     // India Standard Time (UTC+5:30) date string
     const istOffset = 5.5 * 60 * 60 * 1000;
