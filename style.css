@@ -5396,3 +5396,25 @@ body:has(#profileBG.active) .floating-order-btn {
   50% { transform: scale(1.6); background: #D4AF37 !important; color: #121212 !important; }
   100% { transform: scale(1); }
 }
+
+/* ── Store Pause Notice & Maintenance Styles ── */
+.store-pause-banner {
+  transition: all 0.3s ease;
+  line-height: 1.5;
+  z-index: 100;
+  position: relative;
+}
+
+.store-pause-banner a:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+#cartPauseNoticeBox {
+  animation: fadeInNotice 0.3s ease-in-out;
+}
+
+@keyframes fadeInNotice {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

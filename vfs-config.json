@@ -22,5 +22,12 @@
   },
   "removeBg": {
     "apiKey": "f1b1sd5rBBEz2xyJ9ubJBwB5"
+  },
+  "storeStatus": {
+    "paymentsPaused": true,
+    "pauseTitle": "Orders & Payments Temporarily Paused",
+    "pauseNotice": "We are temporarily pausing checkout & online payments for maintenance and inventory updates. You can still browse our collections. We will resume accepting orders shortly!",
+    "whatsAppNotice": "For urgent inquiries or custom orders, message us on WhatsApp.",
+    "whatsAppNumber": "919025327860"
   }
 }

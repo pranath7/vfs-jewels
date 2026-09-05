@@ -130,6 +130,13 @@
     </div>
   </div>
 
+  <!-- STORE PAUSE MAINTENANCE BANNER -->
+  <div class="store-pause-banner" id="storePauseBanner" style="background: linear-gradient(90deg, #2b1f07 0%, #47320a 50%, #2b1f07 100%); color: #ffe699; padding: 10px 16px; text-align: center; font-size: 1.25rem; font-weight: 700; border-bottom: 2px solid #d4af37; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
+    <span style="font-size:1.3rem;">⏸️</span>
+    <span><strong style="color:#ffffff;">Notice:</strong> Online checkout &amp; payments are temporarily paused for maintenance. Feel free to browse our wholesale collection!</span>
+    <a href="https://wa.me/919025327860?text=Hello%20VFS%20Jewels%2C%20I%20have%20an%20inquiry%20about%20wholesale%20ordering." target="_blank" style="color: #ffffff; background: #25D366; padding: 3px 10px; border-radius: 4px; text-decoration: none; font-size: 1.15rem; font-weight: 700; margin-left: 6px; display: inline-flex; align-items: center; gap: 4px;">💬 WhatsApp Us</a>
+  </div>
+
   <!-- HEADER -->
   <header class="site-header" id="siteHeader">
     <div class="page-width">
@@ -512,6 +519,21 @@
     <div class="dw-foot" id="cartFoot" style="display:none">
       <div id="cartMoqWarning" style="display:none; padding: 10px 14px; background: rgba(234, 67, 53, 0.1); border: 1px solid rgba(234, 67, 53, 0.3); border-radius: 8px; color: #EA4335; font-size: 13px; font-weight: 500; margin-bottom: 12px; line-height: 1.4; text-align: center;"></div>
       <div class="dw-total"><span>Total</span><span id="cartTotal">₹0</span></div>
+      
+      <!-- Cart Temporary Pause Notice Box -->
+      <div id="cartPauseNoticeBox" style="background: #fff9e6; border: 1.5px solid #d4af37; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; text-align: left;">
+        <div style="display:flex; align-items:center; gap:8px; font-weight:700; color:#856404; font-size:1.25rem; margin-bottom:4px;">
+          <span>⏸️</span>
+          <span>Online Checkout Temporarily Paused</span>
+        </div>
+        <p style="font-size:1.15rem; color:#533f03; margin:0 0 8px 0; line-height:1.4;">
+          We are temporarily not taking payments or online orders while updating inventory. You can still save products to your wishlist or inquire on WhatsApp!
+        </p>
+        <a id="cartWhatsAppInquiryBtn" href="https://wa.me/919025327860?text=Hello%20VFS%20Jewels%2C%20I%20would%20like%20to%20inquire%20about%20wholesale%20items%20in%20my%20cart." target="_blank" style="display:inline-flex; align-items:center; gap:6px; font-size:1.15rem; font-weight:700; color:#155724; text-decoration:none; background:#d4edda; padding:6px 12px; border-radius:6px; border:1px solid #c3e6cb;">
+          <span>💬</span> Inquire via WhatsApp
+        </a>
+      </div>
+
       <button class="dw-checkout" id="checkoutBtn">Proceed to Checkout</button>
     </div>
   </div>

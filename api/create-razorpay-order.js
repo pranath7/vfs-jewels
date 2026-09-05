@@ -34,6 +34,13 @@ module.exports = async (req, res) => {
       config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     }
 
+    // Check if online payments are temporarily paused
+    if (config.storeStatus && config.storeStatus.paymentsPaused) {
+      return res.status(403).json({
+        error: config.storeStatus.pauseNotice || 'Online payments are temporarily paused.'
+      });
+    }
+
     const keyId = process.env.RAZORPAY_KEY_ID || config.razorpay?.keyId;
     const keySecret = process.env.RAZORPAY_KEY_SECRET || config.razorpay?.keySecret;
 

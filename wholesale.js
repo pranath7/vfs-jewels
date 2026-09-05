@@ -17,14 +17,46 @@ window.VFS_CONFIG = {
 };
 window.VFS_PRODUCTS_CACHE = [];
 
+window.isPaymentsPaused = function() {
+  if (window.VFS_CONFIG && window.VFS_CONFIG.storeStatus && typeof window.VFS_CONFIG.storeStatus.paymentsPaused === 'boolean') {
+    return window.VFS_CONFIG.storeStatus.paymentsPaused;
+  }
+  return true; // Default to safe paused state
+};
+
+window.getPaymentPauseNotice = function() {
+  return window.VFS_CONFIG?.storeStatus?.pauseNotice || "We are temporarily pausing checkout & online payments for maintenance and inventory updates. You can still browse our wholesale collections. We will resume accepting orders shortly!";
+};
+
+window.updateStorePauseUI = function() {
+  const isPaused = window.isPaymentsPaused();
+  const banner = document.getElementById('storePauseBanner');
+  if (banner) {
+    banner.style.display = isPaused ? 'flex' : 'none';
+  }
+  const cartNotice = document.getElementById('cartPauseNoticeBox');
+  if (cartNotice) {
+    cartNotice.style.display = isPaused ? 'block' : 'none';
+  }
+  const checkoutBtn = document.getElementById('checkoutBtn');
+  if (checkoutBtn && isPaused) {
+    checkoutBtn.style.opacity = '0.65';
+    checkoutBtn.style.cursor = 'not-allowed';
+    checkoutBtn.innerHTML = '<span>Orders Temporarily Paused ⏸️</span>';
+  }
+};
+
 // Initialize Cloud configuration from public vfs-config.json
 async function initCloudConfig() {
   try {
     const res = await fetch('vfs-config.json');
     if (res.ok) {
       const config = await res.json();
+      window.VFS_CONFIG = config;
+      if (typeof window.updateStorePauseUI === 'function') {
+        window.updateStorePauseUI();
+      }
       if (config.firebase && config.firebase.apiKey && !config.firebase.apiKey.startsWith("YOUR_")) {
-        window.VFS_CONFIG = config;
         firebase.initializeApp(config.firebase);
         window.db = firebase.firestore();
         window.VFS_CLOUD_ACTIVE = true;
@@ -1610,25 +1642,35 @@ function renderCart() {
 
   const moqWarning = $('#cartMoqWarning');
   const checkoutBtn = $('#checkoutBtn');
-  if (shoppingMode === 'wholesale') {
-    const minOrder = 2000;
-    if (total < minOrder) {
-      const remaining = minOrder - total;
-      if (moqWarning) {
-        moqWarning.textContent = `Wholesale MOQ is ₹2,000. Add ${fmt(remaining)} more to proceed.`;
-        moqWarning.style.display = 'block';
+  const cartNotice = document.getElementById('cartPauseNoticeBox');
+  if (window.isPaymentsPaused && window.isPaymentsPaused()) {
+    if (moqWarning) moqWarning.style.display = 'none';
+    if (cartNotice) cartNotice.style.display = 'block';
+    checkoutBtn.style.opacity = '0.65';
+    checkoutBtn.style.cursor = 'not-allowed';
+    checkoutBtn.innerHTML = '<span>Orders Temporarily Paused ⏸️</span>';
+  } else {
+    if (cartNotice) cartNotice.style.display = 'none';
+    if (shoppingMode === 'wholesale') {
+      const minOrder = 2000;
+      if (total < minOrder) {
+        const remaining = minOrder - total;
+        if (moqWarning) {
+          moqWarning.textContent = `Wholesale MOQ is ₹2,000. Add ${fmt(remaining)} more to proceed.`;
+          moqWarning.style.display = 'block';
+        }
+        checkoutBtn.style.opacity = '0.5';
+        checkoutBtn.style.cursor = 'not-allowed';
+      } else {
+        if (moqWarning) moqWarning.style.display = 'none';
+        checkoutBtn.style.opacity = '1';
+        checkoutBtn.style.cursor = 'pointer';
       }
-      checkoutBtn.style.opacity = '0.5';
-      checkoutBtn.style.cursor = 'not-allowed';
     } else {
       if (moqWarning) moqWarning.style.display = 'none';
       checkoutBtn.style.opacity = '1';
       checkoutBtn.style.cursor = 'pointer';
     }
-  } else {
-    if (moqWarning) moqWarning.style.display = 'none';
-    checkoutBtn.style.opacity = '1';
-    checkoutBtn.style.cursor = 'pointer';
   }
 
   // Qty buttons
@@ -2109,6 +2151,15 @@ if (checkPinBtn) {
 let activeCheckoutOrder = null;
 
 function openCheckout() {
+  if (window.isPaymentsPaused && window.isPaymentsPaused()) {
+    const pauseMsg = window.getPaymentPauseNotice ? window.getPaymentPauseNotice() : "We are temporarily pausing checkout & online payments for maintenance. We will resume taking orders shortly!";
+    if (typeof toast === 'function') {
+      toast("Online checkout & payments are temporarily paused ⏸️");
+    }
+    alert("⏸️ Store Notice:\n\n" + pauseMsg);
+    return;
+  }
+
   if (!cart.length) {
     toast('Your cart is empty! Add products first.');
     return;
@@ -2754,6 +2805,11 @@ function loadRazorpayScript() {
 // Secure Razorpay Online Payment Flow
 // Secure Razorpay Online Payment Flow
 $('#coRazorpayBtn').addEventListener('click', async () => {
+  if (window.isPaymentsPaused && window.isPaymentsPaused()) {
+    alert("Online payments are currently paused for maintenance.");
+    return;
+  }
+
   if (!activeCheckoutOrder) return;
   
   const payBtn = $('#coRazorpayBtn');
