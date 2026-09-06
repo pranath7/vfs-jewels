@@ -308,23 +308,88 @@ window.VFS_DB = {
     if (window.VFS_CLOUD_ACTIVE) {
       try {
         const snap = await window.db.collection('orders').get();
-        const orders = [];
+        const ordersMap = new Map();
+        const duplicatesToClean = [];
+
         snap.forEach(doc => {
-          orders.push(doc.data());
+          const docId = doc.id;
+          const data = doc.data() || {};
+          const rawId = data.id || docId;
+          const cleanId = String(rawId).replace('#', '').trim().toUpperCase();
+          if (!cleanId) return;
+
+          const normalized = { ...data, id: '#' + cleanId };
+
+          if (!ordersMap.has(cleanId)) {
+            ordersMap.set(cleanId, {
+              order: normalized,
+              docsFound: [docId]
+            });
+          } else {
+            const entry = ordersMap.get(cleanId);
+            entry.docsFound.push(docId);
+
+            // Status hierarchy so progress (paid/shipped) is never overridden by a stale doc
+            const statusPriority = { 'completed': 6, 'dispatched': 5, 'shipped': 5, 'ready': 4, 'preparing': 3, 'paid': 2, 'confirmed': 2, 'processing': 2, 'unpaid': 1, 'cancelled': 0 };
+            const existingPriority = statusPriority[entry.order.status?.toLowerCase()] || 0;
+            const newPriority = statusPriority[normalized.status?.toLowerCase()] || 0;
+            const bestStatus = newPriority >= existingPriority ? (normalized.status || entry.order.status) : entry.order.status;
+
+            entry.order = {
+              ...entry.order,
+              ...normalized,
+              status: bestStatus,
+              id: '#' + cleanId
+            };
+          }
         });
-        return orders;
+
+        // Auto-cleanup legacy duplicate '#...' docs in Firestore
+        ordersMap.forEach((entry) => {
+          if (entry.docsFound.length > 1) {
+            entry.docsFound.forEach(did => {
+              if (did.startsWith('#')) {
+                duplicatesToClean.push(did);
+              }
+            });
+          }
+        });
+
+        if (duplicatesToClean.length > 0) {
+          duplicatesToClean.forEach(dupId => {
+            window.db.collection('orders').doc(dupId).delete().catch(() => {});
+          });
+        }
+
+        return Array.from(ordersMap.values()).map(e => e.order);
       } catch(e) {
         console.error("Firestore read error:", e);
       }
     }
     const local = localStorage.getItem('vfs_orders');
-    return local ? JSON.parse(local) : [];
+    if (!local) return [];
+    try {
+      const list = JSON.parse(local);
+      const ordersMap = new Map();
+      list.forEach(o => {
+        const cleanId = String(o.id || '').replace('#', '').trim().toUpperCase();
+        if (cleanId && !ordersMap.has(cleanId)) {
+          ordersMap.set(cleanId, { ...o, id: '#' + cleanId });
+        }
+      });
+      return Array.from(ordersMap.values());
+    } catch(e) {
+      return [];
+    }
   },
   
   saveOrder: async function(order) {
+    const cleanId = String(order.id || '').replace('#', '').trim();
+    const normalizedOrder = { ...order, id: '#' + cleanId };
     if (window.VFS_CLOUD_ACTIVE) {
       try {
-        await window.db.collection('orders').doc(order.id).set(order);
+        await window.db.collection('orders').doc(cleanId).set(normalizedOrder);
+        window.db.collection('orders').doc('#' + cleanId).delete().catch(() => {});
         return;
       } catch(e) {
         console.error("Firestore write error:", e);
@@ -332,7 +397,12 @@ window.VFS_DB = {
     }
     const local = localStorage.getItem('vfs_orders');
     let list = local ? JSON.parse(local) : [];
-    list.push(order);
+    const idx = list.findIndex(o => String(o.id).replace('#', '').trim().toUpperCase() === cleanId.toUpperCase());
+    if (idx !== -1) {
+      list[idx] = normalizedOrder;
+    } else {
+      list.push(normalizedOrder);
+    }
     localStorage.setItem('vfs_orders', JSON.stringify(list));
   },
 
@@ -343,7 +413,7 @@ window.VFS_DB = {
     if (window.VFS_CLOUD_ACTIVE) {
       try {
         await window.db.collection('orders').doc(cleanId).set(updates, { merge: true });
-        await window.db.collection('orders').doc(hashId).set(updates, { merge: true });
+        window.db.collection('orders').doc(hashId).delete().catch(() => {});
       } catch(e) {
         console.error("Firestore update error:", e);
       }
@@ -351,7 +421,7 @@ window.VFS_DB = {
     const local = localStorage.getItem('vfs_orders');
     if (local) {
       const list = JSON.parse(local);
-      const idx = list.findIndex(o => String(o.id).replace('#', '') === cleanId);
+      const idx = list.findIndex(o => String(o.id).replace('#', '').trim().toUpperCase() === cleanId.toUpperCase());
       if (idx !== -1) {
         list[idx] = { ...list[idx], ...updates };
         localStorage.setItem('vfs_orders', JSON.stringify(list));
@@ -1144,7 +1214,17 @@ if (courierFilterSelect) {
 
 // ── Load / Render Orders Data ──
 async function loadDashboard() {
-  const ordersList = await window.VFS_DB.getOrders();
+  const rawOrders = await window.VFS_DB.getOrders();
+  
+  // Guarantee single unique entry per order in dashboard
+  const ordersMap = new Map();
+  rawOrders.forEach(order => {
+    const cid = String(order.id || '').replace('#', '').trim().toUpperCase();
+    if (cid && !ordersMap.has(cid)) {
+      ordersMap.set(cid, order);
+    }
+  });
+  const ordersList = Array.from(ordersMap.values());
   
   // Normalize and backport legacy order statuses
   ordersList.forEach(order => {
@@ -1647,17 +1727,22 @@ window.markOrderPaid = async function(orderId) {
 // ── Delete/Cancel Order Action ──
 window.deleteOrder = async function(orderId) {
   if (!confirm(`Are you sure you want to delete order ${orderId}?`)) return;
+  const cleanId = String(orderId).replace('#', '').trim();
+  const hashId = '#' + cleanId;
   
   if (window.VFS_CLOUD_ACTIVE) {
     try {
-      await window.db.collection('orders').doc(orderId).delete();
+      await Promise.all([
+        window.db.collection('orders').doc(cleanId).delete().catch(() => {}),
+        window.db.collection('orders').doc(hashId).delete().catch(() => {})
+      ]);
     } catch(e) {
       console.error(e);
     }
   } else {
     const stored = localStorage.getItem('vfs_orders');
     if (stored) {
-      const list = JSON.parse(stored).filter(o => o.id !== orderId);
+      const list = JSON.parse(stored).filter(o => String(o.id).replace('#', '').trim().toUpperCase() !== cleanId.toUpperCase());
       localStorage.setItem('vfs_orders', JSON.stringify(list));
     }
   }

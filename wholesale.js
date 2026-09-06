@@ -126,23 +126,46 @@ window.VFS_DB = {
     if (window.VFS_CLOUD_ACTIVE) {
       try {
         const snap = await window.db.collection('orders').get();
-        const orders = [];
+        const ordersMap = new Map();
         snap.forEach(doc => {
-          orders.push(doc.data());
+          const data = doc.data() || {};
+          const rawId = data.id || doc.id;
+          const cleanId = String(rawId).replace('#', '').trim().toUpperCase();
+          if (cleanId && !ordersMap.has(cleanId)) {
+            ordersMap.set(cleanId, { ...data, id: '#' + cleanId });
+          }
         });
-        return orders;
+        return Array.from(ordersMap.values());
       } catch(e) {
         console.error("Firestore read error:", e);
       }
     }
     const local = localStorage.getItem('vfs_orders');
-    return local ? JSON.parse(local) : [];
+    if (!local) return [];
+    try {
+      const list = JSON.parse(local);
+      const ordersMap = new Map();
+      list.forEach(o => {
+        const cleanId = String(o.id || '').replace('#', '').trim().toUpperCase();
+        if (cleanId && !ordersMap.has(cleanId)) {
+          ordersMap.set(cleanId, { ...o, id: '#' + cleanId });
+        }
+      });
+      return Array.from(ordersMap.values());
+    } catch(e) {
+      return [];
+    }
   },
   
   saveOrder: async function(order) {
+    const cleanId = String(order.id || '').replace('#', '').trim();
+    const normalizedOrder = { ...order, id: '#' + cleanId };
     if (window.VFS_CLOUD_ACTIVE) {
       try {
-        await window.db.collection('orders').doc(order.id).set(order);
+        // ALWAYS use cleanId as the Firestore document ID to match backend REST APIs
+        await window.db.collection('orders').doc(cleanId).set(normalizedOrder);
+        // Also remove legacy hash document if it existed
+        window.db.collection('orders').doc('#' + cleanId).delete().catch(() => {});
         return;
       } catch(e) {
         console.error("Firestore write error:", e);
@@ -150,14 +173,22 @@ window.VFS_DB = {
     }
     const local = localStorage.getItem('vfs_orders');
     let list = local ? JSON.parse(local) : [];
-    list.push(order);
+    const idx = list.findIndex(o => String(o.id).replace('#', '').trim().toUpperCase() === cleanId.toUpperCase());
+    if (idx !== -1) {
+      list[idx] = normalizedOrder;
+    } else {
+      list.push(normalizedOrder);
+    }
     localStorage.setItem('vfs_orders', JSON.stringify(list));
   },
 
   updateOrder: async function(orderId, updates) {
+    const cleanId = String(orderId || '').replace('#', '').trim();
+    const hashId = '#' + cleanId;
     if (window.VFS_CLOUD_ACTIVE) {
       try {
-        await window.db.collection('orders').doc(orderId).update(updates);
+        await window.db.collection('orders').doc(cleanId).set(updates, { merge: true });
+        window.db.collection('orders').doc(hashId).delete().catch(() => {});
         return;
       } catch(e) {
         console.error("Firestore update error:", e);
@@ -166,7 +197,7 @@ window.VFS_DB = {
     const local = localStorage.getItem('vfs_orders');
     if (local) {
       const list = JSON.parse(local);
-      const idx = list.findIndex(o => o.id === orderId);
+      const idx = list.findIndex(o => String(o.id).replace('#', '').trim().toUpperCase() === cleanId.toUpperCase());
       if (idx !== -1) {
         list[idx] = { ...list[idx], ...updates };
         localStorage.setItem('vfs_orders', JSON.stringify(list));

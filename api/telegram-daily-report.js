@@ -92,7 +92,17 @@ module.exports = async (req, res) => {
 
     const productCounts = {};
 
-    orders.forEach(order => {
+    // Deduplicate orders by clean ID
+    const uniqueOrdersMap = new Map();
+    (orders || []).forEach(o => {
+      const cid = String(o.id || '').replace('#', '').trim().toUpperCase();
+      if (cid && !uniqueOrdersMap.has(cid)) {
+        uniqueOrdersMap.set(cid, o);
+      }
+    });
+    const uniqueOrders = Array.from(uniqueOrdersMap.values());
+
+    uniqueOrders.forEach(order => {
       const orderDate = order.date ? order.date.split('T')[0] : (order.createdAt ? new Date(order.createdAt).toISOString().split('T')[0] : '');
       const isToday = orderDate === dateStr || !orderDate; // Include recent if date missing
 

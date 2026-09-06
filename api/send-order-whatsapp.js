@@ -51,15 +51,19 @@ function sendWhatsAppPayload(payloadData) {
 
 function saveOrderToFirestore(order) {
   return new Promise((resolve) => {
-    const cleanId = (order.id || 'J7001').replace('#', '');
+    const cleanId = String(order.id || 'J7001').replace('#', '').trim();
     const fields = {};
 
     for (let k in order) {
       const v = order[k];
-      if (typeof v === 'number') {
+      if (k === 'id') {
+        fields['id'] = { stringValue: '#' + cleanId };
+      } else if (typeof v === 'number') {
         fields[k] = { doubleValue: v };
       } else if (typeof v === 'string') {
         fields[k] = { stringValue: v };
+      } else if (typeof v === 'boolean') {
+        fields[k] = { booleanValue: v };
       } else if (Array.isArray(v)) {
         const arrayVals = [];
         v.forEach(item => {
@@ -68,6 +72,8 @@ function saveOrderToFirestore(order) {
             const iv = item[ik];
             if (typeof iv === 'number') {
               itemMap[ik] = { doubleValue: iv };
+            } else if (typeof iv === 'boolean') {
+              itemMap[ik] = { booleanValue: iv };
             } else {
               itemMap[ik] = { stringValue: String(iv || '') };
             }
@@ -79,19 +85,29 @@ function saveOrderToFirestore(order) {
     }
 
     const postData = JSON.stringify({ fields: fields });
-    const path = `/v1/projects/${PROJECT_ID}/databases/(default)/documents/orders?documentId=${cleanId}`;
+    // Use PATCH to upsert cleanId document cleanly without creating duplicate
+    const path = `/v1/projects/${PROJECT_ID}/databases/(default)/documents/orders/${encodeURIComponent(cleanId)}`;
 
     const options = {
       hostname: 'firestore.googleapis.com',
       path: path,
-      method: 'POST',
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(postData)
       }
     };
 
-    const req = https.request(options, () => resolve());
+    const req = https.request(options, () => {
+      // Also silently cleanup legacy hash document if present
+      const delReq = https.request({
+        hostname: 'firestore.googleapis.com',
+        path: `/v1/projects/${PROJECT_ID}/databases/(default)/documents/orders/${encodeURIComponent('#' + cleanId)}`,
+        method: 'DELETE'
+      }, () => resolve());
+      delReq.on('error', () => resolve());
+      delReq.end();
+    });
     req.on('error', () => resolve());
     req.write(postData);
     req.end();
