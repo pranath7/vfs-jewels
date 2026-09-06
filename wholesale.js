@@ -21,7 +21,7 @@ window.isPaymentsPaused = function() {
   if (window.VFS_CONFIG && window.VFS_CONFIG.storeStatus && typeof window.VFS_CONFIG.storeStatus.paymentsPaused === 'boolean') {
     return window.VFS_CONFIG.storeStatus.paymentsPaused;
   }
-  return true; // Default to safe paused state
+  return false;
 };
 
 window.getPaymentPauseNotice = function() {
@@ -39,10 +39,18 @@ window.updateStorePauseUI = function() {
     cartNotice.style.display = isPaused ? 'block' : 'none';
   }
   const checkoutBtn = document.getElementById('checkoutBtn');
-  if (checkoutBtn && isPaused) {
-    checkoutBtn.style.opacity = '0.65';
-    checkoutBtn.style.cursor = 'not-allowed';
-    checkoutBtn.innerHTML = '<span>Orders Temporarily Paused ⏸️</span>';
+  if (checkoutBtn) {
+    if (isPaused) {
+      checkoutBtn.style.opacity = '0.65';
+      checkoutBtn.style.cursor = 'not-allowed';
+      checkoutBtn.innerHTML = '<span>Orders Temporarily Paused ⏸️</span>';
+    } else {
+      checkoutBtn.style.opacity = '';
+      checkoutBtn.style.cursor = '';
+      if (checkoutBtn.innerHTML.includes('Orders Temporarily Paused')) {
+        checkoutBtn.innerHTML = 'Proceed to Checkout';
+      }
+    }
   }
 };
 
