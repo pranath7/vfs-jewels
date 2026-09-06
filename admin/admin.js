@@ -715,9 +715,27 @@ window.VFS_DB = {
       window.VFS_STOCK_CACHE[idStr] = numStock;
       window.VFS_STOCK_CACHE[productId] = numStock;
     }
+    if (!window.VFS_OOS_TIMESTAMPS) {
+      try {
+        window.VFS_OOS_TIMESTAMPS = JSON.parse(localStorage.getItem('vfs_oos_tracker') || '{}');
+      } catch(e) { window.VFS_OOS_TIMESTAMPS = {}; }
+    }
+    let oosTimestamp = null;
+    if (numStock <= 0) {
+      oosTimestamp = window.VFS_OOS_TIMESTAMPS[idStr] || Date.now();
+      window.VFS_OOS_TIMESTAMPS[idStr] = oosTimestamp;
+      window.VFS_OOS_TIMESTAMPS[productId] = oosTimestamp;
+    } else {
+      delete window.VFS_OOS_TIMESTAMPS[idStr];
+      delete window.VFS_OOS_TIMESTAMPS[productId];
+    }
+    try {
+      localStorage.setItem('vfs_oos_tracker', JSON.stringify(window.VFS_OOS_TIMESTAMPS));
+    } catch(e) {}
+
     if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
-        await window.db.collection('product_stock').doc(idStr).set({ stock: numStock });
+        await window.db.collection('product_stock').doc(idStr).set({ stock: numStock, outOfStockSince: oosTimestamp }, { merge: true });
       } catch(e) {
         console.error("Firestore write stock error:", e);
       }
@@ -859,6 +877,20 @@ window.renderSearchCatalog = async function() {
             const wsPriceVal = p.wholesalePrice || Math.round(p.price * 0.6);
             const moqVal = p.moq || 1;
             
+            let stockStatusHtml = `<strong style="color:${stockVal > 0 ? '#27ae60' : '#e74c3c'};">${stockVal > 0 ? stockVal + ' left' : 'Out of Stock'}</strong>`;
+            if (stockVal <= 0) {
+              const oosTracker = window.VFS_OOS_TIMESTAMPS || {};
+              const oosSince = p.outOfStockSince || oosTracker[String(p.id)] || oosTracker[p.id];
+              if (oosSince) {
+                const daysElapsed = Math.floor((Date.now() - Number(oosSince)) / (1000 * 60 * 60 * 24));
+                if (daysElapsed >= 7) {
+                  stockStatusHtml += ` <span style="background:#7f1d1d; color:#fca5a5; font-size:1rem; padding:2px 6px; border-radius:4px; font-weight:800; margin-left:4px;">Faded Off (7+ days OOS)</span>`;
+                } else {
+                  stockStatusHtml += ` <span style="background:#451a03; color:#fcd34d; font-size:1rem; padding:2px 6px; border-radius:4px; font-weight:700; margin-left:4px;">OOS (${7 - daysElapsed}d left before fade)</span>`;
+                }
+              }
+            }
+            
             return `
               <div class="product-manager-card" id="prodCard_${p.id}">
                 <!-- View Mode -->
@@ -872,7 +904,7 @@ window.renderSearchCatalog = async function() {
                       Retail: <strong>${fmt(p.price)}</strong> &bull; 
                       Wholesale: <strong>${fmt(wsPriceVal)}</strong><br>
                       MOQ: <strong>${moqVal} pcs</strong> &bull; 
-                      Stock: <strong style="color:${stockVal > 0 ? '#27ae60' : '#e74c3c'};">${stockVal > 0 ? stockVal + ' left' : 'Out of Stock'}</strong>
+                      Stock: ${stockStatusHtml}
                     </p>
                   </div>
                   <div class="prod-actions">
@@ -1093,37 +1125,56 @@ function adminToast(msg, type = 'success') {
   }, 2800);
 }
 
-// ── Tab Switching (bottom nav) ──
+// ── Unified Tab Switching ──
+function switchAdminTab(targetTab) {
+  if (!targetTab) return;
+  activeTab = targetTab;
+  
+  $$('.bottom-nav-btn').forEach(b => {
+    if (b.dataset.tab === targetTab) {
+      b.classList.add('active');
+    } else {
+      b.classList.remove('active');
+    }
+  });
+  
+  $$('.tab-panel').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = '';
+  });
+  
+  // Map targetTab to correct panel ID
+  let panelId = `panel${targetTab.charAt(0).toUpperCase() + targetTab.slice(1)}`;
+  const panelEl = $(`#${panelId}`);
+  if (panelEl) {
+    panelEl.classList.add('active');
+    panelEl.style.display = '';
+  }
+  
+  updateHeaderTitles();
+  if (activeTab === 'search') {
+    renderSearchCatalog();
+  } else if (activeTab === 'customers') {
+    loadCustomers();
+  } else if (activeTab === 'reports') {
+    loadReports();
+  } else if (activeTab === 'slots') {
+    loadSlotPanel();
+  } else if (activeTab === 'banners') {
+    loadBanners();
+  } else if (activeTab === 'walogs') {
+    loadWhatsAppLogs();
+  } else if (activeTab === 'wallets') {
+    if (typeof window.loadAdminWallets === 'function') {
+      window.loadAdminWallets();
+    }
+  }
+}
+window.switchAdminTab = switchAdminTab;
+
 $$('.bottom-nav-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    const targetTab = btn.dataset.tab;
-    $$('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
-    $$('.tab-panel').forEach(p => p.classList.remove('active'));
-    
-    btn.classList.add('active');
-    
-    // Map targetTab to correct panel ID
-    let panelId = `panel${targetTab.charAt(0).toUpperCase() + targetTab.slice(1)}`;
-    const panelEl = $(`#${panelId}`);
-    if (panelEl) {
-      panelEl.classList.add('active');
-    }
-    
-    activeTab = targetTab;
-    updateHeaderTitles();
-    if (activeTab === 'search') {
-      renderSearchCatalog();
-    } else if (activeTab === 'customers') {
-      loadCustomers();
-    } else if (activeTab === 'reports') {
-      loadReports();
-    } else if (activeTab === 'slots') {
-      loadSlotPanel();
-    } else if (activeTab === 'banners') {
-      loadBanners();
-    } else if (activeTab === 'walogs') {
-      loadWhatsAppLogs();
-    }
+    switchAdminTab(btn.dataset.tab);
   });
 });
 
@@ -1134,7 +1185,7 @@ function updateHeaderTitles() {
   const smsPanel = $('#smsLogPanel');
   const courierStats = $('#courierDistributionArea');
   
-  const isAltTab = ['catalog', 'search', 'returns', 'moderation', 'customers', 'reports', 'banners', 'walogs'].includes(activeTab);
+  const isAltTab = ['catalog', 'search', 'returns', 'moderation', 'customers', 'reports', 'banners', 'walogs', 'slots', 'wallets'].includes(activeTab);
   const isAltStages = ['preparing', 'ready', 'completed', 'cancelled'].includes(activeTab);
   
   if (activeTab === 'walogs') {
@@ -1192,10 +1243,14 @@ function updateHeaderTitles() {
     title.textContent = 'Reports & Analytics';
     subtitle.textContent = 'View sales, month-over-month revenue, courier distribution, and product trends.';
   } else if (activeTab === 'slots') {
-      loadSlotPanel();
-    } else if (activeTab === 'banners') {
+    title.textContent = '📹 8:30 PM Live Video Slot Management';
+    subtitle.textContent = 'Toggle daily live session, set Google Meet URL, and dispatch WhatsApp join links.';
+  } else if (activeTab === 'banners') {
     title.textContent = 'Banner Manager';
     subtitle.textContent = 'Manage home page marketing and promotion banners.';
+  } else if (activeTab === 'wallets') {
+    title.textContent = '👛 Customer Wallets & Store Credit Refunds';
+    subtitle.textContent = 'View customer wallet balances, search by phone number, and credit store refunds.';
   }
 }
 
@@ -1510,12 +1565,13 @@ window.downloadInvoicePDF = async function(orderId) {
       <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #121212;">${fmt(shipping)}</td>
     </tr>
     <tr>
-      <td style="padding: 4px 0; color: #555555;">CGST (1.5%):</td>
-      <td style="text-align: right; padding: 4px 0; color: #555555;">${fmt(cgst)}</td>
+      <td style="padding: 4px 0; color: #555555;">GST 3% (Inclusive):</td>
+      <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #121212;">${fmt(gstAmt)} <span style="font-size: 8pt; color: #888; font-weight: normal;">(Included)</span></td>
     </tr>
     <tr>
-      <td style="padding: 4px 0; color: #555555;">SGST (1.5%):</td>
-      <td style="text-align: right; padding: 4px 0; color: #555555;">${fmt(sgst)}</td>
+      <td colspan="2" style="padding: 0 0 4px 0; font-size: 8pt; color: #777; text-align: right;">
+        (CGST 1.5%: ${fmt(cgst)} | SGST 1.5%: ${fmt(sgst)} — Inclusive in Item Price)
+      </td>
     </tr>
   `;
 
@@ -1554,7 +1610,7 @@ window.downloadInvoicePDF = async function(orderId) {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>VFS Jewels Tax Invoice ${order.id}</title>
+      <title>VFS Jewels Invoice ${order.id}</title>
       <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #121212; background: #fff; margin: 0; padding: 20px; }
         .invoice-box { max-width: 800px; margin: auto; border: 1px solid #D4AF37; padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
@@ -1584,7 +1640,7 @@ window.downloadInvoicePDF = async function(orderId) {
             <p style="margin: 4px 0 0 0; font-size: 9pt; color: #666;">Handcrafted Premium Anti-Tarnish Imitation Jewellery</p>
           </div>
           <div class="invoice-title-badge">
-            <h2>TAX INVOICE</h2>
+            <h2>INVOICE</h2>
             <div style="font-size: 9pt; margin-top: 4px;">
               <strong>Invoice ID:</strong> INV-${order.id.replace('#', '')}<br>
               <strong>Order ID:</strong> ${order.id}<br>
@@ -1637,7 +1693,7 @@ window.downloadInvoicePDF = async function(orderId) {
 
         <div class="footer-note">
           <p style="margin:2px 0;">• Official Store GSTIN: <strong>33AAFVC8491A1ZX</strong> | HSN Code: 7117 (Imitation Jewellery)</p>
-          <p style="margin:2px 0;">• This is a computer-generated tax invoice and requires no physical signature.</p>
+          <p style="margin:2px 0;">• This is a computer-generated invoice and requires no physical signature.</p>
           <p style="margin:6px 0 0 0; color:#D4AF37; font-weight:800; font-size:10pt;">Thank you for shopping with VFS Jewels Sowcarpet! 🌸</p>
         </div>
       </div>
@@ -1656,7 +1712,7 @@ window.downloadInvoicePDF = async function(orderId) {
     printWin.document.write(printHtml);
     printWin.document.close();
   } else {
-    alert("Please allow popups to print tax invoice!");
+    alert("Please allow popups to print invoice!");
   }
 };
 
@@ -1677,11 +1733,11 @@ window.shareOnWhatsApp = async function(orderId) {
   
   let msg = `Hello *${order.name}*,\n\n`;
   if (order.status === 'unpaid') {
-    msg += `Thank you for choosing *VFS Jewels*! 💎🌸 I have attached your formal Retail Tax Estimate PDF below. Here is your order summary:\n\n`;
+    msg += `Thank you for choosing *VFS Jewels*! 💎🌸 I have attached your formal Invoice PDF below. Here is your order summary:\n\n`;
   } else if (order.trackingId) {
-    msg += `Your order with *VFS Jewels* has been shipped! 🚀📦 I have attached your formal Retail Tax Invoice PDF below. Here is your receipt details:\n\n`;
+    msg += `Your order with *VFS Jewels* has been shipped! 🚀📦 I have attached your formal Invoice PDF below. Here is your receipt details:\n\n`;
   } else {
-    msg += `Thank you for your payment! Your order with *VFS Jewels* is being processed. 💳✨ I have attached your formal Retail Tax Invoice PDF below. Here is your receipt details:\n\n`;
+    msg += `Thank you for your payment! Your order with *VFS Jewels* is being processed. 💳✨ I have attached your formal Invoice PDF below. Here is your receipt details:\n\n`;
   }
   
   msg += `*Order ID:* ${order.id}\n`;
@@ -1963,7 +2019,7 @@ window.printInvoice = async function(orderId) {
           <p style="font-size:9pt;color:#666;margin-top:4px;">Handcrafted Premium Imitation Jewellery</p>
         </div>
         <div class="invoice-meta">
-          <h2 style="color:#D4AF37;text-transform:uppercase;font-size:18px;margin-bottom:6px;">Retail Tax Invoice</h2>
+          <h2 style="color:#D4AF37;text-transform:uppercase;font-size:18px;margin-bottom:6px;">Invoice</h2>
           <p><strong>Invoice ID:</strong> INV-${order.id.replace('#', '')}</p>
           <p><strong>Order ID:</strong> ${order.id}</p>
           <p><strong>Date:</strong> ${order.date}</p>
@@ -2014,12 +2070,10 @@ window.printInvoice = async function(orderId) {
             <td>Shipping Fee:</td>
             <td>${fmt(order.shipping)}</td>
           </tr>
-          ${order.gstAmount ? `
-            <tr>
-              <td>GST (3%):</td>
-              <td>${fmt(order.gstAmount)}</td>
-            </tr>
-          ` : ''}
+          <tr>
+            <td>GST 3% (Inclusive):</td>
+            <td>${fmt(order.gstAmount || Math.round((order.subtotal || 0) * 0.03))} (Included)</td>
+          </tr>
           ${order.couponDiscount ? `
             <tr style="color: green;">
               <td>Coupon Discount (${order.couponCode || ''}):</td>
@@ -2061,7 +2115,7 @@ window.printInvoice = async function(orderId) {
       ` : ''}
       
       <div class="invoice-footer">
-        <p>This is a computer-generated tax invoice. No signature required.</p>
+        <p>This is a computer-generated invoice. No signature required.</p>
         <p style="margin-top:6px;font-weight:700;">Thank you for your business! VFS Jewellery Sowcarpet</p>
       </div>
     </div>
@@ -3804,9 +3858,7 @@ window.exportInvoicesZip = async function(daysVal) {
           <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(shipping)}</td>
         </tr>
       `;
-      if (gstAmt) {
-        totalsHtml += `<tr><td style="padding: 4px 0; color: #000000;">GST (3%):</td><td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(gstAmt)}</td></tr>`;
-      }
+      totalsHtml += `<tr><td style="padding: 4px 0; color: #000000;">GST 3% (Inclusive):</td><td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(gstAmt || Math.round(subtotal * 0.03))} <span style="font-size: 8pt; color: #666; font-weight: normal;">(Included)</span></td></tr>`;
       if (couponAmt) {
         totalsHtml += `<tr><td style="padding: 4px 0; color: green;">Coupon Discount (${order.couponCode || ''}):</td><td style="text-align: right; font-weight: 700; padding: 4px 0; color: green;">-${fmt(couponAmt)}</td></tr>`;
       }
@@ -3834,7 +3886,7 @@ window.exportInvoicesZip = async function(daysVal) {
               <p style="font-size: 8.5pt; color: #666666; margin: 4px 0 0 0;">Handcrafted Premium Imitation Jewellery</p>
             </div>
             <div style="text-align: right; font-size: 9.5pt; line-height: 1.4; color: #000000;">
-              <h2 style="color: #D4AF37; text-transform: uppercase; font-size: 16px; margin: 0 0 6px 0;">Retail Tax Invoice</h2>
+              <h2 style="color: #D4AF37; text-transform: uppercase; font-size: 16px; margin: 0 0 6px 0;">Invoice</h2>
               <p style="margin: 2px 0;"><strong>Invoice ID:</strong> INV-${order.id.replace('#', '')}</p>
               <p style="margin: 2px 0;"><strong>Order ID:</strong> ${order.id}</p>
               <p style="margin: 2px 0;"><strong>Date:</strong> ${order.date || new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
@@ -4440,35 +4492,13 @@ async function loadSlotPanel() {
   }
 }
 
-// Hook into admin tab switcher
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('[data-tab="slots"]').forEach(b => {
-    b.addEventListener('click', () => {
-      loadSlotPanel();
-    });
-  });
-});
-
-
-
-// Handle top header 8:30 PM Slots button & bottom nav slots button
+// Hook into admin slots tab switcher
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-tab="slots"]').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => {
-        p.classList.remove('active');
-        p.style.display = '';
-      });
-      const navBtn = document.querySelector('.bottom-nav-btn[data-tab="slots"]');
-      if (navBtn) navBtn.classList.add('active');
-      const panel = document.getElementById('panelSlots');
-      if (panel) panel.classList.add('active');
-      const title = document.getElementById('tabTitle');
-      const sub = document.getElementById('tabSubtitle');
-      if (title) title.textContent = "📹 8:30 PM Live Video Slot Management";
-      if (sub) sub.textContent = "Toggle daily live session, set Google Meet URL, and dispatch WhatsApp join links.";
-      loadSlotPanel();
+      if (typeof window.switchAdminTab === 'function') {
+        window.switchAdminTab('slots');
+      }
     });
   });
 });
@@ -4593,28 +4623,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// Handle top header Wallets button & bottom nav wallets button click
+// Hook into admin wallets tab switcher
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-tab="wallets"]').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => {
-        p.classList.remove('active');
-        p.style.display = '';
-      });
-      const navBtn = document.querySelector('.bottom-nav-btn[data-tab="wallets"]');
-      if (navBtn) navBtn.classList.add('active');
-      const panel = document.getElementById('panelWallets');
-      if (panel) {
-        panel.classList.add('active');
-        panel.style.display = 'block';
-      }
-      const title = document.getElementById('tabTitle');
-      const sub = document.getElementById('tabSubtitle');
-      if (title) title.textContent = "👛 Customer Wallets & Store Credit Refunds";
-      if (sub) sub.textContent = "View customer wallet balances, search by phone number, and credit store refunds.";
-      if (typeof window.loadAdminWallets === 'function') {
-        window.loadAdminWallets();
+      if (typeof window.switchAdminTab === 'function') {
+        window.switchAdminTab('wallets');
       }
     });
   });

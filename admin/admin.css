@@ -249,8 +249,8 @@ body { display: flex; font-size: 1.4rem; }
 .kpi-icon.pending { background: rgba(243,156,18,0.12); color: var(--color-unpaid); }
 
 /* PANELS */
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
+.tab-panel { display: none !important; }
+.tab-panel.active { display: block !important; }
 
 .orders-panel-container {
   background: var(--color-surface-card);

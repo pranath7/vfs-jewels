@@ -116,7 +116,7 @@ function createPDF(order) {
 
   addRect(380, 765, 165, 30, '0.96 0.94 0.88');
   addLine(380, 765, 545, 765, '0.83 0.68 0.21', 1);
-  addText('TAX INVOICE', 390, 775, 14, 'F2', '0.83 0.68 0.21');
+  addText('INVOICE', 425, 775, 14, 'F2', '0.83 0.68 0.21');
 
   addText(`Invoice ID: INV-${id.replace('#', '')}`, 390, 750, 8.5, 'F1', '0.2 0.2 0.2');
   addText(`Order ID: ${id}`, 390, 738, 9, 'F2', '0 0 0');
@@ -185,12 +185,11 @@ function createPDF(order) {
   addText(fmt(shipping), 470, y, 8.5, 'F2', '0 0 0');
 
   y -= 14;
-  addText('CGST (1.5%):', 320, y, 8.5, 'F1', '0.3 0.3 0.3');
-  addText(fmt(cgst), 470, y, 8.5, 'F1', '0.3 0.3 0.3');
+  addText('GST 3% (Inclusive):', 320, y, 8.5, 'F1', '0.3 0.3 0.3');
+  addText(fmt(gstTotal) + ' (Incl.)', 450, y, 8.5, 'F1', '0.3 0.3 0.3');
 
-  y -= 14;
-  addText('SGST (1.5%):', 320, y, 8.5, 'F1', '0.3 0.3 0.3');
-  addText(fmt(sgst), 470, y, 8.5, 'F1', '0.3 0.3 0.3');
+  y -= 12;
+  addText('(CGST 1.5%: ' + fmt(cgst) + ' | SGST 1.5%: ' + fmt(sgst) + ' - Inclusive)', 320, y, 7.5, 'F1', '0.45 0.45 0.45');
 
   if (couponAmount > 0) {
     y -= 14;

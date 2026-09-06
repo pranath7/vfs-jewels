@@ -386,9 +386,31 @@ window.VFS_DB = {
 
   saveProductStock: async function(productId, stock) {
     const idStr = String(productId);
-    if (window.VFS_CLOUD_ACTIVE) {
+    const numStock = Number(stock);
+    
+    // Manage out-of-stock timestamp
+    if (!window.VFS_OOS_TIMESTAMPS) {
       try {
-        await window.db.collection('product_stock').doc(idStr).set({ stock: stock });
+        window.VFS_OOS_TIMESTAMPS = JSON.parse(localStorage.getItem('vfs_oos_tracker') || '{}');
+      } catch(e) { window.VFS_OOS_TIMESTAMPS = {}; }
+    }
+    
+    let oosTimestamp = null;
+    if (numStock <= 0) {
+      oosTimestamp = window.VFS_OOS_TIMESTAMPS[idStr] || Date.now();
+      window.VFS_OOS_TIMESTAMPS[idStr] = oosTimestamp;
+      window.VFS_OOS_TIMESTAMPS[productId] = oosTimestamp;
+    } else {
+      delete window.VFS_OOS_TIMESTAMPS[idStr];
+      delete window.VFS_OOS_TIMESTAMPS[productId];
+    }
+    try {
+      localStorage.setItem('vfs_oos_tracker', JSON.stringify(window.VFS_OOS_TIMESTAMPS));
+    } catch(e) {}
+
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
+      try {
+        await window.db.collection('product_stock').doc(idStr).set({ stock: numStock, outOfStockSince: oosTimestamp }, { merge: true });
         return;
       } catch(e) {
         console.error("Firestore write stock error:", e);
@@ -396,7 +418,7 @@ window.VFS_DB = {
     }
     const local = localStorage.getItem('vfs_product_stock');
     const stockMap = local ? JSON.parse(local) : {};
-    stockMap[idStr] = stock;
+    stockMap[idStr] = numStock;
     localStorage.setItem('vfs_product_stock', JSON.stringify(stockMap));
   },
 
@@ -840,7 +862,54 @@ window.addEventListener('scroll', () => {
 const LOADED_COUNTS = {};
 const BATCH_SIZE = 12;
 
+// Global Out of Stock Timestamps Cache
+if (!window.VFS_OOS_TIMESTAMPS) {
+  try {
+    window.VFS_OOS_TIMESTAMPS = JSON.parse(localStorage.getItem('vfs_oos_tracker') || '{}');
+  } catch(e) {
+    window.VFS_OOS_TIMESTAMPS = {};
+  }
+}
+
 function isProductVisible(p) {
+  if (!p) return false;
+  const stock = getStockForProduct(p);
+  
+  // IN-STOCK PRODUCTS: ALWAYS 100% VISIBLE, NEVER FADE OFF
+  if (stock > 0) {
+    if (window.VFS_OOS_TIMESTAMPS && (window.VFS_OOS_TIMESTAMPS[p.id] || window.VFS_OOS_TIMESTAMPS[String(p.id)])) {
+      delete window.VFS_OOS_TIMESTAMPS[p.id];
+      delete window.VFS_OOS_TIMESTAMPS[String(p.id)];
+      try {
+        localStorage.setItem('vfs_oos_tracker', JSON.stringify(window.VFS_OOS_TIMESTAMPS));
+      } catch(e) {}
+    }
+    return true;
+  }
+  
+  // OUT-OF-STOCK PRODUCTS (stock <= 0):
+  const idStr = String(p.id);
+  let oosSince = p.outOfStockSince || window.VFS_OOS_TIMESTAMPS[idStr] || window.VFS_OOS_TIMESTAMPS[p.id];
+  
+  // If no timestamp recorded yet, start the 7-day clock from now
+  if (!oosSince) {
+    oosSince = Date.now();
+    window.VFS_OOS_TIMESTAMPS[idStr] = oosSince;
+    window.VFS_OOS_TIMESTAMPS[p.id] = oosSince;
+    try {
+      localStorage.setItem('vfs_oos_tracker', JSON.stringify(window.VFS_OOS_TIMESTAMPS));
+    } catch(e) {}
+  }
+  
+  const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+  const elapsed = Date.now() - Number(oosSince);
+  
+  // If out of stock for 7 days or more -> fade off completely from storefront
+  if (elapsed >= SEVEN_DAYS_MS) {
+    return false;
+  }
+  
+  // Out of stock for less than 7 days -> remains visible with Out of Stock badge
   return true;
 }
 
@@ -2775,7 +2844,7 @@ ${itemsSummaryText}
     const newWaBotBtn = waBotBtn.cloneNode(true);
     waBotBtn.parentNode.replaceChild(newWaBotBtn, waBotBtn);
     newWaBotBtn.addEventListener('click', () => {
-      const text = `Hi VFS Jewels! I just placed Order #${orderIdClean}. Please send me my official Tax Invoice & Product Photo Slip.`;
+      const text = `Hi VFS Jewels! I just placed Order #${orderIdClean}. Please send me my official Invoice & Product Photo Slip.`;
       const url = `https://wa.me/919025327860?text=${encodeURIComponent(text)}`;
       window.open(url, '_blank');
     });
@@ -4525,6 +4594,10 @@ window.downloadCustomerInvoicePDF = async function(orderId) {
             <td style="padding: 4px 0; color: #000000;">Shipping Fee:</td>
             <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(order.shipping)}</td>
           </tr>
+          <tr>
+            <td style="padding: 4px 0; color: #555555; font-size: 8.5pt;">GST 3% (Inclusive):</td>
+            <td style="text-align: right; font-weight: 600; padding: 4px 0; color: #555555; font-size: 8.5pt;">${fmt(Math.round((order.subtotal || 0) * 0.03 / 1.03))} (Included)</td>
+          </tr>
           <tr style="font-size: 11pt; font-weight: 900; border-top: 1px solid #dddddd; color: #000000;">
             <td style="padding: 8px 0 0 0; color: #000000;">Grand Total:</td>
             <td style="text-align: right; padding: 8px 0 0 0; color: #000000;">${fmt(order.total)}</td>
@@ -4547,7 +4620,7 @@ window.downloadCustomerInvoicePDF = async function(orderId) {
       ` : ''}
       
       <div style="text-align: center; font-size: 8.5pt; color: #777777; margin-top: 40px; border-top: 1px dashed #dddddd; padding-top: 15px;">
-        <p style="margin: 0 0 4px 0;">This is a computer-generated tax invoice. No signature required.</p>
+        <p style="margin: 0 0 4px 0;">This is a computer-generated invoice. No signature required.</p>
         <p style="margin: 0; font-weight: 700; color: #000000;">Thank you for your business! VFS Jewellery Sowcarpet</p>
       </div>
     </div>
@@ -5802,7 +5875,7 @@ function setupBirthdayCircle() {
 
 // ── Product Shelves: New Arrivals / Best Sellers / Sale ──
 async function renderProductShelves() {
-  const catalog = getFullCatalog();
+  const catalog = getFullCatalog().filter(isProductVisible);
   const now = Date.now();
 
   function shelfCard(p, badge) {
@@ -5944,14 +6017,13 @@ window.downloadInvoicePDF = async function(order) {
       <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(shipping)}</td>
     </tr>
   `;
-  if (gstAmt) {
-    totalsHtml += `
-      <tr>
-        <td style="padding: 4px 0; color: #000000;">GST (3%):</td>
-        <td style="text-align: right; font-weight: 700; padding: 4px 0; color: #000000;">${fmt(gstAmt)}</td>
-      </tr>
-    `;
-  }
+  const gstInclusiveAmt = gstAmt || Math.round((subtotal || 0) * 0.03 / 1.03);
+  totalsHtml += `
+    <tr>
+      <td style="padding: 4px 0; color: #555555; font-size: 8.5pt;">GST 3% (Inclusive):</td>
+      <td style="text-align: right; font-weight: 600; padding: 4px 0; color: #555555; font-size: 8.5pt;">${fmt(gstInclusiveAmt)} (Included)</td>
+    </tr>
+  `;
   if (couponAmt) {
     totalsHtml += `
       <tr>
@@ -6061,7 +6133,7 @@ window.downloadInvoicePDF = async function(order) {
       ` : ''}
       
       <div style="text-align: center; font-size: 8.5pt; color: #777777; margin-top: 40px; border-top: 1px dashed #dddddd; padding-top: 15px;">
-        <p style="margin: 0 0 4px 0;">This is a computer-generated tax invoice. No signature required.</p>
+        <p style="margin: 0 0 4px 0;">This is a computer-generated invoice. No signature required.</p>
         <p style="margin: 0; font-weight: 700; color: #000000;">Thank you for your business! VFS Jewellery Sowcarpet</p>
       </div>
     </div>
@@ -7172,3 +7244,23 @@ document.addEventListener('keydown', (e) => {
     }
   }
 });
+
+// ── Customer Care & Support Modal Controller ──
+window.openCustomerCareModal = function() {
+  const modal = document.getElementById('customerCareModal');
+  if (modal) {
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+};
+
+window.closeCustomerCareModal = function() {
+  const modal = document.getElementById('customerCareModal');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+};
+
