@@ -19,6 +19,14 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function() {
+      try {
+        var t = localStorage.getItem('vfs_theme');
+        if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      } catch(e) {}
+    })();
+  </script>
+  <script>
+    (function() {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(regs) {
           for (var r of regs) r.unregister();
@@ -115,7 +123,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap"></noscript>
 
-  <link rel="stylesheet" href="style.css?v=20260907_v22_support_fixed">
+  <link rel="stylesheet" href="style.css?v=20260907_v23_dark_mode_fixed">
   <link rel="stylesheet" href="assets/gesture-navigation.css?v=20260827_v21_historysync">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
@@ -189,7 +197,7 @@
         <div class="header-icons">
           <!-- Theme Toggle Switch on Right Side -->
           <button id="themeToggleBtn" onclick="window.toggleTheme()" class="icon-btn theme-toggle-btn" aria-label="Toggle Theme" title="Toggle Dark/Light Mode" style="font-size:1.25rem; border:1.5px solid #D4AF37 !important; width:36px; height:36px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:rgba(212,175,55,0.1); cursor:pointer; flex-shrink:0;">
-            <span class="theme-icon-sun" style="display:none;">☀️</span>
+            <span class="theme-icon-sun">☀️</span>
             <span class="theme-icon-moon">🌙</span>
           </button>
           <button class="icon-btn" id="openSearch" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button>
@@ -1444,7 +1452,7 @@
 
   <!-- CDN libraries loaded last so they don't block page render -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="app.js?v=20260907_audit_clean" defer></script>
+  <script src="app.js?v=20260907_dark_mode_fixed" defer></script>
   <script src="scripts/gesture-navigation.js?v=20260827_v21_historysync" defer></script>
   <script>
     if ('serviceWorker' in navigator) {

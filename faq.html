@@ -9,7 +9,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260907_v22_support_fixed">
+  <link rel="stylesheet" href="style.css?v=20260907_v23_dark_mode_fixed">
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('vfs_theme');
+        if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      } catch(e) {}
+    })();
+  </script>
   <style>
     :root {
       --faq-gold: #D4AF37;
@@ -19,6 +27,73 @@
       --faq-text: #2D3748;
       --faq-muted: #718096;
       --faq-border: rgba(212,175,55,0.25);
+    }
+    [data-theme="dark"] {
+      --faq-bg: #0F1117;
+      --faq-card: #161922;
+      --faq-text: #F5F6F8;
+      --faq-muted: #949BAE;
+      --faq-border: rgba(212,175,55,0.35);
+    }
+    [data-theme="dark"] body {
+      background-color: var(--faq-bg);
+      color: var(--faq-text);
+    }
+    [data-theme="dark"] .faq-item {
+      background: var(--faq-card);
+      border-color: #2E3547;
+    }
+    [data-theme="dark"] .faq-question {
+      color: #FFFFFF;
+    }
+    [data-theme="dark"] .faq-answer {
+      color: #C5C9D6;
+      border-top-color: #2E3547;
+    }
+    [data-theme="dark"] .faq-search-input {
+      background: #161922;
+      color: #FFFFFF;
+      border-color: rgba(212,175,55,0.4);
+    }
+    [data-theme="dark"] .faq-topic-pill {
+      background: #161922;
+      color: #C5C9D6;
+      border-color: #2E3547;
+    }
+    [data-theme="dark"] .faq-topic-pill.active {
+      background: var(--faq-gold);
+      color: #121212;
+    }
+    [data-theme="dark"] .faq-feedback-btn {
+      background: #232836;
+      color: #FFFFFF;
+      border-color: #2E3547;
+    }
+    [data-theme="dark"] .no-results-box {
+      background: #161922;
+      border-color: #2E3547;
+    }
+    [data-theme="dark"] .no-results-box h3 {
+      color: #FFFFFF !important;
+    }
+    [data-theme="dark"] .faq-contact-card {
+      background: #161922;
+      border-color: #2E3547;
+    }
+    [data-theme="dark"] .faq-contact-title {
+      color: #FFFFFF;
+    }
+    [data-theme="dark"] .theme-icon-sun {
+      display: inline-block !important;
+    }
+    [data-theme="dark"] .theme-icon-moon {
+      display: none !important;
+    }
+    :root:not([data-theme="dark"]) .theme-icon-sun {
+      display: none !important;
+    }
+    :root:not([data-theme="dark"]) .theme-icon-moon {
+      display: inline-block !important;
     }
     body {
       background-color: var(--faq-bg);
@@ -372,7 +447,13 @@
     <a href="index.html" style="display:flex; align-items:center; gap:10px; text-decoration:none;">
       <img src="https://res.cloudinary.com/cwx4zame/image/upload/v1783183760/ze9xek1cled8puy6vfex.png" alt="VFS Jewels" class="faq-nav-logo">
     </a>
-    <a href="index.html" class="faq-back-btn">← Back to Shop</a>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <button id="themeToggleBtn" onclick="toggleFaqTheme()" class="icon-btn theme-toggle-btn" aria-label="Toggle Theme" title="Toggle Dark/Light Mode" style="font-size:1.25rem; border:1.5px solid #D4AF37 !important; width:36px; height:36px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:rgba(212,175,55,0.1); cursor:pointer;">
+        <span class="theme-icon-sun">☀️</span>
+        <span class="theme-icon-moon">🌙</span>
+      </button>
+      <a href="index.html" class="faq-back-btn">← Back to Shop</a>
+    </div>
   </header>
 
   <!-- Hero Header -->
@@ -728,6 +809,13 @@
     function rateFaq(btn, isHelpful) {
       const parent = btn.closest('.faq-feedback');
       parent.innerHTML = `<span style="color:#16A34A; font-weight:700;">✓ Thanks for your feedback!</span>`;
+    }
+
+    function toggleFaqTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('vfs_theme', next);
     }
   </script>
 </body>

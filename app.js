@@ -6457,16 +6457,7 @@ window.downloadInvoicePDF = downloadInvoicePDF;
 function initThemeToggle() {
   const savedTheme = localStorage.getItem('vfs_theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
-  
-  document.querySelectorAll('#themeToggleBtn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme') || 'light';
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('vfs_theme', next);
-      if (typeof toast === 'function') toast(next === 'dark' ? '🌙 Dark Mode Activated' : '☀️ Light Mode Activated');
-    });
-  });
+  if (typeof updateThemeElements === 'function') updateThemeElements(savedTheme);
 }
 
 // ── Complete 3-Step Wholesale Membership Funnel ──
@@ -6594,12 +6585,20 @@ function switchModeSeamlessly(targetMode) {
    UNIFIED VFS MODALS, THEME & WALLET SYSTEM
    ============================================================ */
 
-// 1. Theme (Dark Mode) Handler
+// 1. Theme (Dark Mode) Handler & UI Synchronizer
+function updateThemeElements(theme) {
+  document.querySelectorAll('#themeToggleBtn, .theme-toggle-btn').forEach(btn => {
+    btn.setAttribute('aria-label', theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+    btn.setAttribute('title', theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+  });
+}
+
 window.toggleTheme = function() {
   const current = document.documentElement.getAttribute('data-theme') || 'light';
   const next = current === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('vfs_theme', next);
+  updateThemeElements(next);
   if (typeof toast === 'function') {
     toast(next === 'dark' ? '🌙 Dark Mode Activated' : '☀️ Light Mode Activated');
   }
@@ -6608,6 +6607,7 @@ window.toggleTheme = function() {
 function initThemeFromStorage() {
   const savedTheme = localStorage.getItem('vfs_theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
+  updateThemeElements(savedTheme);
 }
 initThemeFromStorage();
 
