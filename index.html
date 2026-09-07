@@ -1523,68 +1523,68 @@
   </div>
 
   <!-- CUSTOMER CARE & SUPPORT CONCIERGE MODAL -->
-  <div class="modal-bg" id="customerCareModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:10000; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:16px;">
-    <div class="vfs-modal-content" style="max-width:560px; width:100%; background:var(--bg-card, #141721); border:1px solid #D4AF37; border-radius:16px; padding:32px; color:#fff; position:relative; box-shadow:0 24px 60px rgba(0,0,0,0.6); max-height:90vh; overflow-y:auto;">
-      <button onclick="closeCustomerCareModal()" aria-label="Close" style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.1); border:none; width:36px; height:36px; border-radius:50%; color:#fff; font-size:1.8rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;">&times;</button>
+  <div class="care-modal-backdrop" id="customerCareModal" onclick="if(event.target === this) closeCustomerCareModal();">
+    <div class="care-modal-card">
+      <button onclick="closeCustomerCareModal()" aria-label="Close Support" class="care-close-x">&times;</button>
       
       <div style="text-align:center; margin-bottom:24px;">
-        <span style="background:rgba(212,175,55,0.15); color:#D4AF37; border:1px solid rgba(212,175,55,0.4); font-size:1.1rem; font-weight:800; padding:4px 12px; border-radius:20px; text-transform:uppercase; letter-spacing:1px; display:inline-block; margin-bottom:8px;">💎 Official Concierge Desk</span>
-        <h2 style="font-size:2.4rem; font-family:var(--font-heading, 'Cinzel'); margin:0 0 6px 0; color:#fff;">Customer Care &amp; Support</h2>
-        <p style="font-size:1.3rem; color:#aaa; margin:0;">We are dedicated to providing royal concierge service for all your orders, sizing, and inquiries.</p>
+        <span class="care-badge">💎 Official Concierge Desk</span>
+        <h2 class="care-title">Customer Care &amp; Support</h2>
+        <p class="care-subtitle">We are dedicated to providing royal concierge service for all your orders, sizing, and inquiries.</p>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:24px;">
+      <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:22px;">
         <!-- WhatsApp Priority Channel -->
-        <a href="https://wa.me/919025327860?text=Hello%20VFS%20Jewels%20Customer%20Care%2C%20I%20need%20support%20regarding%20my%20order." target="_blank" rel="noopener" style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:#25D366; color:#fff; border-radius:12px; text-decoration:none; font-weight:700; font-size:1.35rem; box-shadow:0 4px 16px rgba(37,211,102,0.3); transition:transform 0.2s;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <span style="font-size:2rem;">💬</span>
+        <a href="https://wa.me/919025327860?text=Hello%20VFS%20Jewels%20Customer%20Care%2C%20I%20need%20support%20regarding%20my%20order." target="_blank" rel="noopener" class="care-channel-wa">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <span class="care-channel-icon" style="background:rgba(255,255,255,0.22); color:#fff;">💬</span>
             <div>
-              <div style="font-size:1.4rem; font-weight:800;">WhatsApp Support (Fastest)</div>
-              <div style="font-size:1.15rem; opacity:0.9; font-weight:500;">+91 90253 27860 &bull; Instant Response</div>
+              <div style="font-size:1.45rem; font-weight:800; color:#fff;">WhatsApp Support (Fastest)</div>
+              <div style="font-size:1.2rem; color:rgba(255,255,255,0.92); font-weight:500;">+91 90253 27860 &bull; Instant Response</div>
             </div>
           </div>
-          <span style="font-size:1.4rem;">&rarr;</span>
+          <span style="font-size:1.6rem; color:#fff; font-weight:700;">&rarr;</span>
         </a>
 
         <!-- Phone Calling Channel -->
-        <a href="tel:+919840757363" style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:12px; text-decoration:none; font-weight:700; font-size:1.35rem; transition:0.2s;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <span style="font-size:2rem;">📞</span>
+        <a href="tel:+919840757363" class="care-channel-row">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <span class="care-channel-icon" style="background:rgba(212,175,55,0.15); color:#996515;">📞</span>
             <div>
-              <div style="font-size:1.4rem; font-weight:800;">Direct Phone Support</div>
-              <div style="font-size:1.15rem; color:#aaa; font-weight:500;">+91 98407 57363 &bull; Showroom Line</div>
+              <div class="care-channel-title">Direct Phone Support</div>
+              <div class="care-channel-sub">+91 98407 57363 &bull; Showroom Line</div>
             </div>
           </div>
-          <span style="color:#D4AF37; font-size:1.4rem;">&rarr;</span>
+          <span style="color:#D4AF37; font-size:1.6rem; font-weight:700;">&rarr;</span>
         </a>
 
         <!-- Email Channel -->
-        <a href="mailto:vfsjewels@gmail.com?subject=VFS%20Jewels%20Customer%20Support%20Request" style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:12px; text-decoration:none; font-weight:700; font-size:1.35rem; transition:0.2s;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <span style="font-size:2rem;">📧</span>
+        <a href="mailto:vfsjewels@gmail.com?subject=VFS%20Jewels%20Customer%20Support%20Request" class="care-channel-row">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <span class="care-channel-icon" style="background:rgba(212,175,55,0.15); color:#996515;">📧</span>
             <div>
-              <div style="font-size:1.4rem; font-weight:800;">Email Helpdesk</div>
-              <div style="font-size:1.15rem; color:#aaa; font-weight:500;">vfsjewels@gmail.com &bull; accounts@vfsjewels.store</div>
+              <div class="care-channel-title">Email Helpdesk</div>
+              <div class="care-channel-sub">vfsjewels@gmail.com &bull; accounts@vfsjewels.store</div>
             </div>
           </div>
-          <span style="color:#D4AF37; font-size:1.4rem;">&rarr;</span>
+          <span style="color:#D4AF37; font-size:1.6rem; font-weight:700;">&rarr;</span>
         </a>
       </div>
 
       <!-- Showroom & Operating Hours -->
-      <div style="background:rgba(212,175,55,0.06); border:1px solid rgba(212,175,55,0.25); border-radius:12px; padding:16px; font-size:1.2rem; line-height:1.6; color:#ddd; margin-bottom:20px;">
-        <div style="color:#D4AF37; font-weight:800; font-size:1.25rem; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+      <div class="care-showroom-box">
+        <div class="care-showroom-title">
           <span>🏬</span> Flagship Showroom &amp; Operating Hours
         </div>
-        <div><strong>Hours:</strong> Monday – Sunday &bull; 10:00 AM – 9:00 PM IST</div>
-        <div><strong>Address:</strong> 42, 2nd Floor, Natwar Kurpa Complex, Narayana Mudali Street, Sowcarpet, George Town, Chennai - 600001</div>
+        <div class="care-showroom-text"><strong>Hours:</strong> Monday – Sunday &bull; 10:00 AM – 9:00 PM IST</div>
+        <div class="care-showroom-sub" style="margin-top:4px;"><strong>Address:</strong> 42, 2nd Floor, Natwar Kurpa Complex, Narayana Mudali Street, Sowcarpet, George Town, Chennai - 600001</div>
       </div>
 
       <!-- Quick Self-Service Links -->
-      <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-        <a href="faq.html" style="padding:8px 14px; background:rgba(255,255,255,0.08); border-radius:6px; color:#fff; text-decoration:none; font-size:1.2rem; font-weight:600;">❓ FAQ Center</a>
-        <a href="#track-order" onclick="closeCustomerCareModal(); document.getElementById('openTracking') &amp;&amp; document.getElementById('openTracking').click();" style="padding:8px 14px; background:rgba(255,255,255,0.08); border-radius:6px; color:#fff; text-decoration:none; font-size:1.2rem; font-weight:600;">🚚 Track Order</a>
-        <button onclick="closeCustomerCareModal()" style="padding:8px 16px; background:#D4AF37; color:#121212; border:none; border-radius:6px; font-size:1.2rem; font-weight:800; cursor:pointer;">Close Support</button>
+      <div style="display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap;">
+        <a href="faq.html" class="care-quick-btn">❓ FAQ Center</a>
+        <a href="#track-order" onclick="closeCustomerCareModal(); (document.getElementById('openTracking') || document.getElementById('footerTrackOrder'))?.click();" class="care-quick-btn">🚚 Track Order</a>
+        <button onclick="closeCustomerCareModal()" class="care-close-btn-action">Close Support</button>
       </div>
     </div>
   </div>
