@@ -2132,7 +2132,7 @@ function renderProfileHub() {
 
   profileBody.innerHTML = `
     <!-- User Info Card -->
-    <div class="profile-hub-card" style="background:linear-gradient(135deg, #11141e 0%, #1e1b15 100%); color:#ffffff; border:1.5px solid #D4AF37; padding:18px; border-radius:14px; margin-bottom:14px; box-shadow:0 6px 20px rgba(0,0,0,0.25);">
+    <div class="profile-hub-card" id="pHubUserCard" style="background:linear-gradient(135deg, #11141e 0%, #1e1b15 100%); color:#ffffff; border:1.5px solid #D4AF37; padding:18px; border-radius:14px; margin-bottom:14px; box-shadow:0 6px 20px rgba(0,0,0,0.25); cursor:pointer;" title="Tap to switch shopping preference">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
           <h4 style="margin:0; font-size:1.4rem; color:#ffffff; font-weight:800;">${userName}</h4>
@@ -2146,7 +2146,7 @@ function renderProfileHub() {
     </div>
 
     <!-- Wallet Balance Banner -->
-    <div class="profile-wallet-banner" style="background:linear-gradient(135deg, #181510 0%, #2b2212 100%); border:1.5px solid #D4AF37; padding:18px; border-radius:14px; margin-bottom:16px; color:#ffffff; box-shadow:0 6px 20px rgba(0,0,0,0.25);">
+    <div class="profile-wallet-banner" id="pHubWalletBanner" style="background:linear-gradient(135deg, #181510 0%, #2b2212 100%); border:1.5px solid #D4AF37; padding:18px; border-radius:14px; margin-bottom:16px; color:#ffffff; box-shadow:0 6px 20px rgba(0,0,0,0.25); cursor:pointer;">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
         <div style="display:flex; align-items:center; gap:12px;">
           <span style="font-size:2rem;">👛</span>
@@ -2164,7 +2164,7 @@ function renderProfileHub() {
 
     <!-- Action Links -->
     <div style="display:flex; flex-direction:column; gap:12px;">
-      <div class="profile-menu-item" id="pHubWishlist">
+      <div class="profile-menu-item" id="pHubWishlist" style="cursor:pointer;">
         <div style="display:flex; align-items:center; gap:12px;">
           <span style="font-size:1.4rem;">❤️</span>
           <span>My Saved Wishlist</span>
@@ -2172,7 +2172,7 @@ function renderProfileHub() {
         <span style="background:#D4AF37 !important; color:#121212 !important; padding:4px 14px !important; border-radius:20px !important; font-weight:900 !important; font-size:0.95rem !important;">${wlCount} items</span>
       </div>
 
-      <div class="profile-menu-item" id="pHubTracking">
+      <div class="profile-menu-item" id="pHubTracking" style="cursor:pointer;">
         <div style="display:flex; align-items:center; gap:12px;">
           <span style="font-size:1.4rem;">📦</span>
           <span>Track Order &amp; Shipments</span>
@@ -2180,7 +2180,7 @@ function renderProfileHub() {
         <span style="color:#D4AF37; font-weight:800; font-size:1.2rem;">&rarr;</span>
       </div>
 
-      <div class="profile-menu-item" id="pHubSwitchMode">
+      <div class="profile-menu-item" id="pHubSwitchMode" style="cursor:pointer;">
         <div style="display:flex; align-items:center; gap:12px;">
           <span style="font-size:1.4rem;">🔄</span>
           <span>Switch Mode (${isWholesale ? 'Wholesale' : 'Retail'})</span>
@@ -2188,7 +2188,7 @@ function renderProfileHub() {
         <span style="color:#D4AF37; font-weight:800; font-size:1.2rem;">&rarr;</span>
       </div>
 
-      <a href="https://api.whatsapp.com/send?phone=919025327860&text=Hi%20VFS%20Jewels%2C%20I%20need%20assistance%20with%20my%20account." target="_blank" class="profile-menu-item" style="border:1.5px solid #059669 !important; background:rgba(5,150,105,0.08) !important; text-decoration:none !important;">
+      <a href="https://wa.me/919025327860?text=Hi%20VFS%20Jewels%2C%20I%20need%20assistance%20with%20my%20account." target="_blank" rel="noopener" class="profile-menu-item" id="pHubWhatsApp" style="border:1.5px solid #059669 !important; background:rgba(5,150,105,0.08) !important; text-decoration:none !important; cursor:pointer;">
         <div style="display:flex; align-items:center; gap:12px;">
           <span style="font-size:1.4rem;">💬</span>
           <span style="color:#059669 !important; font-weight:800 !important;">Official WhatsApp VIP Support</span>
@@ -2198,40 +2198,86 @@ function renderProfileHub() {
     </div>
   `;
 
+  const openWalletAction = (e) => {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    closeDrawer('profile', true);
+    if (window.VFSGestures && typeof window.VFSGestures.onModalOpen === 'function') {
+      window.history.replaceState({ vfsModal: 'walletModal', timestamp: Date.now() }, '', '#walletModal');
+    }
+    setTimeout(() => {
+      if (typeof window.openWalletModalFunc === 'function') {
+        window.openWalletModalFunc();
+      } else {
+        const modal = document.getElementById('walletModal');
+        if (modal) {
+          modal.style.display = 'flex';
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
+      }
+    }, 60);
+  };
+
   const walletBtn = $('#pHubOpenWallet');
-  if (walletBtn) {
-    walletBtn.onclick = () => {
-      closeDrawer('profile');
-      if (typeof window.openWalletModalFunc === 'function') window.openWalletModalFunc();
-    };
-  }
+  if (walletBtn) walletBtn.onclick = openWalletAction;
+
+  const walletBanner = $('#pHubWalletBanner');
+  if (walletBanner) walletBanner.onclick = openWalletAction;
 
   const wlBtn = $('#pHubWishlist');
   if (wlBtn) {
-    wlBtn.onclick = () => {
-      closeDrawer('profile');
-      openDrawer('wl');
+    wlBtn.onclick = (e) => {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      closeDrawer('profile', true);
+      setTimeout(() => {
+        openDrawer('wl');
+      }, 60);
     };
   }
 
   const trackBtn = $('#pHubTracking');
   if (trackBtn) {
-    trackBtn.onclick = () => {
-      closeDrawer('profile');
-      const trackModal = $('#trackingModal') || $('#openTracking');
-      if (trackModal) trackModal.click();
+    trackBtn.onclick = (e) => {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      closeDrawer('profile', true);
+      if (window.VFSGestures && typeof window.VFSGestures.onModalOpen === 'function') {
+        window.history.replaceState({ vfsModal: 'trackingOverlay', timestamp: Date.now() }, '', '#trackingOverlay');
+      }
+      setTimeout(() => {
+        const trackingOverlay = document.getElementById('trackingOverlay');
+        if (trackingOverlay) {
+          trackingOverlay.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
+      }, 60);
     };
   }
 
-  const modeBtn = $('#pHubSwitchMode');
-  if (modeBtn) {
-    modeBtn.onclick = () => {
-      closeDrawer('profile');
+  const openModeAction = (e) => {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    closeDrawer('profile', true);
+    if (window.VFSGestures && typeof window.VFSGestures.onModalOpen === 'function') {
+      window.history.replaceState({ vfsModal: 'welcomeModeModal', timestamp: Date.now() }, '', '#welcomeModeModal');
+    }
+    setTimeout(() => {
       if (typeof window.openWelcomeModeModal === 'function') {
         window.openWelcomeModeModal();
       } else if (typeof openWholesaleFunnel === 'function') {
         openWholesaleFunnel();
       }
+    }, 60);
+  };
+
+  const modeBtn = $('#pHubSwitchMode');
+  if (modeBtn) modeBtn.onclick = openModeAction;
+
+  const userCard = $('#pHubUserCard');
+  if (userCard) userCard.onclick = openModeAction;
+
+  const waBtn = $('#pHubWhatsApp');
+  if (waBtn) {
+    waBtn.onclick = () => {
+      closeDrawer('profile', true);
     };
   }
 }
@@ -2261,20 +2307,24 @@ function openDrawer(type) {
   document.body.style.overflow = 'hidden';
 }
 
-function closeDrawer(type) {
+function closeDrawer(type, skipHistory = false) {
   if (type === 'cart') {
-    $('#cartBG').classList.remove('active');
-    $('#cartDW').classList.remove('active');
+    const bg = $('#cartBG');
+    const dw = $('#cartDW');
+    if (bg) bg.classList.remove('active');
+    if (dw) dw.classList.remove('active');
   } else if (type === 'profile') {
     const bg = $('#profileBG');
     const dw = $('#profileDW');
     if (bg) bg.classList.remove('active');
     if (dw) dw.classList.remove('active');
   } else {
-    $('#wlBG').classList.remove('active');
-    $('#wlDW').classList.remove('active');
+    const bg = $('#wlBG');
+    const dw = $('#wlDW');
+    if (bg) bg.classList.remove('active');
+    if (dw) dw.classList.remove('active');
   }
-  if (window.VFSGestures && typeof window.VFSGestures.onModalClose === 'function') {
+  if (!skipHistory && window.VFSGestures && typeof window.VFSGestures.onModalClose === 'function') {
     window.VFSGestures.onModalClose('drawer-' + type);
   }
   const guideBtn = $('#openGuideBtn') || document.querySelector('.floating-guide-btn');
@@ -7085,6 +7135,13 @@ function initAllMasterModalListeners() {
       if (typeof switchModeSeamlessly === 'function') {
         switchModeSeamlessly('retail');
       }
+    };
+  }
+
+  const welcomeModeModalEl = document.getElementById('welcomeModeModal');
+  if (welcomeModeModalEl) {
+    welcomeModeModalEl.onclick = function(e) {
+      if (e.target === welcomeModeModalEl) window.closeWelcomeModeModal();
     };
   }
 

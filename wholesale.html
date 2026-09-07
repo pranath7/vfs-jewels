@@ -798,30 +798,6 @@
     </div>
   </div>
 
-  <!-- WISHLIST DRAWER -->
-  <div class="dw-bg" id="wlBG"></div>
-  <div class="dw" id="wlDW">
-    <div class="dw-head"><h3>Wishlist (<span id="wlCT">0</span>)</h3><button class="dw-close" id="closeWLDW"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
-    <div class="dw-body" id="wlBody"></div>
-  </div>
-
-  <!-- CUSTOMER PROFILE DRAWER -->
-  <div class="dw-bg" id="profileBG"></div>
-  <aside class="dw profile-drawer" id="profileDW" style="max-width: 440px;">
-    <div class="dw-head profile-dw-head" style="background: linear-gradient(135deg, #11141e 0%, #1e1b15 100%); color: #ffffff; padding: 20px 24px; border-bottom: 1px solid rgba(212,175,55,0.3); display: flex; align-items: center; justify-content: space-between;">
-      <div style="display:flex; align-items:center; gap:14px;">
-        <div class="profile-avatar" style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, #D4AF37, #AA7C11); color:#121212; font-weight:800; font-size:1.5rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(212,175,55,0.3);" id="profileAvatarText">👤</div>
-        <div>
-          <h3 id="profileHeaderName" style="font-size:1.45rem; margin:0; color:#ffffff; font-weight:700;">My Account</h3>
-          <p id="profileHeaderSub" style="font-size:1.1rem; margin:2px 0 0 0; color:#D4AF37; font-weight:500;">VFS Customer Dashboard</p>
-        </div>
-      </div>
-      <button class="dw-close" id="closeProfileDW" aria-label="Close Profile" style="color:#ffffff; background:transparent; border:none; cursor:pointer;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-    </div>
-    <div class="dw-body profile-dw-body" id="profileBody" style="padding: 20px; overflow-y: auto;">
-      <!-- Dynamically filled via renderProfileHub() -->
-    </div>
-  </aside>
 
   <!-- TOASTS -->
   <div class="toast-box" id="toastBox"></div>
@@ -840,7 +816,7 @@
 
   <!-- CDN libraries & scripts -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="wholesale.js?v=20260907_moq1000" defer></script>
+  <script src="wholesale.js?v=20260907_profile_fix" defer></script>
   <script src="scripts/gesture-navigation.js?v=20260827_v21_historysync" defer></script>
 
   <!-- DYNAMIC ORDER TRACKING OVERLAY -->
