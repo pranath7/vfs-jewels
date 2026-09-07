@@ -3252,11 +3252,14 @@ $('#coRazorpayBtn').addEventListener('click', async () => {
 });
 
 // ── Newsletter ──
-$('#nlForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  toast('Subscribed! Welcome to VFS Circle ✉️');
-  e.target.reset();
-});
+const nlForm = $('#nlForm');
+if (nlForm) {
+  nlForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    toast('Subscribed! Welcome to VFS Circle ✉️');
+    e.target.reset();
+  });
+}
 
 // ── Keyboard: Escape closes overlays ──
 document.addEventListener('keydown', (e) => {
@@ -3488,37 +3491,46 @@ function openPDP(id) {
 
   const btnWish = $('#pdpBtnWish');
   const wishTextSpan = $('#pdpWishText');
-  btnWish.addEventListener('click', () => {
-    if (wishlist.includes(p.id)) {
-      wishlist = wishlist.filter(x => x !== p.id);
-      btnWish.classList.remove('active');
-      btnWish.querySelector('svg').setAttribute('fill', 'none');
-      wishTextSpan.textContent = 'Add to wishlist';
-      toast('Removed from wishlist');
-    } else {
-      wishlist.push(p.id);
-      btnWish.classList.add('active');
-      btnWish.querySelector('svg').setAttribute('fill', 'currentColor');
-      wishTextSpan.textContent = 'Added to wishlist';
-      toast('Added to wishlist ♡');
-    }
-    saveState();
-    updateCounts();
-    renderProducts(currentFilter);
-  });
+  if (btnWish) {
+    btnWish.addEventListener('click', () => {
+      if (wishlist.includes(p.id)) {
+        wishlist = wishlist.filter(x => x !== p.id);
+        btnWish.classList.remove('active');
+        const svg = btnWish.querySelector('svg');
+        if (svg) svg.setAttribute('fill', 'none');
+        if (wishTextSpan) wishTextSpan.textContent = 'Add to wishlist';
+        toast('Removed from wishlist');
+      } else {
+        wishlist.push(p.id);
+        btnWish.classList.add('active');
+        const svg = btnWish.querySelector('svg');
+        if (svg) svg.setAttribute('fill', 'currentColor');
+        if (wishTextSpan) wishTextSpan.textContent = 'Added to wishlist';
+        toast('Added to wishlist ♡');
+      }
+      saveState();
+      updateCounts();
+      renderProducts(currentFilter);
+    });
+  }
 
-  $('#pdpPinCheck').addEventListener('click', () => {
-    const val = $('#pdpPinInput').value.trim();
-    const res = $('#pdpPinResult');
-    if (!/^\d{6}$/.test(val)) {
-      res.className = 'pdp-pin-result err';
-      res.textContent = 'Please enter a valid 6-digit pincode';
-      return;
-    }
-    const days = 2 + Math.floor(Math.random() * 4);
-    res.className = 'pdp-pin-result ok';
-    res.innerHTML = `✓ Delivery available! Estimated ${days}–${days + 2} business days.`;
-  });
+  const pdpPinCheck = $('#pdpPinCheck');
+  if (pdpPinCheck) {
+    pdpPinCheck.addEventListener('click', () => {
+      const pinInput = $('#pdpPinInput');
+      const val = pinInput ? pinInput.value.trim() : '';
+      const res = $('#pdpPinResult');
+      if (!res) return;
+      if (!/^\d{6}$/.test(val)) {
+        res.className = 'pdp-pin-result err';
+        res.textContent = 'Please enter a valid 6-digit pincode';
+        return;
+      }
+      const days = 2 + Math.floor(Math.random() * 4);
+      res.className = 'pdp-pin-result ok';
+      res.innerHTML = `✓ Delivery available! Estimated ${days}–${days + 2} business days.`;
+    });
+  }
 
   // Setup Social Sharing links dynamically
   (function setupSharing() {
@@ -5641,68 +5653,71 @@ function setupShoppingMode() {
   }
 
   // Google Authentication Trigger
-  $('#royalBtnGoogleSignIn').addEventListener('click', async () => {
-    const btn = $('#royalBtnGoogleSignIn');
-    if (btn.disabled) return;
-    btn.disabled = true;
-    btn.style.opacity = '0.6';
-    btn.style.cursor = 'not-allowed';
+  const royalBtnGoogleSignIn = $('#royalBtnGoogleSignIn');
+  if (royalBtnGoogleSignIn) {
+    royalBtnGoogleSignIn.addEventListener('click', async () => {
+      const btn = royalBtnGoogleSignIn;
+      if (btn.disabled) return;
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      btn.style.cursor = 'not-allowed';
 
-    try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      let result;
       try {
-        result = await firebase.auth().signInWithPopup(provider);
-      } catch (popupErr) {
-        if (popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/cancelled-popup-request' || popupErr.code === 'auth/popup-closed-by-user') {
-          toast("Popup blocked. Redirecting to Google login...");
-          await firebase.auth().signInWithRedirect(provider);
-          return;
+        const provider = new firebase.auth.GoogleAuthProvider();
+        let result;
+        try {
+          result = await firebase.auth().signInWithPopup(provider);
+        } catch (popupErr) {
+          if (popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/cancelled-popup-request' || popupErr.code === 'auth/popup-closed-by-user') {
+            toast("Popup blocked. Redirecting to Google login...");
+            await firebase.auth().signInWithRedirect(provider);
+            return;
+          } else {
+            throw popupErr;
+          }
+        }
+
+        if (!result || !result.user) return;
+        const user = result.user;
+
+        let userData = null;
+        if (window.VFS_CLOUD_ACTIVE && window.db) {
+          const doc = await window.db.collection('wholesale_users').doc(user.uid).get();
+          if (doc.exists) {
+            userData = doc.data();
+          }
         } else {
-          throw popupErr;
+          const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
+          if (mockUsers[user.uid]) userData = mockUsers[user.uid];
         }
-      }
 
-      if (!result || !result.user) return;
-      const user = result.user;
-
-      let userData = null;
-      if (window.VFS_CLOUD_ACTIVE && window.db) {
-        const doc = await window.db.collection('wholesale_users').doc(user.uid).get();
-        if (doc.exists) {
-          userData = doc.data();
+        if (userData) {
+          wholesaleUser = userData;
+          wholesaleUnlocked = userData.unlocked === true;
+          saveState();
+          updateModeUI();
+          updateLockUI();
+          renderProducts(null);
+          if (wholesaleUnlocked) {
+            toast(`Welcome back, ${wholesaleUser.name}!`);
+          }
+        } else {
+          tempPhone = user.phoneNumber || '';
+          if ($('#royalRegName')) $('#royalRegName').value = user.displayName || '';
+          if ($('#royalRegPhone')) $('#royalRegPhone').value = tempPhone;
+          window._googleUser = user;
+          showLockScreen('royalScreenRegister');
         }
-      } else {
-        const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
-        if (mockUsers[user.uid]) userData = mockUsers[user.uid];
+      } catch (err) {
+        console.error("Google Sign-In failed:", err);
+        toast("Sign in failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
       }
-
-      if (userData) {
-        wholesaleUser = userData;
-        wholesaleUnlocked = userData.unlocked === true;
-        saveState();
-        updateModeUI();
-        updateLockUI();
-        renderProducts(null);
-        if (wholesaleUnlocked) {
-          toast(`Welcome back, ${wholesaleUser.name}!`);
-        }
-      } else {
-        tempPhone = user.phoneNumber || '';
-        $('#royalRegName').value = user.displayName || '';
-        $('#royalRegPhone').value = tempPhone;
-        window._googleUser = user;
-        showLockScreen('royalScreenRegister');
-      }
-    } catch (err) {
-      console.error("Google Sign-In failed:", err);
-      toast("Sign in failed: " + err.message);
-    } finally {
-      btn.disabled = false;
-      btn.style.opacity = '1';
-      btn.style.cursor = 'pointer';
-    }
-  });
+    });
+  }
 
   // Complete Registration Form
   const registerUserHandler = async (name, business, phoneVal, address) => {

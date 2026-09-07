@@ -1411,7 +1411,7 @@
           <li><a href="#trust" class="drawer-nav-link" data-target="about">ABOUT US</a></li>
           <li><a href="#products" class="drawer-nav-link" data-target="shop">SHOP</a></li>
           <li><a href="faq.html" class="drawer-nav-link">FAQ &amp; HELP</a></li>
-          <li><a href="javascript:void(0)" onclick="document.getElementById('closeMobileNav') &amp;&amp; document.getElementById('closeMobileNav').click(); openCustomerCareModal();" class="drawer-nav-link" style="color:#D4AF37; font-weight:700;">🎧 CUSTOMER CARE &amp; SUPPORT</a></li>
+          <li><a href="javascript:void(0)" onclick="var nav=document.getElementById('closeMobileNav');if(nav)nav.click();openCustomerCareModal();" class="drawer-nav-link" style="color:#D4AF37; font-weight:700;">🎧 CUSTOMER CARE &amp; SUPPORT</a></li>
           <li><a href="#store" class="drawer-nav-link" data-target="contact">CONTACT US</a></li>
           <li><a href="#" class="drawer-nav-link" data-target="shipping-policy">SHIPPING POLICY</a></li>
         </ul>
@@ -1444,7 +1444,7 @@
 
   <!-- CDN libraries loaded last so they don't block page render -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="app.js?v=20260907_profile_fix" defer></script>
+  <script src="app.js?v=20260907_audit_clean" defer></script>
   <script src="scripts/gesture-navigation.js?v=20260827_v21_historysync" defer></script>
   <script>
     if ('serviceWorker' in navigator) {

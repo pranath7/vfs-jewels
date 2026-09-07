@@ -883,15 +883,15 @@ function handleGoogleRedirectResult() {
       } else {
         // Pre-fill profile registration
         tempPhone = user.phoneNumber || '';
-        $('#regNameInput').value = user.displayName || '';
-        $('#regPhoneInput').value = tempPhone;
+        if ($('#regNameInput')) $('#regNameInput').value = user.displayName || '';
+        if ($('#regPhoneInput')) $('#regPhoneInput').value = tempPhone;
         window._googleUser = user;
         
         // Show login modal directly on registration step
-        $('#loginStepPhone').style.display = 'none';
-        $('#loginStepOTP').style.display = 'none';
-        $('#loginStepRegister').style.display = 'block';
-        $('#wholesaleLoginModal').classList.add('active');
+        if ($('#loginStepPhone')) $('#loginStepPhone').style.display = 'none';
+        if ($('#loginStepOTP')) $('#loginStepOTP').style.display = 'none';
+        if ($('#loginStepRegister')) $('#loginStepRegister').style.display = 'block';
+        if ($('#wholesaleLoginModal')) $('#wholesaleLoginModal').classList.add('active');
       }
     }
   }).catch((err) => {
@@ -3660,37 +3660,46 @@ function openPDP(id) {
 
   const btnWish = $('#pdpBtnWish');
   const wishTextSpan = $('#pdpWishText');
-  btnWish.addEventListener('click', () => {
-    if (wishlist.includes(p.id)) {
-      wishlist = wishlist.filter(x => x !== p.id);
-      btnWish.classList.remove('active');
-      btnWish.querySelector('svg').setAttribute('fill', 'none');
-      wishTextSpan.textContent = 'Add to wishlist';
-      toast('Removed from wishlist');
-    } else {
-      wishlist.push(p.id);
-      btnWish.classList.add('active');
-      btnWish.querySelector('svg').setAttribute('fill', 'currentColor');
-      wishTextSpan.textContent = 'Added to wishlist';
-      toast('Added to wishlist ♡');
-    }
-    saveState();
-    updateCounts();
-    renderProducts(currentFilter);
-  });
+  if (btnWish) {
+    btnWish.addEventListener('click', () => {
+      if (wishlist.includes(p.id)) {
+        wishlist = wishlist.filter(x => x !== p.id);
+        btnWish.classList.remove('active');
+        const svg = btnWish.querySelector('svg');
+        if (svg) svg.setAttribute('fill', 'none');
+        if (wishTextSpan) wishTextSpan.textContent = 'Add to wishlist';
+        toast('Removed from wishlist');
+      } else {
+        wishlist.push(p.id);
+        btnWish.classList.add('active');
+        const svg = btnWish.querySelector('svg');
+        if (svg) svg.setAttribute('fill', 'currentColor');
+        if (wishTextSpan) wishTextSpan.textContent = 'Added to wishlist';
+        toast('Added to wishlist ♡');
+      }
+      saveState();
+      updateCounts();
+      renderProducts(currentFilter);
+    });
+  }
 
-  $('#pdpPinCheck').addEventListener('click', () => {
-    const val = $('#pdpPinInput').value.trim();
-    const res = $('#pdpPinResult');
-    if (!/^\d{6}$/.test(val)) {
-      res.className = 'pdp-pin-result err';
-      res.textContent = 'Please enter a valid 6-digit pincode';
-      return;
-    }
-    const days = 2 + Math.floor(Math.random() * 4);
-    res.className = 'pdp-pin-result ok';
-    res.innerHTML = `✓ Delivery available! Estimated ${days}–${days + 2} business days.`;
-  });
+  const pdpPinCheck = $('#pdpPinCheck');
+  if (pdpPinCheck) {
+    pdpPinCheck.addEventListener('click', () => {
+      const pinInput = $('#pdpPinInput');
+      const val = pinInput ? pinInput.value.trim() : '';
+      const res = $('#pdpPinResult');
+      if (!res) return;
+      if (!/^\d{6}$/.test(val)) {
+        res.className = 'pdp-pin-result err';
+        res.textContent = 'Please enter a valid 6-digit pincode';
+        return;
+      }
+      const days = 2 + Math.floor(Math.random() * 4);
+      res.className = 'pdp-pin-result ok';
+      res.innerHTML = `✓ Delivery available! Estimated ${days}–${days + 2} business days.`;
+    });
+  }
 
   // Setup Social Sharing links dynamically
   (function setupSharing() {
@@ -5883,8 +5892,8 @@ function setupShoppingMode() {
       }
       tempPhone = phone;
       toast(`OTP sent to +91 ${phone}!`);
-      $('#loginStepPhone').style.display = 'none';
-      $('#loginStepOTP').style.display = 'block';
+      if ($('#loginStepPhone')) $('#loginStepPhone').style.display = 'none';
+      if ($('#loginStepOTP')) $('#loginStepOTP').style.display = 'block';
     });
   }
 
@@ -5898,13 +5907,14 @@ function setupShoppingMode() {
       }
       
       const uid = 'phone-' + tempPhone;
-      const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
+      let mockUsers = {};
+      try { mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}'); } catch(e) {}
       if (mockUsers[uid]) {
         wholesaleUser = mockUsers[uid];
         shoppingMode = 'wholesale';
         wholesaleUnlocked = wholesaleUser.unlocked === true;
         saveState();
-        wholesaleLoginModal.classList.remove('active');
+        if (wholesaleLoginModal) wholesaleLoginModal.classList.remove('active');
         updateModeUI();
         renderProducts(null);
         if (!wholesaleUnlocked) {
@@ -5913,9 +5923,9 @@ function setupShoppingMode() {
           toast(`Welcome back, ${wholesaleUser.name}!`);
         }
       } else {
-        $('#loginStepOTP').style.display = 'none';
-        $('#regPhoneInput').value = tempPhone;
-        $('#loginStepRegister').style.display = 'block';
+        if ($('#loginStepOTP')) $('#loginStepOTP').style.display = 'none';
+        if ($('#regPhoneInput')) $('#regPhoneInput').value = tempPhone;
+        if ($('#loginStepRegister')) $('#loginStepRegister').style.display = 'block';
       }
     });
   }

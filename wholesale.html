@@ -567,41 +567,6 @@
     </div>
   </aside>
 
-  <!-- GOOGLE REVIEW MODAL -->
-  <div class="modal-bg" id="googleReviewModal">
-    <div class="review-modal">
-      <button class="modal-x" id="closeReviewModal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-      <div class="rev-modal-header">
-        <svg class="google-logo" viewBox="0 0 24 24" style="height: 24px; width: auto; display: inline-block;">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.44.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.62-.62-1.07-1.37-1.37-2.18z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-        </svg>
-        <div class="rev-modal-biz">
-          <h4>VFS Jewels Sowcarpet</h4>
-          <p>Posting publicly on Google Reviews</p>
-        </div>
-      </div>
-      <div class="rev-modal-body">
-        <div class="rev-modal-stars" id="modalReviewStars">
-          <span class="star" data-value="1">★</span>
-          <span class="star" data-value="2">★</span>
-          <span class="star" data-value="3">★</span>
-          <span class="star" data-value="4">★</span>
-          <span class="star" data-value="5">★</span>
-        </div>
-        <input type="text" id="revModalName" placeholder="Your Name (e.g. Anjali R.)" class="rev-modal-input">
-        <textarea id="revModalText" placeholder="Share details of your experience with VFS Jewels..." class="rev-modal-textarea" rows="3"></textarea>
-        <button class="btn-primary" id="btnSubmitReview" style="width:100%; padding:12px; font-size:1.3rem;">Post Review to Google</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- PDP MODAL -->
-  <div class="pdp-overlay" id="pdpOverlay">
-    <div class="pdp-container" id="pdpContent"></div>
-  </div>
 
   <!-- TINDER SWIPER MODAL -->
   <div class="modal-bg" id="tinderModal">
@@ -751,52 +716,6 @@
     </div>
   </div>
 
-  <!-- SEARCH OVERLAY -->
-  <div class="search-overlay" id="searchOL">
-    <div class="search-box">
-      <div class="search-inner"><input type="text" placeholder="Search for rings, earrings, kadas, chains..." id="searchInput"><button id="closeSearch"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
-      <div class="search-results" id="searchResults"></div>
-    </div>
-  </div>
-
-  <!-- PINCODE MODAL -->
-  <div class="modal-bg" id="pinModal">
-    <div class="pin-modal">
-      <button class="modal-x" id="closePin"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-      <h3>Where to Deliver?</h3>
-      <p>Enter your 6-digit pincode to check delivery options.</p>
-      <div class="pin-form"><input type="text" placeholder="Enter pincode" id="pinInput" maxlength="6"><button id="checkPin">Check</button></div>
-      <div class="pin-result" id="pinResult"></div>
-    </div>
-  </div>
-
-  <!-- STORE LOCATOR OVERLAY -->
-  <div class="pdp-overlay" id="storeOverlay">
-    <div class="pdp-container">
-      <button class="pdp-back" id="closeStore">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
-        Back to Shop
-      </button>
-      <div class="section-head" style="text-align:left; margin-bottom: 30px;">
-        <h2 style="font-size: 3.2rem; font-weight: 400; font-family: var(--font-heading);">Our VFS Outlets</h2>
-        <p style="font-size: 1.4rem; color: var(--color-primary-60); margin-top: 6px;">Visit our stores to experience our imitation collections in person.</p>
-        <div class="line" style="margin: 10px 0 0 0; width: 50px;"></div>
-      </div>
-      <div class="store-list-grid" id="storeList"></div>
-    </div>
-  </div>
-
-  <!-- CART DRAWER -->
-  <div class="dw-bg" id="cartBG"></div>
-  <div class="dw" id="cartDW">
-    <div class="dw-head"><h3>Cart (<span id="cartCT">0</span>)</h3><button class="dw-close" id="closeCartDW"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
-    <div class="dw-body" id="cartBody"></div>
-    <div class="dw-foot" id="cartFoot" style="display:none">
-      <div id="cartMoqWarning" style="display:none; padding: 10px 14px; background: rgba(234, 67, 53, 0.1); border: 1px solid rgba(234, 67, 53, 0.3); border-radius: 8px; color: #EA4335; font-size: 13px; font-weight: 500; margin-bottom: 12px; line-height: 1.4; text-align: center;"></div>
-      <div class="dw-total"><span>Total</span><span id="cartTotal">₹0</span></div>
-      <button class="dw-checkout" id="checkoutBtn">Proceed to Checkout</button>
-    </div>
-  </div>
 
 
   <!-- TOASTS -->
@@ -816,7 +735,7 @@
 
   <!-- CDN libraries & scripts -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="wholesale.js?v=20260907_profile_fix" defer></script>
+  <script src="wholesale.js?v=20260907_audit_clean" defer></script>
   <script src="scripts/gesture-navigation.js?v=20260827_v21_historysync" defer></script>
 
   <!-- DYNAMIC ORDER TRACKING OVERLAY -->
@@ -1149,7 +1068,7 @@
           <li><a href="#trust" class="drawer-nav-link" data-target="about">ABOUT US</a></li>
           <li><a href="#products" class="drawer-nav-link" data-target="shop">SHOP</a></li>
           <li><a href="faq.html" class="drawer-nav-link">FAQ &amp; HELP</a></li>
-          <li><a href="javascript:void(0)" onclick="document.getElementById('closeMobileNav') &amp;&amp; document.getElementById('closeMobileNav').click(); openCustomerCareModal();" class="drawer-nav-link" style="color:#D4AF37; font-weight:700;">🎧 CUSTOMER CARE &amp; SUPPORT</a></li>
+          <li><a href="javascript:void(0)" onclick="var nav=document.getElementById('closeMobileNav');if(nav)nav.click();openCustomerCareModal();" class="drawer-nav-link" style="color:#D4AF37; font-weight:700;">🎧 CUSTOMER CARE &amp; SUPPORT</a></li>
           <li><a href="#store" class="drawer-nav-link" data-target="contact">CONTACT US</a></li>
           <li><a href="#" class="drawer-nav-link" data-target="shipping-policy">SHIPPING POLICY</a></li>
         </ul>
