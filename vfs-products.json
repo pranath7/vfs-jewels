@@ -10,11 +10,11 @@
     "img": "https://res.cloudinary.com/cwx4zame/image/upload/v1783178917/whbmflasdurxiag7au7t.jpg",
     "rating": "5.0",
     "reviews": 100,
-    "badge": "Demo Item",
+    "badge": "Sold Out",
     "priceOnRequest": false,
     "wholesalePrice": 1,
     "moq": 1,
-    "stock": 100,
+    "stock": 0,
     "freeShipping": true
   },
   {
