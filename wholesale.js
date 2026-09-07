@@ -65,24 +65,142 @@ async function initCloudConfig() {
         window.updateStorePauseUI();
       }
       if (config.firebase && config.firebase.apiKey && !config.firebase.apiKey.startsWith("YOUR_")) {
-        firebase.initializeApp(config.firebase);
+        if (!firebase.apps || !firebase.apps.length) {
+          firebase.initializeApp(config.firebase);
+        }
         window.db = firebase.firestore();
         window.VFS_CLOUD_ACTIVE = true;
         console.log("🔥 VFS Cloud: Connected to Firebase Firestore.");
         
-        // Sync catalog from Firestore by merging with vfs-products.json catalog
+        // Sync catalog from Firestore by merging with catalog
         const dbProducts = await window.VFS_DB.getProducts();
         if (dbProducts && dbProducts.length > 0) {
           const map = new Map();
-          PRODUCTS.forEach(p => map.set(String(p.id), p));
-          dbProducts.forEach(p => map.set(String(p.id), { ...(map.get(String(p.id)) || {}), ...p }));
+          (window.VFS_PRODUCTS_CACHE && window.VFS_PRODUCTS_CACHE.length > 0 ? window.VFS_PRODUCTS_CACHE : PRODUCTS).forEach(p => map.set(String(p.id), p));
+          dbProducts.forEach(p => {
+            const idKey = String(p.id || p.sku || '');
+            if (idKey) {
+              const existing = map.get(idKey) || {};
+              map.set(idKey, { ...existing, ...p, id: existing.id !== undefined ? existing.id : p.id });
+            }
+          });
           window.VFS_PRODUCTS_CACHE = Array.from(map.values());
-          renderProducts(null);
+          PRODUCTS.length = 0;
+          PRODUCTS.push(...window.VFS_PRODUCTS_CACHE);
+          PRODUCTS.forEach(p => {
+            const s = (p.stock !== undefined && p.stock !== null) ? Number(p.stock) : 0;
+            window.VFS_STOCK_CACHE[p.id] = s;
+            window.VFS_STOCK_CACHE[String(p.id)] = s;
+          });
+          try {
+            localStorage.setItem('vfs_custom_products', JSON.stringify(window.VFS_PRODUCTS_CACHE));
+          } catch(e) {}
+          if (typeof renderProducts === 'function') renderProducts(null);
+          if (typeof renderProductShelves === 'function') renderProductShelves();
         }
+
+        // Setup Real-time Firestore Listeners for Products and Stock
+        setupRealtimeProductsListener();
       }
     }
   } catch (e) {
     console.warn("⚠️ VFS Cloud: Falling back to localStorage mode.", e);
+  }
+}
+
+window._vfsProductsListenerActive = false;
+function setupRealtimeProductsListener() {
+  if (!window.db || window._vfsProductsListenerActive) return;
+  window._vfsProductsListenerActive = true;
+  try {
+    window.db.collection('products').onSnapshot(snapshot => {
+      if (!snapshot) return;
+      let hasChanges = false;
+      const prodMap = new Map();
+      (window.VFS_PRODUCTS_CACHE && window.VFS_PRODUCTS_CACHE.length > 0 ? window.VFS_PRODUCTS_CACHE : PRODUCTS).forEach(p => prodMap.set(String(p.id), p));
+
+      snapshot.docChanges().forEach(change => {
+        const data = change.doc.data();
+        if (!data) return;
+        const pId = String(data.id !== undefined ? data.id : change.doc.id);
+        if (change.type === 'removed') {
+          if (prodMap.has(pId)) {
+            prodMap.delete(pId);
+            hasChanges = true;
+          }
+        } else {
+          // 'added' or 'modified'
+          const existing = prodMap.get(pId) || {};
+          const numId = !isNaN(Number(pId)) ? Number(pId) : pId;
+          const merged = { ...existing, ...data, id: existing.id !== undefined ? existing.id : numId };
+          prodMap.set(pId, merged);
+          hasChanges = true;
+          if (data.stock !== undefined && data.stock !== null) {
+            const s = Number(data.stock);
+            window.VFS_STOCK_CACHE[pId] = s;
+            window.VFS_STOCK_CACHE[numId] = s;
+          }
+        }
+      });
+
+      if (hasChanges) {
+        window.VFS_PRODUCTS_CACHE = Array.from(prodMap.values());
+        PRODUCTS.length = 0;
+        PRODUCTS.push(...window.VFS_PRODUCTS_CACHE);
+        try {
+          localStorage.setItem('vfs_custom_products', JSON.stringify(window.VFS_PRODUCTS_CACHE));
+        } catch(e) {}
+
+        console.log("🔥 Real-time sync: Catalog updated from Firestore.");
+        if (typeof renderProducts === 'function') renderProducts(null);
+        if (typeof renderProductShelves === 'function') renderProductShelves();
+        if (typeof updateCounts === 'function') updateCounts();
+
+        // If PDP is open for this modified product, refresh PDP
+        if (window.currentPdpProductId) {
+          const curIdStr = String(window.currentPdpProductId);
+          const modal = document.getElementById('productModal') || document.getElementById('pdpOverlay');
+          if (modal && (modal.classList.contains('active') || modal.style.display !== 'none')) {
+            const updatedP = window.VFS_PRODUCTS_CACHE.find(p => String(p.id) === curIdStr);
+            if (updatedP && typeof openPDP === 'function') {
+              openPDP(updatedP.id);
+            }
+          }
+        }
+      }
+    }, err => {
+      console.warn("Firestore products snapshot listener note:", err);
+    });
+
+    // Real-time stock updates
+    window.db.collection('product_stock').onSnapshot(snapshot => {
+      if (!snapshot) return;
+      let stockChanged = false;
+      snapshot.docChanges().forEach(change => {
+        const data = change.doc.data();
+        if (!data) return;
+        const pId = change.doc.id;
+        const newStock = Number(data.stock);
+        if (!isNaN(newStock)) {
+          const numId = !isNaN(Number(pId)) ? Number(pId) : pId;
+          window.VFS_STOCK_CACHE[pId] = newStock;
+          window.VFS_STOCK_CACHE[numId] = newStock;
+          const p = (window.VFS_PRODUCTS_CACHE || PRODUCTS).find(x => String(x.id) === pId);
+          if (p && p.stock !== newStock) {
+            p.stock = newStock;
+            stockChanged = true;
+          }
+        }
+      });
+      if (stockChanged) {
+        if (typeof renderProducts === 'function') renderProducts(null);
+        if (typeof renderProductShelves === 'function') renderProductShelves();
+      }
+    }, err => {
+      console.warn("Firestore stock snapshot listener note:", err);
+    });
+  } catch(e) {
+    console.warn("Error attaching realtime products listener:", e);
   }
 }
 
@@ -353,12 +471,13 @@ window.VFS_DB = {
 
   // ── Catalog Products ──
   getProducts: async function() {
-    if (window.VFS_CLOUD_ACTIVE) {
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
         const snap = await window.db.collection('products').get();
         const products = [];
         snap.forEach(doc => {
-          products.push(doc.data());
+          const d = doc.data() || {};
+          products.push({ ...d, id: d.id !== undefined ? d.id : (isNaN(Number(doc.id)) ? doc.id : Number(doc.id)) });
         });
         if (products.length > 0) return products;
       } catch(e) {
@@ -367,6 +486,31 @@ window.VFS_DB = {
     }
     const local = localStorage.getItem('vfs_custom_products');
     return local ? JSON.parse(local) : null;
+  },
+
+  saveProduct: async function(product) {
+    if (!product || product.id === undefined) return;
+    const idStr = String(product.id);
+    const cleanProduct = JSON.parse(JSON.stringify(product));
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
+      try {
+        await window.db.collection('products').doc(idStr).set(cleanProduct, { merge: true });
+      } catch(e) {
+        console.error("Firestore write product error:", e);
+      }
+    }
+    try {
+      const local = localStorage.getItem('vfs_custom_products');
+      let list = local ? JSON.parse(local) : [];
+      const idx = list.findIndex(p => String(p.id) === idStr);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...cleanProduct };
+      } else {
+        list.push(cleanProduct);
+      }
+      localStorage.setItem('vfs_custom_products', JSON.stringify(list));
+      localStorage.setItem('vfs_products', JSON.stringify(list));
+    } catch(e) {}
   },
 
   // ── Product Stock ──
@@ -4673,12 +4817,6 @@ async function initApp() {
     toast('🎉 Special 1% WhatsApp Discount Activated!');
   }
 
-  // Clear any legacy client-side products caching to avoid conflicts
-  try {
-    localStorage.removeItem('vfs_products');
-    localStorage.removeItem('vfs_custom_products');
-  } catch (e) {}
-
   // 1. Load full live catalog (281 items) from vfs-products.json FIRST
   try {
     const res = await fetch(`vfs-products.json?t=${Date.now()}`);
@@ -4694,12 +4832,33 @@ async function initApp() {
     console.error("Failed to load products from live catalog:", e);
   }
 
+  // If local cache of edited products exists, merge it immediately for instantaneous display
+  try {
+    const local = localStorage.getItem('vfs_custom_products');
+    if (local) {
+      const customList = JSON.parse(local);
+      if (Array.isArray(customList) && customList.length > 0) {
+        const map = new Map();
+        PRODUCTS.forEach(p => map.set(String(p.id), p));
+        customList.forEach(p => {
+          const idKey = String(p.id || p.sku || '');
+          if (idKey && map.has(idKey)) {
+            map.set(idKey, { ...map.get(idKey), ...p });
+          } else if (idKey) {
+            map.set(idKey, p);
+          }
+        });
+        window.VFS_PRODUCTS_CACHE = Array.from(map.values());
+        PRODUCTS.length = 0;
+        PRODUCTS.push(...window.VFS_PRODUCTS_CACHE);
+      }
+    }
+  } catch(e) {}
+
   // 2. Ensure Cloud configuration (Firebase Firestore connection) merges on top
   await initCloudConfig();
 
-  // Build stock cache from vfs-products.json PRODUCTS array (authoritative stock source).
-  // NOTE: Do NOT use getFullCatalog() here — it may return Firestore products which can have
-  // missing or incorrect stock values. PRODUCTS is always from vfs-products.json.
+  // Build stock cache from merged catalog
   PRODUCTS.forEach(p => {
     const s = (p.stock !== undefined && p.stock !== null) ? Number(p.stock) : 0;
     window.VFS_STOCK_CACHE[p.id] = s;

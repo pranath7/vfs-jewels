@@ -180,12 +180,16 @@ async function refreshCloudData() {
     try {
       const dbProducts = await window.VFS_DB.getProducts();
       if (dbProducts && dbProducts.length > 0) {
-        // Merge: start with JSON products, add any Firestore-only products
-        const existingIds = new Set(window.VFS_PRODUCTS_CACHE.map(p => p.id));
-        const newFromDb = dbProducts.filter(p => !existingIds.has(p.id));
-        if (newFromDb.length > 0) {
-          window.VFS_PRODUCTS_CACHE = [...window.VFS_PRODUCTS_CACHE, ...newFromDb];
-        }
+        const prodMap = new Map();
+        window.VFS_PRODUCTS_CACHE.forEach(p => prodMap.set(String(p.id), p));
+        dbProducts.forEach(p => {
+          const idKey = String(p.id || p.sku || '');
+          if (idKey) {
+            const existing = prodMap.get(idKey) || {};
+            prodMap.set(idKey, { ...existing, ...p, id: existing.id !== undefined ? existing.id : p.id });
+          }
+        });
+        window.VFS_PRODUCTS_CACHE = Array.from(prodMap.values());
       }
     } catch (e) {
       console.warn("⚠️ VFS Admin: Firestore product sync failed", e);
@@ -205,6 +209,60 @@ async function refreshCloudData() {
   }
   if (typeof renderSearchCatalog === 'function') {
     renderSearchCatalog();
+  }
+  setupRealtimeAdminProductsListener();
+}
+
+window._vfsAdminProductsListenerActive = false;
+function setupRealtimeAdminProductsListener() {
+  if (!window.db || window._vfsAdminProductsListenerActive) return;
+  window._vfsAdminProductsListenerActive = true;
+  try {
+    window.db.collection('products').onSnapshot(snapshot => {
+      if (!snapshot) return;
+      let hasChanges = false;
+      const prodMap = new Map();
+      (window.VFS_PRODUCTS_CACHE || []).forEach(p => prodMap.set(String(p.id), p));
+
+      snapshot.docChanges().forEach(change => {
+        const data = change.doc.data();
+        if (!data) return;
+        const pId = String(data.id !== undefined ? data.id : change.doc.id);
+        if (change.type === 'removed') {
+          if (prodMap.has(pId)) {
+            prodMap.delete(pId);
+            hasChanges = true;
+          }
+        } else {
+          const existing = prodMap.get(pId) || {};
+          const numId = !isNaN(Number(pId)) ? Number(pId) : pId;
+          const merged = { ...existing, ...data, id: existing.id !== undefined ? existing.id : numId };
+          prodMap.set(pId, merged);
+          hasChanges = true;
+          if (data.stock !== undefined && data.stock !== null) {
+            const s = Number(data.stock);
+            window.VFS_STOCK_CACHE[pId] = s;
+            window.VFS_STOCK_CACHE[numId] = s;
+          }
+        }
+      });
+
+      if (hasChanges) {
+        window.VFS_PRODUCTS_CACHE = Array.from(prodMap.values());
+        try {
+          localStorage.setItem('vfs_custom_products', JSON.stringify(window.VFS_PRODUCTS_CACHE));
+        } catch(e) {}
+        // Only re-render if user is not actively editing a card
+        const activeEdit = document.querySelector('.prod-edit-mode[style*="flex"]');
+        if (!activeEdit && typeof renderSearchCatalog === 'function') {
+          renderSearchCatalog();
+        }
+      }
+    }, err => {
+      console.warn("Admin Firestore products snapshot note:", err);
+    });
+  } catch(e) {
+    console.warn("Error attaching realtime admin products listener:", e);
   }
 }
 
@@ -570,12 +628,13 @@ window.VFS_DB = {
 
   // ── Catalog Products ──
   getProducts: async function() {
-    if (window.VFS_CLOUD_ACTIVE) {
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
         const snap = await window.db.collection('products').get();
         const products = [];
         snap.forEach(doc => {
-          products.push(doc.data());
+          const d = doc.data() || {};
+          products.push({ ...d, id: d.id !== undefined ? d.id : (isNaN(Number(doc.id)) ? doc.id : Number(doc.id)) });
         });
         if (products.length > 0) return products;
       } catch(e) {
@@ -586,12 +645,49 @@ window.VFS_DB = {
     return local ? JSON.parse(local) : null;
   },
 
-  saveProductsList: async function(productsList) {
+  saveProduct: async function(product) {
+    if (!product || product.id === undefined) return;
+    const idStr = String(product.id);
+    const cleanProduct = JSON.parse(JSON.stringify(product));
     if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
-        for (const p of productsList) {
-          await window.db.collection('products').doc(p.id.toString()).set(p);
+        await window.db.collection('products').doc(idStr).set(cleanProduct, { merge: true });
+        console.log(`🔥 Firestore: Product ${idStr} saved successfully.`);
+      } catch(e) {
+        console.error("Firestore write product error:", e);
+        throw e;
+      }
+    }
+    try {
+      const local = localStorage.getItem('vfs_custom_products');
+      let list = local ? JSON.parse(local) : [];
+      const idx = list.findIndex(p => String(p.id) === idStr || String(p.sku) === idStr);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...cleanProduct };
+      } else {
+        list.push(cleanProduct);
+      }
+      localStorage.setItem('vfs_custom_products', JSON.stringify(list));
+      localStorage.setItem('vfs_products', JSON.stringify(list));
+    } catch(e) {}
+  },
+
+  saveProductsList: async function(productsList) {
+    if (!Array.isArray(productsList) || productsList.length === 0) return;
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
+      try {
+        const batchSize = 400;
+        for (let i = 0; i < productsList.length; i += batchSize) {
+          const batch = window.db.batch();
+          const chunk = productsList.slice(i, i + batchSize);
+          chunk.forEach(p => {
+            const cleanP = JSON.parse(JSON.stringify(p));
+            const ref = window.db.collection('products').doc(String(p.id));
+            batch.set(ref, cleanP, { merge: true });
+          });
+          await batch.commit();
         }
+        console.log(`🔥 Firestore: Batched saved ${productsList.length} products.`);
       } catch(e) {
         console.error("Firestore write products error:", e);
       }
@@ -607,6 +703,8 @@ window.VFS_DB = {
     if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
         await window.db.collection('products').doc(idStr).delete();
+        await window.db.collection('product_stock').doc(idStr).delete().catch(() => {});
+        console.log(`🔥 Firestore: Product ${idStr} deleted.`);
       } catch(e) {
         console.error("Firestore delete product error:", e);
       }
@@ -1045,12 +1143,16 @@ window.saveProductInline = async function(id) {
         localStorage.setItem('vfs_custom_products', JSON.stringify(products));
       } catch(e) {}
 
-      adminToast('Product updated instantly! 🌸');
+      // Cloud Save — Await both to ensure reliable persistence to Firestore
+      try {
+        await window.VFS_DB.saveProduct(products[index]);
+        await window.VFS_DB.saveProductStock(id, newStock);
+        adminToast('Product updated & synced to website! 🌸');
+      } catch(cloudErr) {
+        console.warn("Cloud save warning:", cloudErr);
+        adminToast('Updated locally (Cloud sync failed)', 'warning');
+      }
       renderSearchCatalog();
-
-      // Background Async Cloud Save (Non-blocking!)
-      window.VFS_DB.saveProductsList(products);
-      window.VFS_DB.saveProductStock(id, newStock);
     } else {
       adminToast('Product not found in catalog cache!', 'error');
     }
@@ -1093,9 +1195,8 @@ window.deleteProductFromCatalog = async function(id) {
   adminToast('Product deleted instantly! 🗑️');
   renderSearchCatalog();
 
-  // 3. Background Async Cloud Deletion (Non-blocking!)
-  window.VFS_DB.deleteProduct(id);
-  window.VFS_DB.saveProductsList(filtered);
+  // 3. Cloud Deletion
+  await window.VFS_DB.deleteProduct(id);
 };
 
 
