@@ -2067,11 +2067,11 @@ function renderCart() {
   } else {
     if (cartNotice) cartNotice.style.display = 'none';
     if (shoppingMode === 'wholesale') {
-      const minOrder = 4000;
+      const minOrder = 1000;
       if (grandTotal < minOrder) {
         const remaining = minOrder - grandTotal;
         if (moqWarning) {
-          moqWarning.textContent = `Wholesale MOQ is ₹4,000. Add ${fmt(remaining)} more to proceed.`;
+          moqWarning.textContent = `Wholesale MOQ is ₹1,000. Add ${fmt(remaining)} more to proceed.`;
           moqWarning.style.display = 'block';
         }
         checkoutBtn.style.opacity = '0.5';
@@ -2591,9 +2591,9 @@ function openCheckout() {
   // Demo product bypass: skip MOV for testing (id: 1)
   const isDemoOnly = cart.length === 1 && cart[0].id === 1;
 
-  // MOV ₹3,000 applies to wholesale orders only
-  if (!isDemoOnly && shoppingMode === 'wholesale' && cartSubtotal < 3000) {
-    toast(`Wholesale minimum order is ₹3,000. Add ${fmt(3000 - cartSubtotal)} more to proceed.`);
+  // MOV ₹1,000 applies to wholesale orders only
+  if (!isDemoOnly && shoppingMode === 'wholesale' && cartSubtotal < 1000) {
+    toast(`Wholesale minimum order is ₹1,000. Add ${fmt(1000 - cartSubtotal)} more to proceed.`);
     return;
   }
 

@@ -1165,7 +1165,7 @@
         <div class="mode-selection-card" id="selectWholesaleCard" style="flex:1;border:2px solid #ccc;border-radius:8px;padding:20px;cursor:pointer;transition:all 0.3s ease;text-align:center;">
           <div style="font-size:3rem;margin-bottom:10px;">💼</div>
           <h4 style="font-size:1.6rem;font-weight:700;margin-bottom:8px;color:#121212;">Wholesale Buyer</h4>
-          <p style="font-size:1.2rem;color:#666;line-height:1.4;">For resellers/businesses.<br>Wholesale pricing.<br>Login & Advance required.</p>
+          <p style="font-size:1.2rem;color:#666;line-height:1.4;">For resellers/businesses.<br>Wholesale pricing • MOQ ₹1,000.<br>Login &amp; Advance required.</p>
           <button class="btn-primary" style="margin-top:15px;width:100%;font-size:1.2rem;padding:8px;background:#D4AF37;color:#121212;border:none;">Shop Wholesale</button>
         </div>
       </div>
@@ -1194,10 +1194,13 @@
         </ul>
         This advance amount is automatically credited to your wallet balance and adjusted/deducted from your final checkout invoice.<br><br>
         
-        <strong>3. Damaged or Missing Claims Policy</strong><br>
+        <strong>3. Minimum Order Quantity (MOQ)</strong><br>
+        Wholesale orders require a minimum order value of just <strong>₹1,000 only</strong>. You can freely mix and match any items and designs.<br><br>
+
+        <strong>4. Damaged or Missing Claims Policy</strong><br>
         An uninterrupted **unboxing video** starting from showing the sealed package address label to opening and inspecting every item is strictly required for damaged or missing product claims. Claims without a complete unboxing video will not be approved.<br><br>
         
-        <strong>4. Returns &amp; Exchange</strong><br>
+        <strong>5. Returns &amp; Exchange</strong><br>
         We do not offer returns/exchanges unless the product is defective or damaged in transit, verified via unboxing video.
       </div>
       
@@ -1441,7 +1444,7 @@
 
   <!-- CDN libraries loaded last so they don't block page render -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="app.js?v=20260827_v21_historysync" defer></script>
+  <script src="app.js?v=20260907_moq1000" defer></script>
   <script src="scripts/gesture-navigation.js?v=20260827_v21_historysync" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
@@ -1461,7 +1464,7 @@
         <button id="chooseWholesaleBtn" class="mode-choice-btn" style="padding:24px 16px; border-radius:12px; border:2px solid var(--color-secondary); background:var(--bg-secondary); cursor:pointer; text-align:center; transition:all 0.2s ease;">
           <div style="font-size:2.8rem; margin-bottom:8px;">📦</div>
           <strong style="display:block; font-size:1.5rem; color:var(--text-primary); margin-bottom:4px;">Wholesale Portal</strong>
-          <span style="font-size:1.1rem; color:var(--text-muted); line-height:1.4; display:block;">Reseller Wholesale Rates • B2B Direct</span>
+          <span style="font-size:1.1rem; color:var(--text-muted); line-height:1.4; display:block;">Reseller Rates • MOQ ₹1,000 Only • B2B Direct</span>
         </button>
         <button id="chooseRetailBtn" class="mode-choice-btn" style="padding:24px 16px; border-radius:12px; border:2px solid var(--border-color); background:var(--bg-secondary); cursor:pointer; text-align:center; transition:all 0.2s ease;">
           <div style="font-size:2.8rem; margin-bottom:8px;">🛍️</div>
