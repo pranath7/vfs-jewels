@@ -3479,7 +3479,55 @@ async function loadCustomers() {
   custBody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:#aaa;">Loading...</td></tr>';
 
   try {
-    // Get all customers from Firestore wholesale_users collection
+    // 1. Fetch wallet credits map (handles object or array)
+    const walletMap = {};
+    if (window.VFS_DB && window.VFS_DB.getWalletCredits) {
+      try {
+        const credits = await window.VFS_DB.getWalletCredits();
+        if (credits) {
+          if (Array.isArray(credits)) {
+            credits.forEach(cr => {
+              const pKey = (cr.id || cr.phone || '').replace(/\D/g, '').slice(-10);
+              if (pKey) walletMap[pKey] = Number(cr.balance || 0);
+            });
+          } else if (typeof credits === 'object') {
+            Object.keys(credits).forEach(k => {
+              const pKey = k.replace(/\D/g, '').slice(-10);
+              const val = credits[k];
+              const bal = (typeof val === 'object' && val !== null) ? (val.balance ?? 0) : val;
+              if (pKey) walletMap[pKey] = Number(bal || 0);
+            });
+          }
+        }
+      } catch (wErr) {
+        console.warn("Wallet credits fetch warning:", wErr);
+      }
+    }
+
+    // 2. Fetch orders for spend & phone matching
+    const orders = await window.VFS_DB.getOrders();
+
+    // 3. Helper: comprehensive check if customer has paid/unlocked wholesale access
+    const isCustomerPaid = (c, cleanP) => {
+      if (!c) return false;
+      if (c.unlocked === true || c.unlocked === 'true') return true;
+      const status = String(c.paymentStatus || '').trim().toLowerCase();
+      if (['paid', 'accepted', 'captured', 'success', 'completed', 'unlocked', 'authorized'].includes(status)) return true;
+      if (c.advancePaid && Number(c.advancePaid) > 0) return true;
+      if (c.razorpayPaymentId || c.razorpay_payment_id) return true;
+      if (c.walletBalance && Number(c.walletBalance) > 0) return true;
+      if (cleanP && walletMap[cleanP] && Number(walletMap[cleanP]) > 0) return true;
+      if (cleanP && Array.isArray(orders)) {
+        const hasPaidOrder = orders.some(o => {
+          const op = (o.phone || '').replace(/\D/g, '').slice(-10);
+          return op === cleanP && ['paid', 'dispatched', 'delivered', 'completed', 'preparing', 'ready'].includes(o.status);
+        });
+        if (hasPaidOrder) return true;
+      }
+      return false;
+    };
+
+    // 4. Get all customers from Firestore wholesale_users collection
     let rawCustomers = await window.VFS_DB.getCustomers();
 
     // Smart deduplication & status merging by clean 10-digit phone number
@@ -3494,16 +3542,16 @@ async function loadCustomers() {
           } else {
             // Merge properties — paid status overrides pending status!
             const existing = phoneMap[cleanP];
-            const isPaid = (c.paymentStatus === 'paid' || c.unlocked === true || c.advancePaid > 0) || (existing.paymentStatus === 'paid' || existing.unlocked === true || existing.advancePaid > 0);
+            const isPaid = isCustomerPaid(c, cleanP) || isCustomerPaid(existing, cleanP);
             phoneMap[cleanP] = {
               ...existing,
               ...c,
               phone: cleanP,
-              name: (c.name && c.name !== 'Wholesale Member') ? c.name : existing.name,
-              businessName: c.businessName || existing.businessName,
-              paymentStatus: isPaid ? 'paid' : 'pending',
+              name: (c.name && c.name !== 'Wholesale Member') ? c.name : (existing.name || c.name),
+              businessName: c.businessName || existing.businessName || c.shopName || existing.shopName,
+              paymentStatus: isPaid ? 'paid' : (existing.paymentStatus || c.paymentStatus || 'pending'),
               unlocked: isPaid,
-              advancePaid: isPaid ? Math.max(c.advancePaid || 0, existing.advancePaid || 0, 1) : 0
+              advancePaid: isPaid ? Math.max(Number(c.advancePaid) || 0, Number(existing.advancePaid) || 0, Number(c.walletBalance) || 0, Number(existing.walletBalance) || 0, Number(walletMap[cleanP]) || 0, 1000) : 0
             };
           }
         } else {
@@ -3519,9 +3567,6 @@ async function loadCustomers() {
       customers = local ? Object.values(JSON.parse(local)) : [];
     }
 
-    // Get orders for spend calculation
-    const orders = await window.VFS_DB.getOrders();
-
     if (countEl) countEl.textContent = customers.length;
  
     const searchVal = ($('#custSearchInput')?.value || '').toLowerCase();
@@ -3532,22 +3577,6 @@ async function loadCustomers() {
     if (filtered.length === 0) {
       custBody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;color:#aaa;">No customers found</td></tr>';
       return;
-    }
-
-    // Get wallet credits for active balance display
-    const walletMap = {};
-    if (window.VFS_DB && window.VFS_DB.getWalletCredits) {
-      try {
-        const credits = await window.VFS_DB.getWalletCredits();
-        if (credits && Array.isArray(credits)) {
-          credits.forEach(cr => {
-            const pKey = (cr.id || cr.phone || '').replace(/\D/g, '').slice(-10);
-            if (pKey) walletMap[pKey] = cr.balance || 0;
-          });
-        }
-      } catch (wErr) {
-        console.warn("Wallet credits fetch warning:", wErr);
-      }
     }
 
     custBody.innerHTML = filtered.map((c, i) => {
@@ -3584,12 +3613,29 @@ async function loadCustomers() {
       }
       
       const cleanPhoneKey = (phoneDisplay || '').replace(/\D/g, '').slice(-10);
-      const walletBal = (c.walletBalance !== undefined) ? c.walletBalance : (walletMap[cleanPhoneKey] || 0);
+      const walletBal = (c.walletBalance !== undefined && Number(c.walletBalance) > 0) ? Number(c.walletBalance) : (Number(walletMap[cleanPhoneKey]) || 0);
+
+      // Comprehensive isPaid evaluation
+      const isPaid = isCustomerPaid(c, cleanPhoneKey);
+
+      // Auto-heal Firestore if paid/has wallet credits but doc still has unlocked: false
+      if (isPaid && cleanPhoneKey && (!c.unlocked || c.paymentStatus !== 'paid')) {
+        if (window.db && window.VFS_CLOUD_ACTIVE) {
+          const healPayload = { unlocked: true, paymentStatus: 'paid' };
+          window.db.collection('wholesale_users').doc(cleanPhoneKey).set(healPayload, { merge: true }).catch(() => {});
+          window.db.collection('wholesale_users').doc('phone_' + cleanPhoneKey).set(healPayload, { merge: true }).catch(() => {});
+          window.db.collection('wholesale_users').doc('91' + cleanPhoneKey).set(healPayload, { merge: true }).catch(() => {});
+        }
+      }
 
       const completedOrders = custOrders.filter(o => ['paid','dispatched','delivered','completed'].includes(o.status));
       const orderSpend = completedOrders.reduce((s, o) => s + (o.total || 0) + (o.advanceAdjusted || 0), 0);
-      const advancePaid = c.advancePaid || (c.unlocked || c.paymentStatus === 'paid' ? 1 : 0);
-      const totalSpend = advancePaid + orderSpend;
+      
+      // Advance fee spent: either explicit advancePaid, or wallet balance, or ₹1000 standard fee if paid
+      const advanceSpent = (c.advancePaid && Number(c.advancePaid) > 0)
+        ? Number(c.advancePaid)
+        : (isPaid ? Math.max(walletBal, 1000) : (walletBal > 0 ? walletBal : 0));
+      const totalSpend = advanceSpent + orderSpend;
 
       const joined = c.registeredAt ? new Date(c.registeredAt).toLocaleDateString('en-IN') : '-';
       const emailDisplay = c.email || c.userEmail || '-';
@@ -3597,13 +3643,20 @@ async function loadCustomers() {
       
       // Wholesale Portal Access Status
       let statusHtml = '';
-      if (c.unlocked || c.paymentStatus === 'paid') {
+      if (isPaid) {
         statusHtml = `<span style="color:#27AE60; font-weight:700; font-size:1.15rem;">● Unlocked (Paid)</span>`;
       } else {
         statusHtml = `<span style="color:#e67e22; font-weight:600; font-size:1.1rem;">Pending Payment</span>`;
       }
 
-      const waActionHtml = `<button class="btn-card-secondary" onclick="openWaDirectChat('${escapeHtml(phoneDisplay)}', '${escapeHtml(c.name || 'Reseller')}')" style="font-size:1.05rem; padding:6px 12px; border-radius:4px; font-weight:700; cursor:pointer; background:#25d366; color:#fff; border:none;">💬 Chat WhatsApp</button>`;
+      // Action buttons: Grant/Revoke access toggle + WhatsApp chat
+      const toggleAccessBtn = isPaid
+        ? `<button class="btn-card-secondary" onclick="toggleCustomerWholesaleAccess('${escapeHtml(cleanPhoneKey)}', false)" style="font-size:1rem; padding:6px 10px; border-radius:4px; font-weight:700; cursor:pointer; background:#4a5568; color:#fff; border:none;" title="Revoke wholesale access">🔒 Revoke</button>`
+        : `<button class="btn-card-secondary" onclick="toggleCustomerWholesaleAccess('${escapeHtml(cleanPhoneKey)}', true)" style="font-size:1rem; padding:6px 10px; border-radius:4px; font-weight:700; cursor:pointer; background:#27AE60; color:#fff; border:none;" title="Grant wholesale access">✅ Grant Access</button>`;
+
+      const waActionHtml = `<button class="btn-card-secondary" onclick="openWaDirectChat('${escapeHtml(phoneDisplay)}', '${escapeHtml(c.name || 'Reseller')}')" style="font-size:1rem; padding:6px 10px; border-radius:4px; font-weight:700; cursor:pointer; background:#25d366; color:#fff; border:none;">💬 Chat WhatsApp</button>`;
+
+      const actionsHtml = `<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">${toggleAccessBtn}${waActionHtml}</div>`;
 
       return `<tr>
         <td>${i + 1}</td>
@@ -3615,7 +3668,7 @@ async function loadCustomers() {
         <td><strong style="color:#D4AF37; font-size:1.2rem;">${fmt(walletBal)}</strong></td>
         <td>${joined}</td>
         <td>${statusHtml}</td>
-        <td>${waActionHtml}</td>
+        <td>${actionsHtml}</td>
       </tr>`;
     }).join('');
  
@@ -3631,35 +3684,74 @@ async function loadCustomers() {
 }
 window.loadCustomers = loadCustomers;
 
-// Accept Payment and Unlock Wholesale access
-window.approveWholesaleUser = async function(uid) {
-  if (!uid) return;
-  if (!confirm("Are you sure you want to accept this payment and unlock wholesale portal access for this customer?")) return;
-  
+// Grant or Revoke Wholesale portal access with 1-click & cloud sync
+window.toggleCustomerWholesaleAccess = async function(phone, grant) {
+  if (!phone || phone === '-') {
+    adminToast("Invalid customer phone number!", "error");
+    return;
+  }
+  const cleanP = String(phone).replace(/\D/g, '').slice(-10);
+  if (!cleanP || cleanP.length !== 10) {
+    adminToast("Invalid 10-digit mobile number: " + phone, "error");
+    return;
+  }
+
+  const actionText = grant ? "GRANT wholesale portal access" : "REVOKE wholesale portal access";
+  if (!confirm(`Are you sure you want to ${actionText} for customer mobile ${cleanP}?`)) return;
+
   try {
-    if (window.VFS_CLOUD_ACTIVE) {
-      await window.db.collection('wholesale_users').doc(uid).update({
-        unlocked: true,
-        paymentStatus: 'accepted'
+    const payload = {
+      unlocked: grant,
+      paymentStatus: grant ? 'paid' : 'pending',
+      updatedAt: Date.now()
+    };
+    if (grant) {
+      payload.advancePaid = 1000;
+    }
+
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
+      const p1 = window.db.collection('wholesale_users').doc(cleanP).set(payload, { merge: true });
+      const p2 = window.db.collection('wholesale_users').doc('phone_' + cleanP).set(payload, { merge: true });
+      const p3 = window.db.collection('wholesale_users').doc('91' + cleanP).set(payload, { merge: true });
+      await Promise.all([p1, p2, p3]);
+    }
+
+    // Also update localStorage cache
+    try {
+      const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
+      [cleanP, 'phone_' + cleanP, '91' + cleanP].forEach(k => {
+        if (mockUsers[k]) {
+          mockUsers[k] = { ...mockUsers[k], ...payload };
+        } else if (grant) {
+          mockUsers[k] = { phone: cleanP, ...payload };
+        }
       });
+      localStorage.setItem('vfs_wholesale_users', JSON.stringify(mockUsers));
+    } catch(lsErr) {
+      console.warn("Local storage update error:", lsErr);
     }
+
+    adminToast(grant ? "Wholesale access GRANTED! Customer is now Unlocked. 🎉" : "Wholesale access REVOKED.", grant ? "success" : "info");
     
-    // Update local storage fallback
-    const local = localStorage.getItem('vfs_wholesale_users');
-    if (local) {
-      const mockUsers = JSON.parse(local);
-      if (mockUsers[uid]) {
-        mockUsers[uid].unlocked = true;
-        mockUsers[uid].paymentStatus = 'accepted';
-        localStorage.setItem('vfs_wholesale_users', JSON.stringify(mockUsers));
-      }
+    // If granted, optionally offer to send WhatsApp welcome message
+    if (grant) {
+      setTimeout(() => {
+        if (confirm(`Would you like to send a Wholesale Welcome WhatsApp message to ${cleanP}?`)) {
+          window.sendWelcomeWhatsApp('Valued Partner', cleanP);
+        }
+      }, 500);
     }
-    
-    adminToast("Wholesale customer unlocked successfully! 🎉", "success");
+
     loadCustomers();
   } catch (err) {
-    alert("Approval failed: " + err.message);
+    console.error("Toggle wholesale access error:", err);
+    alert("Action failed: " + err.message);
   }
+};
+
+// Backwards compatibility alias
+window.approveWholesaleUser = async function(uid) {
+  return window.toggleCustomerWholesaleAccess(uid, true);
 };
 
 window.sendWelcomeWhatsApp = function(name, phone) {
