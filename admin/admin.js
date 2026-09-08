@@ -3507,23 +3507,16 @@ async function loadCustomers() {
     // 2. Fetch orders for spend & phone matching
     const orders = await window.VFS_DB.getOrders();
 
-    // 3. Helper: comprehensive check if customer has paid/unlocked wholesale access
+    // 3. Helper: check if customer has PAID for wholesale access
+    // Per policy: Wholesale access is NOT judged on wallet balance.
+    // It is recognized strictly by PAYMENT DONE (unlocked: true, paymentStatus === 'paid', razorpayPaymentId, or advancePaid > 0).
     const isCustomerPaid = (c, cleanP) => {
       if (!c) return false;
       if (c.unlocked === true || c.unlocked === 'true') return true;
       const status = String(c.paymentStatus || '').trim().toLowerCase();
-      if (['paid', 'accepted', 'captured', 'success', 'completed', 'unlocked', 'authorized'].includes(status)) return true;
+      if (['paid', 'accepted', 'captured', 'success', 'completed'].includes(status)) return true;
       if (c.advancePaid && Number(c.advancePaid) > 0) return true;
       if (c.razorpayPaymentId || c.razorpay_payment_id) return true;
-      if (c.walletBalance && Number(c.walletBalance) > 0) return true;
-      if (cleanP && walletMap[cleanP] && Number(walletMap[cleanP]) > 0) return true;
-      if (cleanP && Array.isArray(orders)) {
-        const hasPaidOrder = orders.some(o => {
-          const op = (o.phone || '').replace(/\D/g, '').slice(-10);
-          return op === cleanP && ['paid', 'dispatched', 'delivered', 'completed', 'preparing', 'ready'].includes(o.status);
-        });
-        if (hasPaidOrder) return true;
-      }
       return false;
     };
 
@@ -3549,9 +3542,10 @@ async function loadCustomers() {
               phone: cleanP,
               name: (c.name && c.name !== 'Wholesale Member') ? c.name : (existing.name || c.name),
               businessName: c.businessName || existing.businessName || c.shopName || existing.shopName,
-              paymentStatus: isPaid ? 'paid' : (existing.paymentStatus || c.paymentStatus || 'pending'),
+              paymentStatus: isPaid ? 'paid' : (existing.paymentStatus === 'paid' || c.paymentStatus === 'paid' ? 'paid' : 'pending'),
               unlocked: isPaid,
-              advancePaid: isPaid ? Math.max(Number(c.advancePaid) || 0, Number(existing.advancePaid) || 0, Number(c.walletBalance) || 0, Number(existing.walletBalance) || 0, Number(walletMap[cleanP]) || 0, 1000) : 0
+              advancePaid: isPaid ? Math.max(Number(c.advancePaid) || 0, Number(existing.advancePaid) || 0, 1000) : 0,
+              razorpayPaymentId: c.razorpayPaymentId || existing.razorpayPaymentId || c.razorpay_payment_id || existing.razorpay_payment_id || ''
             };
           }
         } else {
@@ -3615,10 +3609,10 @@ async function loadCustomers() {
       const cleanPhoneKey = (phoneDisplay || '').replace(/\D/g, '').slice(-10);
       const walletBal = (c.walletBalance !== undefined && Number(c.walletBalance) > 0) ? Number(c.walletBalance) : (Number(walletMap[cleanPhoneKey]) || 0);
 
-      // Comprehensive isPaid evaluation
+      // Wholesale access strictly recognized by payment done
       const isPaid = isCustomerPaid(c, cleanPhoneKey);
 
-      // Auto-heal Firestore if paid/has wallet credits but doc still has unlocked: false
+      // Auto-heal Firestore if payment was done but doc still has unlocked: false
       if (isPaid && cleanPhoneKey && (!c.unlocked || c.paymentStatus !== 'paid')) {
         if (window.db && window.VFS_CLOUD_ACTIVE) {
           const healPayload = { unlocked: true, paymentStatus: 'paid' };
@@ -3631,10 +3625,10 @@ async function loadCustomers() {
       const completedOrders = custOrders.filter(o => ['paid','dispatched','delivered','completed'].includes(o.status));
       const orderSpend = completedOrders.reduce((s, o) => s + (o.total || 0) + (o.advanceAdjusted || 0), 0);
       
-      // Advance fee spent: either explicit advancePaid, or wallet balance, or ₹1000 standard fee if paid
+      // Advance fee spent is only counted if wholesale payment was done
       const advanceSpent = (c.advancePaid && Number(c.advancePaid) > 0)
         ? Number(c.advancePaid)
-        : (isPaid ? Math.max(walletBal, 1000) : (walletBal > 0 ? walletBal : 0));
+        : (isPaid ? 1000 : 0);
       const totalSpend = advanceSpent + orderSpend;
 
       const joined = c.registeredAt ? new Date(c.registeredAt).toLocaleDateString('en-IN') : '-';

@@ -5917,19 +5917,45 @@ function setupShoppingMode() {
                 wholesaleUser.walletBalance = newWalletBal;
 
                 if (window.VFS_CLOUD_ACTIVE && window.db) {
-                  await window.db.collection('wholesale_users').doc(wholesaleUser.uid).update({
+                  const paidPayload = {
                     paymentStatus: 'paid',
                     unlocked: true,
-                    advancePaid: wholesaleUser.advancePaid,
+                    advancePaid: wholesaleUser.advancePaid || paidUnlockFee,
                     walletBalance: newWalletBal,
-                    razorpayPaymentId: response.razorpay_payment_id,
-                    unlockedAt: Date.now()
-                  });
+                    razorpayPaymentId: response.razorpay_payment_id || '',
+                    razorpayOrderId: response.razorpay_order_id || '',
+                    paidAt: Date.now(),
+                    unlockedAt: Date.now(),
+                    phone: cleanPhone || wholesaleUser.phone
+                  };
+                  const docKeys = new Set();
+                  if (wholesaleUser.uid) docKeys.add(wholesaleUser.uid);
+                  if (cleanPhone && cleanPhone.length === 10) {
+                    docKeys.add(cleanPhone);
+                    docKeys.add('phone_' + cleanPhone);
+                    docKeys.add('91' + cleanPhone);
+                    docKeys.add('phone-' + cleanPhone);
+                  }
+                  await Promise.all(Array.from(docKeys).map(k => 
+                    window.db.collection('wholesale_users').doc(k).set(paidPayload, { merge: true }).catch(err => console.warn("Firestore wholesale payment sync note:", k, err))
+                  ));
                 }
 
                 const mockUsers = JSON.parse(localStorage.getItem('vfs_wholesale_users') || '{}');
                 mockUsers[wholesaleUser.uid] = wholesaleUser;
+                if (cleanPhone && cleanPhone.length === 10) {
+                  mockUsers[cleanPhone] = wholesaleUser;
+                  mockUsers['phone_' + cleanPhone] = wholesaleUser;
+                  mockUsers['91' + cleanPhone] = wholesaleUser;
+                  mockUsers['phone-' + cleanPhone] = wholesaleUser;
+                }
                 localStorage.setItem('vfs_wholesale_users', JSON.stringify(mockUsers));
+                localStorage.setItem('vfs_wholesale_unlocked', 'true');
+                localStorage.setItem('vfs_wholesale_paid', 'true');
+                localStorage.setItem('vfs_wholesale_unlocked_date', new Date().toISOString());
+                localStorage.setItem('vfs_customer_phone', cleanPhone || wholesaleUser.phone);
+                localStorage.setItem('vfs_user_mode', 'wholesale');
+                localStorage.setItem('vfs_shopping_mode', 'wholesale');
                 saveState();
 
                 // ── SEND AUTOMATED WHATSAPP WELCOME MESSAGE ──
