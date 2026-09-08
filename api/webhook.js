@@ -1,7 +1,17 @@
 const https = require('https');
+const { sendTelegramMessage } = require('./lib/telegram');
 
+const REGISTERED_PHONE_ID = '1306137785911069';
 const WHATSAPP_TOKEN = process.env.WHATSAPP_API_TOKEN || process.env.WHATSAPP_TOKEN || '';
-const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_ID || process.env.PHONE_NUMBER_ID || '1306137785911069';
+
+// Guard against old test sandbox ID (641979435655452) in Vercel env
+let resolvedPhoneId = REGISTERED_PHONE_ID;
+if (process.env.WHATSAPP_PHONE_ID && process.env.WHATSAPP_PHONE_ID !== '641979435655452') {
+  resolvedPhoneId = process.env.WHATSAPP_PHONE_ID;
+} else if (process.env.PHONE_NUMBER_ID && process.env.PHONE_NUMBER_ID !== '641979435655452') {
+  resolvedPhoneId = process.env.PHONE_NUMBER_ID;
+}
+const PHONE_NUMBER_ID = resolvedPhoneId;
 
 function fetchOrderFromFirestore(orderId) {
   const cleanId = String(orderId).replace('#', '').trim();
@@ -50,9 +60,9 @@ function fetchOrderFromFirestore(orderId) {
 }
 
 function sendWhatsAppReply(toPhone, messageBody) {
-  if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
-    console.warn('⚠️ sendWhatsAppReply aborted: Missing WHATSAPP_TOKEN or PHONE_NUMBER_ID');
-    return Promise.resolve(false);
+  if (!WHATSAPP_TOKEN) {
+    console.warn('⚠️ sendWhatsAppReply aborted: Missing WHATSAPP_TOKEN');
+    return Promise.resolve({ ok: false, error: 'Missing WHATSAPP_TOKEN environment variable' });
   }
   const data = JSON.stringify({
     messaging_product: "whatsapp",
@@ -77,17 +87,22 @@ function sendWhatsAppReply(toPhone, messageBody) {
       let body = '';
       res.on('data', chunk => body += chunk);
       res.on('end', () => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(true);
-        } else {
-          console.warn(`⚠️ Meta API responded with status ${res.statusCode}:`, body);
-          resolve(false);
+        try {
+          const parsed = JSON.parse(body);
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            resolve({ ok: true, data: parsed });
+          } else {
+            console.warn(`⚠️ Meta API responded with status ${res.statusCode}:`, body);
+            resolve({ ok: false, status: res.statusCode, error: body, parsed });
+          }
+        } catch(e) {
+          resolve({ ok: false, status: res.statusCode, error: body });
         }
       });
     });
     req.on('error', (err) => {
       console.error('❌ Network error sending WhatsApp reply:', err);
-      resolve(false);
+      resolve({ ok: false, error: err.message });
     });
     req.write(data);
     req.end();
@@ -142,6 +157,9 @@ module.exports = async (req, res) => {
 
     if (mode === 'subscribe' && token === VERIFY_TOKEN) {
       console.log('✅ Webhook successfully verified by Meta!');
+      try {
+        await sendTelegramMessage('🟢 <b>Meta Webhook Verified:</b> Callback challenge accepted successfully!');
+      } catch(e) {}
       res.setHeader('Content-Type', 'text/plain');
       return res.status(200).send(challenge);
     } else {
@@ -150,12 +168,12 @@ module.exports = async (req, res) => {
   }
 
   // 2. Incoming WhatsApp Events (POST Request from Meta)
-  // Initiated by Customer -> Triggers Free 24-Hour WhatsApp Customer Care Session!
   if (req.method === 'POST') {
     try {
       const payload = req.body;
-      if (payload.object === 'whatsapp_business_account' && payload.entry) {
+      if (payload && payload.object === 'whatsapp_business_account' && payload.entry) {
         for (const entry of payload.entry) {
+          if (!entry.changes) continue;
           for (const change of entry.changes) {
             if (change.value && change.value.messages) {
               for (const msg of change.value.messages) {
@@ -165,11 +183,18 @@ module.exports = async (req, res) => {
 
                 // Extract Order ID from message
                 const extractedId = extractOrderId(textBody);
-                if (extractedId) {
-                  const cleanOrderId = extractedId.replace('#', '').trim();
-                  console.log(`🔍 Extracted Order ID: "${cleanOrderId}". Fetching from Firestore...`);
+                const cleanOrderId = extractedId ? extractedId.replace('#', '').trim() : null;
 
-                  // Attempt lookup with cleanId first, fallback to #cleanId if needed
+                // Send instant Telegram log to owner
+                await sendTelegramMessage(
+                  `📩 <b>Incoming WhatsApp Customer Message:</b>\n` +
+                  `👤 <b>From:</b> +${senderPhone}\n` +
+                  `💬 <b>Text:</b> "${textBody}"\n` +
+                  `🔍 <b>Extracted Order ID:</b> ${cleanOrderId ? '#' + cleanOrderId : 'None detected'}`
+                ).catch(() => {});
+
+                if (cleanOrderId) {
+                  // Lookup order in Firestore
                   let order = await fetchOrderFromFirestore(cleanOrderId);
                   if (!order) {
                     order = await fetchOrderFromFirestore('#' + cleanOrderId);
@@ -186,6 +211,9 @@ module.exports = async (req, res) => {
                     } else {
                       itemsTxt = `1. *Fashion Jewellery Order*\n   • Qty: 1 | Price: ₹${order.total || 0}\n`;
                     }
+
+                    const invoiceUrl = `https://www.vfsjewels.store/api/invoice?id=${encodeURIComponent(displayOrderId)}`;
+                    const photoSlipUrl = `https://www.vfsjewels.store/api/photo-slip?id=${encodeURIComponent(displayOrderId)}`;
 
                     const reply = 
 `📄 *VFS JEWELS — TAX INVOICE & PACKING PHOTO SLIP*
@@ -204,19 +232,41 @@ ${itemsTxt}━━━━━━━━━━━━━━━━━━━━━━━
 
 🔗 *DOWNLOAD OFFICIAL PDFS (Click to Open):*
 📄 *Tax Invoice PDF:*
-https://www.vfsjewels.store/api/invoice?id=${encodeURIComponent(displayOrderId)}
+${invoiceUrl}
 
 📸 *Packing Photo Slip PDF:*
-https://www.vfsjewels.store/api/photo-slip?id=${encodeURIComponent(displayOrderId)}
+${photoSlipUrl}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 Thank you for shopping with VFS Jewels! 💎✨
 Need help? Reply here anytime.`;
 
-                    const replyStatus = await sendWhatsAppReply(senderPhone, reply);
-                    console.log(`📤 WhatsApp Free Session Reply to +${senderPhone} for #${displayOrderId}: ${replyStatus ? 'SUCCESS' : 'FAILED'}`);
+                    const replyResult = await sendWhatsAppReply(senderPhone, reply);
+                    console.log(`📤 WhatsApp Free Session Reply to +${senderPhone} for #${displayOrderId}:`, replyResult);
+
+                    if (replyResult.ok) {
+                      await sendTelegramMessage(
+                        `✅ <b>WhatsApp Automated Reply Sent!</b>\n` +
+                        `📦 <b>Order:</b> #${displayOrderId}\n` +
+                        `👤 <b>To:</b> +${senderPhone}\n` +
+                        `📄 <a href="${invoiceUrl}">View Tax Invoice</a>\n` +
+                        `📸 <a href="${photoSlipUrl}">View Photo Slip</a>`
+                      ).catch(() => {});
+                    } else {
+                      await sendTelegramMessage(
+                        `⚠️ <b>WhatsApp Automated Reply Failed:</b>\n` +
+                        `📦 <b>Order:</b> #${displayOrderId}\n` +
+                        `👤 <b>To:</b> +${senderPhone}\n` +
+                        `❌ <b>Error:</b> <code>${String(replyResult.error || replyResult.status).slice(0, 300)}</code>\n` +
+                        `<i>(Check if Meta App is published or if Token is expired)</i>`
+                      ).catch(() => {});
+                    }
                   } else {
                     console.warn(`⚠️ Order not found in Firestore for ID: "${cleanOrderId}"`);
+                    await sendTelegramMessage(
+                      `⚠️ <b>Order Not Found in Database:</b> #${cleanOrderId}\n` +
+                      `Customer +${senderPhone} asked for invoice, but order #${cleanOrderId} was not found.`
+                    ).catch(() => {});
                   }
                 }
               }
