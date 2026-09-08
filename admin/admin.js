@@ -3476,7 +3476,7 @@ async function loadCustomers() {
     }
   }
 
-  custBody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:#aaa;">Loading...</td></tr>';
+  custBody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#aaa;">Loading...</td></tr>';
 
   try {
     // 1. Fetch wallet credits map (handles object or array)
@@ -3545,6 +3545,8 @@ async function loadCustomers() {
               paymentStatus: isPaid ? 'paid' : (existing.paymentStatus === 'paid' || c.paymentStatus === 'paid' ? 'paid' : 'pending'),
               unlocked: isPaid,
               advancePaid: isPaid ? Math.max(Number(c.advancePaid) || 0, Number(existing.advancePaid) || 0, 1000) : 0,
+              walletBalance: Math.max(Number(c.walletBalance) || 0, Number(existing.walletBalance) || 0),
+              registeredAt: existing.registeredAt || c.registeredAt || existing.createTime || c.createTime,
               razorpayPaymentId: c.razorpayPaymentId || existing.razorpayPaymentId || c.razorpay_payment_id || existing.razorpay_payment_id || ''
             };
           }
@@ -3569,7 +3571,7 @@ async function loadCustomers() {
     );
  
     if (filtered.length === 0) {
-      custBody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;color:#aaa;">No customers found</td></tr>';
+      custBody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:#aaa;">No customers found</td></tr>';
       return;
     }
 
@@ -3607,7 +3609,6 @@ async function loadCustomers() {
       }
       
       const cleanPhoneKey = (phoneDisplay || '').replace(/\D/g, '').slice(-10);
-      const walletBal = (c.walletBalance !== undefined && Number(c.walletBalance) > 0) ? Number(c.walletBalance) : (Number(walletMap[cleanPhoneKey]) || 0);
 
       // Wholesale access strictly recognized by payment done
       const isPaid = isCustomerPaid(c, cleanPhoneKey);
@@ -3622,16 +3623,26 @@ async function loadCustomers() {
         }
       }
 
-      const completedOrders = custOrders.filter(o => ['paid','dispatched','delivered','completed'].includes(o.status));
-      const orderSpend = completedOrders.reduce((s, o) => s + (o.total || 0) + (o.advanceAdjusted || 0), 0);
-      
-      // Advance fee spent is only counted if wholesale payment was done
-      const advanceSpent = (c.advancePaid && Number(c.advancePaid) > 0)
-        ? Number(c.advancePaid)
-        : (isPaid ? 1000 : 0);
-      const totalSpend = advanceSpent + orderSpend;
+      // Determine customer wallet balance accurately
+      let walletBal = 0;
+      if (walletMap[cleanPhoneKey] !== undefined && Number(walletMap[cleanPhoneKey]) > 0) {
+        walletBal = Number(walletMap[cleanPhoneKey]);
+      } else if (c.walletBalance !== undefined && Number(c.walletBalance) > 0) {
+        walletBal = Number(c.walletBalance);
+      } else if (isPaid) {
+        walletBal = Number(c.advancePaid) || 1000;
+      }
 
-      const joined = c.registeredAt ? new Date(c.registeredAt).toLocaleDateString('en-IN') : '-';
+      // Robust Joined Date formatting
+      const joinedRaw = c.registeredAt || c.createdAt || c.createTime || c.paidAt;
+      let joined = '-';
+      if (joinedRaw) {
+        const d = new Date(Number(joinedRaw) || joinedRaw);
+        if (!isNaN(d.getTime())) {
+          joined = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'numeric', year: 'numeric' });
+        }
+      }
+
       const emailDisplay = c.email || c.userEmail || '-';
       const businessDisplay = c.businessName || c.shopName || c.shop || '-';
       
@@ -3651,7 +3662,6 @@ async function loadCustomers() {
         <td><strong style="color:var(--color-primary);">${escapeHtml(phoneDisplay)}</strong></td>
         <td>${escapeHtml(emailDisplay)}</td>
         <td>${escapeHtml(businessDisplay)}</td>
-        <td><strong style="color:#27AE60; font-size:1.2rem;">${fmt(totalSpend)}</strong></td>
         <td><strong style="color:#D4AF37; font-size:1.2rem;">${fmt(walletBal)}</strong></td>
         <td>${joined}</td>
         <td>${statusHtml}</td>
@@ -3666,7 +3676,7 @@ async function loadCustomers() {
       searchInput.addEventListener('input', loadCustomers);
     }
   } catch(e) {
-    custBody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:20px;color:#e74c3c;">Error loading customers: ${e.message}</td></tr>`;
+    custBody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:#e74c3c;">Error loading customers: ${e.message}</td></tr>`;
   }
 }
 window.loadCustomers = loadCustomers;
