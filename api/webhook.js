@@ -64,12 +64,15 @@ function sendWhatsAppReply(toPhone, messageBody) {
     console.warn('⚠️ sendWhatsAppReply aborted: Missing WHATSAPP_TOKEN');
     return Promise.resolve({ ok: false, error: 'Missing WHATSAPP_TOKEN environment variable' });
   }
+
+  // Meta Cloud API strictly requires digits only (no '+', '-', or spaces)
+  const cleanPhone = String(toPhone).replace(/[^0-9]/g, '');
+
   const data = JSON.stringify({
     messaging_product: "whatsapp",
-    recipient_type: "individual",
-    to: toPhone,
+    to: cleanPhone,
     type: "text",
-    text: { preview_url: true, body: messageBody }
+    text: { body: messageBody }
   });
 
   return new Promise((resolve) => {
