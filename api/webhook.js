@@ -1,7 +1,7 @@
 const https = require('https');
 
 const WHATSAPP_TOKEN = process.env.WHATSAPP_API_TOKEN || process.env.WHATSAPP_TOKEN || '';
-const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_ID || process.env.PHONE_NUMBER_ID || '641979435655452';
+const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_ID || process.env.PHONE_NUMBER_ID || '1306137785911069';
 
 function fetchOrderFromFirestore(orderId) {
   const cleanId = String(orderId).replace('#', '').trim();
@@ -65,7 +65,7 @@ function sendWhatsAppReply(toPhone, messageBody) {
   return new Promise((resolve) => {
     const options = {
       hostname: 'graph.facebook.com',
-      path: `/v20.0/${PHONE_NUMBER_ID}/messages`,
+      path: `/v19.0/${PHONE_NUMBER_ID}/messages`,
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
