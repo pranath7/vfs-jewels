@@ -1263,6 +1263,7 @@ function switchAdminTab(targetTab) {
     loadSlotPanel();
   } else if (activeTab === 'banners') {
     loadBanners();
+    if (typeof loadAdminReels === 'function') loadAdminReels();
   } else if (activeTab === 'walogs') {
     loadWhatsAppLogs();
   } else if (activeTab === 'wallets') {
@@ -1347,8 +1348,8 @@ function updateHeaderTitles() {
     title.textContent = '📹 8:30 PM Live Video Slot Management';
     subtitle.textContent = 'Toggle daily live session, set Google Meet URL, and dispatch WhatsApp join links.';
   } else if (activeTab === 'banners') {
-    title.textContent = 'Banner Manager';
-    subtitle.textContent = 'Manage home page marketing and promotion banners.';
+    title.textContent = '🖼️ Hero Banners & Instagram Reels';
+    subtitle.textContent = 'Upload or delete homepage hero slider banners and Instagram reels with instant live sync.';
   } else if (activeTab === 'wallets') {
     title.textContent = '👛 Customer Wallets & Store Credit Refunds';
     subtitle.textContent = 'View customer wallet balances, search by phone number, and credit store refunds.';
@@ -1513,7 +1514,7 @@ async function loadDashboard() {
   empty(cancelledContainer, 'No cancelled orders');
   
   loadReturnQueries();
-  loadReviewsModeration();
+  // Reviews section removed
 }
 
 function renderOrderCard(order, container) {
@@ -4152,47 +4153,163 @@ window.exportInvoicesZip = async function(daysVal) {
   }
 };
 
-// ── Banner Manager ──
+// ── Hero Banners & Instagram Reels Manager ──
 async function loadBanners() {
   const grid = $('#bannerManagerGrid');
+  const countBadge = $('#bannerCountBadge');
   if (!grid) return;
-  grid.innerHTML = '<p style="color:#aaa;font-size:1.3rem;">Loading banners...</p>';
-  const banners = await window.VFS_DB.getBanners();
-  if (banners.length === 0) {
-    grid.innerHTML = '<p style="color:#aaa;font-size:1.3rem;padding:20px 0;">No custom banners uploaded yet. Upload one above!</p>';
-    return;
+  grid.innerHTML = '<p style="color:#aaa;font-size:1.3rem;padding:20px 0;">Loading banners from cloud...</p>';
+  try {
+    const banners = await window.VFS_DB.getBanners();
+    if (countBadge) countBadge.textContent = banners.length;
+    if (!banners || banners.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1; padding:30px; text-align:center; background:rgba(255,255,255,0.02); border-radius:8px; border:1px dashed #444;">
+          <p style="color:#888; font-size:1.3rem; margin:0 0 6px 0;">No custom hero banners uploaded yet.</p>
+          <small style="color:#666; font-size:1.1rem;">Storefront is currently displaying default VFS luxury banners. Upload your first custom banner above!</small>
+        </div>`;
+      return;
+    }
+    grid.innerHTML = banners.map(b => {
+      const dateStr = b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Active';
+      const linkText = b.link ? b.link : '#categories';
+      return `
+        <div class="banner-manager-card" style="border:1px solid #333; border-radius:8px; overflow:hidden; background:#12151e; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+          <div style="position:relative; width:100%; height:140px; background:#0e1017;">
+            <img src="${b.url}" alt="Hero Banner" style="width:100%; height:100%; object-fit:cover; display:block;">
+            <span style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.75); color:#D4AF37; font-size:1.05rem; padding:2px 8px; border-radius:4px; font-weight:700;">${dateStr}</span>
+          </div>
+          <div class="banner-manager-card-info" style="padding:12px; display:flex; flex-direction:column; gap:8px;">
+            <div style="font-size:1.15rem; color:#aaa; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              🔗 <span style="color:#fff;">${linkText}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+              <a href="${b.url}" target="_blank" style="color:#D4AF37; font-size:1.15rem; text-decoration:none;">View Full ↗</a>
+              <button class="btn-delete-banner" onclick="deleteBanner('${b.id}')" style="background:#e74c3c; color:#fff; border:none; border-radius:4px; padding:6px 14px; font-size:1.15rem; font-weight:700; cursor:pointer;">Delete 🗑️</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch (err) {
+    console.error("Error loading banners:", err);
+    grid.innerHTML = `<p style="color:#e74c3c; font-size:1.3rem;">Failed to load banners: ${err.message}</p>`;
   }
-  grid.innerHTML = banners.map(b => `
-    <div class="banner-manager-card">
-      <img src="${b.url}" alt="Banner">
-      <div class="banner-manager-card-info">
-        <span>${new Date(b.createdAt).toLocaleDateString('en-IN')}</span>
-        <button class="btn-delete-banner" onclick="deleteBanner('${b.id}')">Delete</button>
-      </div>
-    </div>`).join('');
 }
 window.loadBanners = loadBanners;
 
 window.deleteBanner = async function(bannerId) {
-  if (!confirm('Delete this banner?')) return;
-  await window.VFS_DB.deleteBanner(bannerId);
-  adminToast('Banner deleted.');
-  loadBanners();
+  if (!confirm('Are you sure you want to delete this hero banner? It will be removed from the live homepage immediately.')) return;
+  adminToast('Deleting banner...', 'info');
+  try {
+    await window.VFS_DB.deleteBanner(bannerId);
+    adminToast('Banner deleted successfully! Storefront updated. ✅');
+    loadBanners();
+  } catch (err) {
+    adminToast('Failed to delete banner: ' + err.message, 'error');
+  }
 };
 
-// Setup Banner upload listener
+// ── Instagram Reels Manager ──
+async function loadAdminReels() {
+  const grid = $('#adminReelsGrid');
+  const countBadge = $('#reelCountBadge');
+  if (!grid) return;
+  grid.innerHTML = '<p style="color:#aaa;font-size:1.3rem;padding:20px 0;">Loading reels from cloud...</p>';
+  try {
+    const data = await window.VFS_DB.getSettings('instagram_reels');
+    const rawUrl = data && data.url ? data.url : '';
+    const urls = rawUrl.split(/[\s,\n\r]+/).map(u => u.trim()).filter(u => u.length > 0);
+    window._currentAdminReels = urls;
+    if (countBadge) countBadge.textContent = urls.length;
+    if (urls.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1; padding:30px; text-align:center; background:rgba(255,255,255,0.02); border-radius:8px; border:1px dashed #444;">
+          <p style="color:#888; font-size:1.3rem; margin:0 0 6px 0;">No Instagram reels currently showcased.</p>
+          <small style="color:#666; font-size:1.1rem;">Paste an Instagram Reel URL above to feature it on the homepage!</small>
+        </div>`;
+      return;
+    }
+    grid.innerHTML = urls.map((url, idx) => {
+      const match = url.match(/(?:\/reel\/|\/p\/|\/reels\/)([A-Za-z0-9_-]+)/);
+      const shortcode = match ? match[1] : null;
+      let embedHtml = '';
+      if (shortcode) {
+        embedHtml = `<iframe src="https://www.instagram.com/reel/${shortcode}/embed" style="width:100%; height:260px; border:none; border-radius:6px; overflow:hidden;" frameborder="0" scrolling="no"></iframe>`;
+      } else {
+        embedHtml = `<div style="height:120px; display:flex; align-items:center; justify-content:center; background:#1e2330; border-radius:6px; color:#aaa; font-size:1.2rem; padding:10px; text-align:center;">📹 Direct Video Link</div>`;
+      }
+      return `
+        <div style="border:1px solid #333; border-radius:8px; padding:14px; background:#12151e; display:flex; flex-direction:column; gap:10px;">
+          ${embedHtml}
+          <div style="font-size:1.15rem; color:#aaa; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            <a href="${url}" target="_blank" style="color:#e1306c; text-decoration:none;">${url} ↗</a>
+          </div>
+          <button onclick="deleteAdminReel(${idx})" style="background:#e74c3c; color:#fff; border:none; border-radius:4px; padding:8px 14px; font-size:1.2rem; font-weight:700; cursor:pointer; align-self:flex-end;">Delete Reel 🗑️</button>
+        </div>`;
+    }).join('');
+  } catch (err) {
+    console.error("Error loading reels:", err);
+    grid.innerHTML = `<p style="color:#e74c3c; font-size:1.3rem;">Failed to load reels: ${err.message}</p>`;
+  }
+}
+window.loadAdminReels = loadAdminReels;
+
+window.addAdminReel = async function() {
+  const input = $('#adminReelInput');
+  if (!input) return;
+  const newUrl = input.value.trim();
+  if (!newUrl) {
+    adminToast('Please enter an Instagram Reel URL', 'error');
+    return;
+  }
+  const urls = window._currentAdminReels || [];
+  if (urls.includes(newUrl)) {
+    adminToast('This Reel is already added!', 'error');
+    return;
+  }
+  urls.push(newUrl);
+  adminToast('Adding Reel...', 'info');
+  try {
+    await window.VFS_DB.saveSettings('instagram_reels', { url: urls.join('\n'), updatedAt: Date.now() });
+    adminToast('Reel added and published to homepage! 🎥');
+    input.value = '';
+    loadAdminReels();
+  } catch (err) {
+    adminToast('Failed to add reel: ' + err.message, 'error');
+  }
+};
+
+window.deleteAdminReel = async function(index) {
+  if (!confirm('Are you sure you want to remove this Instagram Reel from the homepage?')) return;
+  const urls = window._currentAdminReels || [];
+  if (index < 0 || index >= urls.length) return;
+  urls.splice(index, 1);
+  adminToast('Removing Reel...', 'info');
+  try {
+    await window.VFS_DB.saveSettings('instagram_reels', { url: urls.join('\n'), updatedAt: Date.now() });
+    adminToast('Reel removed from storefront! 🗑️');
+    loadAdminReels();
+  } catch (err) {
+    adminToast('Failed to remove reel: ' + err.message, 'error');
+  }
+};
+
+// Setup Banner upload listener & tabs
 document.addEventListener('DOMContentLoaded', () => {
   const bannerInput = $('#bannerFileInput');
+  const bannerLinkInput = $('#bannerLinkInput');
   if (bannerInput) {
     bannerInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      adminToast('Uploading banner...');
+      adminToast('Uploading banner to Cloudinary CDN...');
       try {
         const url = await window.uploadToCloudinary(file);
-        const banner = { id: 'banner_' + Date.now(), url, createdAt: Date.now() };
+        const link = bannerLinkInput ? bannerLinkInput.value.trim() : '';
+        const banner = { id: 'banner_' + Date.now(), url, link: link || '#categories', createdAt: Date.now() };
         await window.VFS_DB.saveBanner(banner);
         adminToast('Banner uploaded successfully! 🖼️');
+        if (bannerLinkInput) bannerLinkInput.value = '';
         loadBanners();
       } catch(err) {
         adminToast('Upload failed: ' + err.message, 'error');
@@ -4201,32 +4318,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Setup Instagram Reel link loader & saver
-  const reelInput = $('#adminReelUrlInput');
-  const saveReelBtn = $('#btnSaveReelUrl');
-  if (reelInput) {
-    window.VFS_DB.getSettings('instagram_reels').then(data => {
-      if (data && data.url) {
-        reelInput.value = data.url;
+  // Hook all data-tab="banners" buttons
+  document.querySelectorAll('[data-tab="banners"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (typeof window.switchAdminTab === 'function') {
+        window.switchAdminTab('banners');
       }
     });
-  }
-  if (saveReelBtn && reelInput) {
-    saveReelBtn.addEventListener('click', async () => {
-      const url = reelInput.value.trim();
-      saveReelBtn.disabled = true;
-      saveReelBtn.textContent = 'Saving...';
-      try {
-        await window.VFS_DB.saveSettings('instagram_reels', { url, updatedAt: Date.now() });
-        adminToast('Instagram Reel link updated successfully! 🎥');
-      } catch (err) {
-        adminToast('Failed to save settings: ' + err.message, 'error');
-      } finally {
-        saveReelBtn.disabled = false;
-        saveReelBtn.textContent = 'Save Link';
-      }
-    });
-  }
+  });
 });
 
 window.triggerResetDatabase = async function() {

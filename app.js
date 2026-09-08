@@ -943,9 +943,27 @@ window.addEventListener('scroll', () => {
   $('#siteHeader').classList.toggle('scrolled', window.scrollY > 10);
 });
 
-// ── Hero Slider ──
-(function initHero() {
+// ── Hero Slider with Live Cloud Sync ──
+let heroSliderTimer = null;
+window.loadDynamicHeroBanners = async function() {
   const slider = $('#heroSlider');
+  if (!slider) return;
+
+  try {
+    const customBanners = await window.VFS_DB.getBanners();
+    if (customBanners && customBanners.length > 0) {
+      slider.innerHTML = customBanners.map((b, i) => `
+        <div class="hero-slide ${i === 0 ? 'active' : ''}">
+          <a href="${b.link || '#categories'}" class="hero-banner-link" aria-label="Shop VFS Jewels Collection">
+            <img src="${b.url}" alt="VFS Jewels Luxury Jewellery" ${i === 0 ? 'fetchpriority="high"' : ''}>
+          </a>
+        </div>
+      `).join('');
+    }
+  } catch(e) {
+    console.warn("Could not load dynamic banners, using fallback:", e);
+  }
+
   const slides = $$('#heroSlider .hero-slide');
   const dotsContainer = $('#heroDots');
   const prevBtn = $('#heroPrev');
@@ -977,8 +995,9 @@ window.addEventListener('scroll', () => {
   if (prevBtn) prevBtn.onclick = (e) => { e.preventDefault(); goSlide(cur - 1); resetTimer(); };
   if (nextBtn) nextBtn.onclick = (e) => { e.preventDefault(); goSlide(cur + 1); resetTimer(); };
 
-  let startX = 0;
-  if (slider) {
+  if (slider && !slider._hasTouchBound) {
+    slider._hasTouchBound = true;
+    let startX = 0;
     slider.addEventListener('touchstart', (e) => {
       startX = e.touches[0].clientX;
     }, { passive: true });
@@ -993,12 +1012,23 @@ window.addEventListener('scroll', () => {
     }, { passive: true });
   }
 
-  let timer = setInterval(() => goSlide(cur + 1), 5000);
   function resetTimer() {
-    clearInterval(timer);
-    timer = setInterval(() => goSlide(cur + 1), 5000);
+    if (heroSliderTimer) clearInterval(heroSliderTimer);
+    heroSliderTimer = setInterval(() => goSlide(cur + 1), 5000);
   }
-})();
+  resetTimer();
+
+  // Attach real-time cloud sync listener once
+  if (window.VFS_CLOUD_ACTIVE && window.db && !window._heroBannersListenerAttached) {
+    window._heroBannersListenerAttached = true;
+    try {
+      window.db.collection('banners').onSnapshot(() => {
+        window.loadDynamicHeroBanners();
+      }, err => console.warn('Banners real-time snapshot notice:', err));
+    } catch(e) {}
+  }
+};
+window.loadDynamicHeroBanners();
 
 // ── State for Lazy Loading / Horizontal Infinite Scroll ──
 const LOADED_COUNTS = {};
@@ -5147,6 +5177,17 @@ async function renderInstaReels() {
   } catch (err) {
     console.error("Failed to load Instagram reels:", err);
   }
+
+  // Real-time Firestore sync for Instagram reels
+  if (window.VFS_CLOUD_ACTIVE && window.db && !window._instaReelsListenerAttached) {
+    window._instaReelsListenerAttached = true;
+    try {
+      window.db.collection('settings').doc('instagram_reels').onSnapshot(() => {
+        renderInstaReels();
+      }, err => console.warn('Reels real-time snapshot notice:', err));
+    } catch(e) {}
+  }
+
   section.style.display = 'none';
 }
 

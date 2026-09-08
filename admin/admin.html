@@ -71,6 +71,9 @@
         <p id="tabSubtitle">Manage customer orders, confirm payments, and scan tracking barcodes.</p>
       </div>
       <div class="header-actions">
+        <button id="btnOpenBannersAdmin" class="btn-secondary-dark" style="background:#D4AF37 !important; border-color:#D4AF37 !important; color:#121212 !important; font-weight:800; padding:8px 16px;" data-tab="banners">
+          🖼️ Banners &amp; Reels
+        </button>
         <button id="btnOpenSlotAdmin" class="btn-secondary-dark" style="background:#D4AF37 !important; border-color:#D4AF37 !important; color:#121212 !important; font-weight:800; padding:8px 16px;" data-tab="slots">
           📹 8:30 PM Slots
         </button>
@@ -248,39 +251,7 @@
       </section>
 
 
-      <!-- TAB: REVIEWS MODERATION -->
-      <section class="tab-panel" id="panelModeration">
-        <div class="orders-panel-container">
-          <div class="panel-header-row">
-            <h2>Reviews &amp; Reels Moderation</h2>
-            <span class="col-count count-moderation" id="countModeration">0</span>
-          </div>
 
-          <!-- Add Google Business Review Form -->
-          <div style="background:var(--color-surface-dark, #1e2330); border:1px solid var(--color-border, #333); padding:24px; border-radius:8px; margin-bottom:30px; max-width:680px;">
-            <h3 style="color:#fff; margin-bottom:14px; font-size:1.4rem;">➕ Add Real Google Business Review to Storefront</h3>
-            <form id="adminAddGoogleReviewForm" style="display:flex; flex-direction:column; gap:14px;">
-              <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                <input type="text" id="adminRevName" placeholder="Reviewer Name (e.g. Karthik N.)" required style="flex:1; min-width:200px; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
-                <select id="adminRevRating" style="width:160px; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
-                  <option value="5">⭐⭐⭐⭐⭐ (5 Stars)</option>
-                  <option value="4">⭐⭐⭐⭐ (4 Stars)</option>
-                  <option value="3">⭐⭐⭐ (3 Stars)</option>
-                  <option value="2">⭐⭐ (2 Stars)</option>
-                  <option value="1">⭐ (1 Star)</option>
-                </select>
-              </div>
-              <textarea id="adminRevText" rows="3" placeholder="Write review text here..." required style="width:100%; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none; font-family:var(--font-body);"></textarea>
-              <input type="url" id="adminRevPhoto" placeholder="Optional Photo / Video URL..." style="width:100%; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
-              <button type="submit" class="btn-primary" style="padding:12px 24px; font-size:1.25rem; font-weight:800; background:#D4AF37; color:#121212; border:none; cursor:pointer; align-self:flex-start;">Post Google Review to Storefront ✓</button>
-            </form>
-          </div>
-
-          <div class="orders-grid-flow" id="listModeration">
-            <!-- Pending customer reviews go here -->
-          </div>
-        </div>
-      </section>
 
 
       <!-- TAB 4: ADD PRODUCTS -->
@@ -479,29 +450,73 @@
         </div>
       </section>
 
-      <!-- TAB: BANNER MANAGER -->
+      <!-- TAB: BANNER & REELS MANAGER -->
       <section class="tab-panel" id="panelBanners">
         <div class="orders-panel-container">
-          <div class="panel-header-row">
-            <h2>Banner Manager</h2>
-          </div>
-          <p style="font-size:1.3rem;color:#666;margin-bottom:16px;">Upload new homepage banners or delete existing ones. Changes reflect on the storefront immediately.</p>
-          <label class="banner-upload-area" id="bannerDropzone">
-            <input type="file" id="bannerFileInput" accept="image/*" style="display:none">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" width="40" height="40"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <p>Click to upload a banner image (JPG/PNG, recommended 1200×600)</p>
-          </label>
-          <div class="banner-manager-grid" id="bannerManagerGrid">
-            <!-- Banner cards load dynamically -->
+          <div class="panel-header-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+            <div>
+              <h2 style="color:var(--color-secondary, #D4AF37); margin:0;">🖼️ Hero Banners &amp; Instagram Reels Manager</h2>
+              <p style="font-size:1.25rem; color:#888; margin:6px 0 0 0;">Upload or delete homepage hero slider banners and Instagram reels. Changes sync to the storefront immediately.</p>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn-secondary-dark" onclick="loadBanners(); loadAdminReels();" style="padding:8px 16px; font-size:1.2rem; cursor:pointer;">🔄 Refresh</button>
+            </div>
           </div>
 
-          <!-- Instagram Reel Link Settings -->
-          <div class="form-group-full" style="background:var(--color-surface-dark); border:1px solid var(--color-border); padding:20px; border-radius:var(--rounded-md); margin-top:30px;">
-            <h3 style="color:var(--color-secondary);margin-bottom:12px;">🎥 Homepage Instagram Reel Embed</h3>
-            <p style="font-size:1.15rem;color:#888;margin-bottom:16px;">Enter the URL of the Instagram Reel you want to showcase on the storefront homepage.</p>
-            <div style="display:flex; flex-direction:column; gap:12px; max-width:600px;">
-              <textarea id="adminReelUrlInput" placeholder="Paste Instagram Reel links here (one per line)..." rows="3" style="width:100%; padding:10px 14px; font-size:1.25rem; border:1px solid var(--color-border); border-radius:var(--rounded-md); background:var(--color-surface); color:#fff; outline:none; font-family:var(--font-body); resize:vertical;"></textarea>
-              <button class="btn-primary" id="btnSaveReelUrl" style="padding:10px 20px; font-size:1.25rem; cursor:pointer; align-self:flex-start;">Save Link</button>
+          <!-- 1. HERO BANNERS SECTION -->
+          <div style="background:var(--color-surface-dark, #1e2330); border:1px solid var(--color-border, #333); border-radius:10px; padding:24px; margin-bottom:30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+              <h3 style="color:#fff; font-size:1.5rem; margin:0; display:flex; align-items:center; gap:8px;">
+                <span>✨ Homepage Hero Banners</span>
+                <span class="col-count" id="bannerCountBadge" style="background:#D4AF37; color:#121212; font-size:1.15rem; padding:2px 10px; border-radius:12px; font-weight:800;">0</span>
+              </h3>
+              <span style="font-size:1.15rem; color:#25D366; font-weight:700;">● Live Real-Time Storefront Sync</span>
+            </div>
+            
+            <p style="font-size:1.2rem; color:#aaa; margin-bottom:16px;">Recommended size: <b>1200 × 600 px</b> (JPG/PNG/WebP). Banners rotate automatically in the hero slider on the homepage.</p>
+
+            <div style="display:grid; grid-template-columns: 1fr; gap:16px; margin-bottom:16px;">
+              <label class="banner-upload-area" id="bannerDropzone" style="cursor:pointer; display:block; text-align:center; padding:28px 20px; border:2px dashed #D4AF37; border-radius:10px; background:rgba(212,175,55,0.04);">
+                <input type="file" id="bannerFileInput" accept="image/*" style="display:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" width="44" height="44" style="margin-bottom:8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <p style="font-size:1.3rem; color:#fff; font-weight:700; margin:0 0 4px 0;">Click or Drag &amp; Drop to Upload New Banner</p>
+                <span style="font-size:1.15rem; color:#888;">Instant upload via Cloudinary CDN</span>
+              </label>
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; align-items:center;">
+              <input type="text" id="bannerLinkInput" placeholder="Optional Click Link (e.g. #categories or /wholesale.html)..." style="flex:1; min-width:240px; padding:10px 14px; font-size:1.2rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
+              <span style="font-size:1.15rem; color:#888;">Applied to next uploaded banner</span>
+            </div>
+
+            <!-- Active Hero Banners Grid -->
+            <h4 style="color:#D4AF37; font-size:1.3rem; margin:16px 0 12px 0;">Active Banners on Storefront:</h4>
+            <div class="banner-manager-grid" id="bannerManagerGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:18px;">
+              <!-- Banner cards load dynamically -->
+            </div>
+          </div>
+
+          <!-- 2. INSTAGRAM REELS SECTION -->
+          <div style="background:var(--color-surface-dark, #1e2330); border:1px solid var(--color-border, #333); border-radius:10px; padding:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+              <h3 style="color:#fff; font-size:1.5rem; margin:0; display:flex; align-items:center; gap:8px;">
+                <span>🎥 Instagram Reels Showcase</span>
+                <span class="col-count" id="reelCountBadge" style="background:#e1306c; color:#fff; font-size:1.15rem; padding:2px 10px; border-radius:12px; font-weight:800;">0</span>
+              </h3>
+              <span style="font-size:1.15rem; color:#25D366; font-weight:700;">● Live Real-Time Storefront Sync</span>
+            </div>
+
+            <p style="font-size:1.2rem; color:#aaa; margin-bottom:16px;">Showcase your trending Instagram Reels on the homepage. Add reel links below (e.g. <code>https://www.instagram.com/reel/C123456/</code>).</p>
+
+            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+              <input type="url" id="adminReelInput" placeholder="Paste Instagram Reel URL (e.g. https://www.instagram.com/reel/C123456/)..." style="flex:1; min-width:280px; padding:12px 14px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
+              <button class="btn-primary" id="btnAddReelBtn" onclick="addAdminReel()" style="padding:12px 24px; font-size:1.25rem; font-weight:800; background:#e1306c; color:#fff; border:none; cursor:pointer; border-radius:6px;">+ Add Reel</button>
+            </div>
+
+            <!-- Active Reels Grid -->
+            <h4 style="color:#e1306c; font-size:1.3rem; margin:16px 0 12px 0;">Active Reels on Live Storefront:</h4>
+            <div id="adminReelsGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:18px;">
+              <!-- Reel cards load dynamically -->
             </div>
           </div>
         </div>
@@ -618,9 +633,9 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <span>Search</span>
     </button>
-    <button class="bottom-nav-btn" data-tab="moderation">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      <span>Reviews</span>
+    <button class="bottom-nav-btn" data-tab="banners">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      <span>Banners &amp; Reels</span>
     </button>
     <button class="bottom-nav-btn" data-tab="returns">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -633,10 +648,6 @@
     <button class="bottom-nav-btn" data-tab="reports">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       <span>Reports</span>
-    </button>
-    <button class="bottom-nav-btn" data-tab="banners">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-      <span>Banners</span>
     </button>
     <button class="bottom-nav-btn" data-tab="wallets">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"/></svg>
