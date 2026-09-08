@@ -52,6 +52,48 @@ module.exports = async (req, res) => {
       .digest('hex');
 
     if (expectedSignature === razorpay_signature) {
+      // ── AUTOMATED WHOLESALE UNLOCK IN FIRESTORE UPON PAYMENT ──
+      const rawPhone = req.body.phone || '';
+      const cleanPhone = String(rawPhone).replace(/\D/g, '').slice(-10);
+      if (cleanPhone && cleanPhone.length === 10) {
+        try {
+          const https = require('https');
+          const paidAmount = Number(req.body.amount) || 1000;
+          const patchPayload = JSON.stringify({
+            fields: {
+              unlocked: { booleanValue: true },
+              paymentStatus: { stringValue: 'paid' },
+              advancePaid: { integerValue: String(Math.round(paidAmount)) },
+              razorpayPaymentId: { stringValue: razorpay_payment_id },
+              razorpayOrderId: { stringValue: razorpay_order_id },
+              phone: { stringValue: cleanPhone },
+              paidAt: { integerValue: String(Date.now()) },
+              unlockedAt: { integerValue: String(Date.now()) },
+              updatedAt: { integerValue: String(Date.now()) }
+            }
+          });
+
+          const docKeys = [cleanPhone, 'phone_' + cleanPhone, '91' + cleanPhone];
+          await Promise.all(docKeys.map(k => new Promise(resolve => {
+            const patchReq = https.request({
+              hostname: 'firestore.googleapis.com',
+              path: `/v1/projects/vfs-jewellery/databases/(default)/documents/wholesale_users/${k}`,
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(patchPayload)
+              }
+            }, () => resolve());
+            patchReq.on('error', () => resolve());
+            patchReq.write(patchPayload);
+            patchReq.end();
+          })));
+          console.log(`⚡ Automatically unlocked wholesale customer in Firestore for phone ${cleanPhone}`);
+        } catch(patchErr) {
+          console.warn('Auto-unlock Firestore patch warning:', patchErr);
+        }
+      }
+
       return res.status(200).json({ status: 'success', verified: true });
     } else {
       return res.status(400).json({ status: 'failed', verified: false, error: 'Signature verification failed' });

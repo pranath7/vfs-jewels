@@ -3643,14 +3643,7 @@ async function loadCustomers() {
         statusHtml = `<span style="color:#e67e22; font-weight:600; font-size:1.1rem;">Pending Payment</span>`;
       }
 
-      // Action buttons: Grant/Revoke access toggle + WhatsApp chat
-      const toggleAccessBtn = isPaid
-        ? `<button class="btn-card-secondary" onclick="toggleCustomerWholesaleAccess('${escapeHtml(cleanPhoneKey)}', false)" style="font-size:1rem; padding:6px 10px; border-radius:4px; font-weight:700; cursor:pointer; background:#4a5568; color:#fff; border:none;" title="Revoke wholesale access">🔒 Revoke</button>`
-        : `<button class="btn-card-secondary" onclick="toggleCustomerWholesaleAccess('${escapeHtml(cleanPhoneKey)}', true)" style="font-size:1rem; padding:6px 10px; border-radius:4px; font-weight:700; cursor:pointer; background:#27AE60; color:#fff; border:none;" title="Grant wholesale access">✅ Grant Access</button>`;
-
-      const waActionHtml = `<button class="btn-card-secondary" onclick="openWaDirectChat('${escapeHtml(phoneDisplay)}', '${escapeHtml(c.name || 'Reseller')}')" style="font-size:1rem; padding:6px 10px; border-radius:4px; font-weight:700; cursor:pointer; background:#25d366; color:#fff; border:none;">💬 Chat WhatsApp</button>`;
-
-      const actionsHtml = `<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">${toggleAccessBtn}${waActionHtml}</div>`;
+      const waActionHtml = `<button class="btn-card-secondary" onclick="openWaDirectChat('${escapeHtml(phoneDisplay)}', '${escapeHtml(c.name || 'Reseller')}')" style="font-size:1.05rem; padding:6px 12px; border-radius:4px; font-weight:700; cursor:pointer; background:#25d366; color:#fff; border:none;">💬 Chat WhatsApp</button>`;
 
       return `<tr>
         <td>${i + 1}</td>
@@ -3662,7 +3655,7 @@ async function loadCustomers() {
         <td><strong style="color:#D4AF37; font-size:1.2rem;">${fmt(walletBal)}</strong></td>
         <td>${joined}</td>
         <td>${statusHtml}</td>
-        <td>${actionsHtml}</td>
+        <td>${waActionHtml}</td>
       </tr>`;
     }).join('');
  

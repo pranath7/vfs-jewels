@@ -5871,7 +5871,9 @@ function setupShoppingMode() {
           handler: async function (response) {
             rzpPayBtn.innerHTML = 'Verifying Payment...';
             try {
-              // 3. Verify Payment Signature
+              // 3. Verify Payment Signature & Auto-unlock in Firestore
+              const cleanPhone = (wholesaleUser.phone || localStorage.getItem('vfs_customer_phone') || '').replace(/\D/g, '').slice(-10);
+              const paidUnlockFee = advanceAmount || 1000;
               const verifyRes = await fetch('/api/verify-razorpay-payment', {
                 method: 'POST',
                 headers: {
@@ -5880,7 +5882,9 @@ function setupShoppingMode() {
                 body: JSON.stringify({
                   razorpay_order_id: response.razorpay_order_id,
                   razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature
+                  razorpay_signature: response.razorpay_signature,
+                  phone: cleanPhone,
+                  amount: paidUnlockFee
                 })
               });
 
