@@ -328,17 +328,29 @@
           </div>
           <p style="font-size:1.25rem; color:#8e8e93; margin-bottom:20px;">Manage customer wallet balances and credit refund amounts directly to customer mobile numbers. 100% saved in Cloud Firestore (<code>wallet_credits</code> collection).</p>
           
-          <!-- Credit Refund Form -->
-          <div style="background:var(--color-surface-dark, #1e2330); border:1px solid var(--color-border, #333); padding:24px; border-radius:var(--rounded-md, 8px); margin-bottom:30px; max-width:650px;">
-            <h3 style="color:#fff; margin-bottom:14px; font-size:1.4rem;">➕ Credit Refund / Add Store Credit</h3>
+          <!-- Credit / Edit Wallet Form -->
+          <div style="background:var(--color-surface-dark, #1e2330); border:1px solid var(--color-border, #333); padding:24px; border-radius:var(--rounded-md, 8px); margin-bottom:30px; max-width:700px;">
+            <h3 style="color:#fff; margin-bottom:14px; font-size:1.4rem;">👛 Credit or Edit Customer Wallet Balance</h3>
             <form id="adminCreditWalletForm" style="display:flex; flex-direction:column; gap:14px;">
               <div style="display:flex; gap:12px; flex-wrap:wrap;">
                 <input type="text" id="adminWalletPhone" placeholder="Customer Mobile (e.g. 9025327860)" required style="flex:1; min-width:200px; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
-                <input type="number" id="adminWalletAmount" placeholder="Amount (₹) e.g. 500" min="1" required style="width:160px; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
+                <select id="adminWalletActionType" style="width:180px; padding:12px; font-size:1.2rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none; font-weight:700;">
+                  <option value="set">✏️ Set Exact Balance</option>
+                  <option value="add">➕ Add to Balance (Credit)</option>
+                </select>
+                <input type="number" id="adminWalletAmount" placeholder="Amount (₹) e.g. 500" min="0" required style="width:160px; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
               </div>
-              <input type="text" id="adminWalletNote" placeholder="Reason / Note (e.g. Refund for Order #VFS-98407)" style="width:100%; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
-              <button type="submit" class="btn-primary" style="padding:12px 24px; font-size:1.25rem; font-weight:800; background:#D4AF37; color:#121212; border:none; cursor:pointer; align-self:flex-start;">Credit Refund to Wallet ✓</button>
+              <input type="text" id="adminWalletNote" placeholder="Reason / Note (e.g. Updated by Admin / Refund for Order)" style="width:100%; padding:12px; font-size:1.25rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
+              <button type="submit" class="btn-primary" style="padding:12px 24px; font-size:1.25rem; font-weight:800; background:#D4AF37; color:#121212; border:none; cursor:pointer; align-self:flex-start;">Update Customer Wallet ✓</button>
             </form>
+          </div>
+
+          <!-- Search & Summary Bar -->
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+            <input type="text" id="adminWalletSearchInput" oninput="filterAdminWalletTable()" placeholder="🔍 Search wallet by customer phone number..." style="flex:1; min-width:240px; padding:10px 14px; font-size:1.2rem; border:1px solid #444; border-radius:6px; background:#12151e; color:#fff; outline:none;">
+            <div style="color:#aaa; font-size:1.2rem;">
+              Total Accounts: <strong id="adminKpiWalletCount" style="color:#D4AF37;">0</strong> | Total Balance: <strong id="adminKpiWalletTotal" style="color:#27ae60;">₹0</strong>
+            </div>
           </div>
 
           <!-- Active Wallets List -->
@@ -350,7 +362,7 @@
                   <th>Customer Phone</th>
                   <th>Wallet Balance</th>
                   <th>Last Note / Reason</th>
-                  <th>Action</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="walletTableBody">

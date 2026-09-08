@@ -4847,8 +4847,9 @@ window.loadAdminWallets = async function() {
           <td><strong>+91 ${phone}</strong></td>
           <td><span style="font-weight:900; color:#27ae60; font-size:1.35rem;">₹${bal}</span></td>
           <td>Wholesale Advance & Store Credit</td>
-          <td>
-            <button class="btn-card-primary" onclick="quickCreditWalletPrompt('${phone}')" style="padding:6px 14px; font-size:1.1rem; background:#D4AF37; color:#121212; border:none; border-radius:4px; font-weight:700; cursor:pointer;">+ Add Credit</button>
+          <td style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button class="btn-card-primary" onclick="quickEditWalletPrompt('${phone}', ${bal})" style="padding:6px 12px; font-size:1.1rem; background:#2980b9; color:#fff; border:none; border-radius:4px; font-weight:700; cursor:pointer;">✏️ Edit Balance</button>
+            <button class="btn-card-primary" onclick="quickCreditWalletPrompt('${phone}')" style="padding:6px 12px; font-size:1.1rem; background:#D4AF37; color:#121212; border:none; border-radius:4px; font-weight:700; cursor:pointer;">+ Add Credit</button>
           </td>
         </tr>
       `;
@@ -4874,7 +4875,29 @@ window.filterAdminWalletTable = function() {
 
 window.quickCreditWalletPrompt = function(phone) {
   document.getElementById('adminWalletPhone').value = phone;
+  const actionSel = document.getElementById('adminWalletActionType');
+  if (actionSel) actionSel.value = 'add';
   document.getElementById('adminWalletAmount').focus();
+};
+
+window.quickEditWalletPrompt = async function(phone, currentBal) {
+  const cleanP = String(phone).replace(/\D/g, '').slice(-10);
+  const input = prompt(`✏️ Edit Wallet Balance for +91 ${cleanP}\n\nCurrent Balance: ₹${currentBal}\n\nEnter new exact wallet balance (₹):`, currentBal);
+  if (input === null) return;
+  const newBal = parseFloat(input);
+  if (isNaN(newBal) || newBal < 0) {
+    adminToast('Please enter a valid non-negative number!', 'error');
+    return;
+  }
+  adminToast(`Updating wallet for +91 ${cleanP} to ₹${newBal}...`, 'info');
+  try {
+    await window.VFS_DB.saveWalletBalance(cleanP, newBal);
+    adminToast(`✅ Wallet balance for +91 ${cleanP} updated to ₹${newBal}!`);
+    await window.loadAdminWallets();
+  } catch(err) {
+    console.error("Error updating wallet:", err);
+    adminToast('Failed to update wallet: ' + err.message, 'error');
+  }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -4885,26 +4908,27 @@ document.addEventListener('DOMContentLoaded', () => {
       let phone = document.getElementById('adminWalletPhone').value.trim().replace(/[^0-9]/g, '');
       if (phone.length === 12 && phone.startsWith('91')) phone = phone.slice(2);
       
-      const amt = parseFloat(document.getElementById('adminWalletAmount').value) || 0;
-      const note = document.getElementById('adminWalletNote').value.trim() || 'Store Credit Refund';
+      const actionType = document.getElementById('adminWalletActionType')?.value || 'set';
+      const amt = parseFloat(document.getElementById('adminWalletAmount').value);
+      const note = document.getElementById('adminWalletNote').value.trim() || 'Store Credit Adjustment';
       
-      if (!phone || phone.length !== 10 || amt <= 0) {
+      if (!phone || phone.length !== 10 || isNaN(amt) || amt < 0) {
         adminToast('Please enter a valid 10-digit phone number and amount!', 'error');
         return;
       }
       
       try {
         const currentBal = await window.VFS_DB.getCustomerWalletBalance(phone);
-        const newBal = currentBal + amt;
+        const newBal = (actionType === 'set') ? amt : (currentBal + amt);
         await window.VFS_DB.saveWalletBalance(phone, newBal);
         
-        adminToast(`Credited ₹${amt} to +91 ${phone}! New Balance: ₹${newBal} 👛`);
+        adminToast(`✅ Wallet for +91 ${phone} ${actionType === 'set' ? 'set to' : 'credited to'} ₹${newBal}! 👛`);
         document.getElementById('adminWalletAmount').value = '';
         document.getElementById('adminWalletNote').value = '';
         await window.loadAdminWallets();
       } catch(err) {
-        console.error("Error crediting wallet:", err);
-        adminToast("Failed to credit wallet: " + err.message, "error");
+        console.error("Error updating wallet:", err);
+        adminToast("Failed to update wallet: " + err.message, "error");
       }
     });
   }
