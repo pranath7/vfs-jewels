@@ -6001,3 +6001,33 @@ body:has(#profileBG.active) .floating-order-btn {
   color: #ffffff;
 }
 
+/* ── Prominent WhatsApp Free-Session Invoice Trigger Button ── */
+.wa-invoice-pulse-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: wa-pulse-glow 2.5s infinite;
+}
+
+.wa-invoice-pulse-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5) !important;
+}
+
+.wa-invoice-pulse-btn:active {
+  transform: translateY(1px);
+}
+
+@keyframes wa-pulse-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(37, 211, 102, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+  }
+}
+
+

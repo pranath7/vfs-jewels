@@ -8,7 +8,7 @@ function fetchOrderFromFirestore(orderId) {
   return new Promise((resolve) => {
     const options = {
       hostname: 'firestore.googleapis.com',
-      path: `/v1/projects/vfs-jewellery/databases/(default)/documents/orders/${cleanId}`,
+      path: `/v1/projects/vfs-jewellery/databases/(default)/documents/orders/${encodeURIComponent(cleanId)}`,
       method: 'GET'
     };
     const req = https.get(options, (res) => {
@@ -50,7 +50,10 @@ function fetchOrderFromFirestore(orderId) {
 }
 
 function sendWhatsAppReply(toPhone, messageBody) {
-  if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) return Promise.resolve(false);
+  if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
+    console.warn('⚠️ sendWhatsAppReply aborted: Missing WHATSAPP_TOKEN or PHONE_NUMBER_ID');
+    return Promise.resolve(false);
+  }
   const data = JSON.stringify({
     messaging_product: "whatsapp",
     recipient_type: "individual",
@@ -70,11 +73,56 @@ function sendWhatsAppReply(toPhone, messageBody) {
         'Content-Length': Buffer.byteLength(data)
       }
     };
-    const req = https.request(options, () => resolve(true));
-    req.on('error', () => resolve(false));
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(true);
+        } else {
+          console.warn(`⚠️ Meta API responded with status ${res.statusCode}:`, body);
+          resolve(false);
+        }
+      });
+    });
+    req.on('error', (err) => {
+      console.error('❌ Network error sending WhatsApp reply:', err);
+      resolve(false);
+    });
     req.write(data);
     req.end();
   });
+}
+
+function extractOrderId(text) {
+  if (!text) return null;
+  const t = String(text).trim();
+  
+  // 1. Explicit keyword match: "Order #XYZ" or "Order XYZ"
+  const orderWordMatch = t.match(/order\s*#?\s*([A-Za-z0-9\-]+)/i);
+  if (orderWordMatch && orderWordMatch[1]) {
+    return orderWordMatch[1].toUpperCase().replace(/^#/, '');
+  }
+
+  // 2. Hash token: "#J7001", "#S9010", "#VF-1002"
+  const hashMatch = t.match(/#([A-Za-z0-9\-]+)/);
+  if (hashMatch && hashMatch[1]) {
+    return hashMatch[1].toUpperCase();
+  }
+
+  // 3. Known format prefixes: VF-XXXX or VFS-XXXX
+  const vfMatch = t.match(/(?:VF-?|VFS-?)\d+/i);
+  if (vfMatch) {
+    return vfMatch[0].toUpperCase().replace('VF', 'VF-').replace('VF--', 'VF-');
+  }
+
+  // 4. Monthly code format: single letter month + number e.g. J7001, A8004, S9010
+  const monthlyMatch = t.match(/\b([A-Z]\d{3,5})\b/i);
+  if (monthlyMatch) {
+    return monthlyMatch[1].toUpperCase();
+  }
+
+  return null;
 }
 
 module.exports = async (req, res) => {
@@ -102,6 +150,7 @@ module.exports = async (req, res) => {
   }
 
   // 2. Incoming WhatsApp Events (POST Request from Meta)
+  // Initiated by Customer -> Triggers Free 24-Hour WhatsApp Customer Care Session!
   if (req.method === 'POST') {
     try {
       const payload = req.body;
@@ -112,42 +161,62 @@ module.exports = async (req, res) => {
               for (const msg of change.value.messages) {
                 const senderPhone = msg.from;
                 const textBody = (msg.text?.body || '').trim();
+                console.log(`📩 Incoming message from +${senderPhone}: "${textBody}"`);
 
-                // Look for order ID in incoming message (e.g. VF-1001 or #VF-1001)
-                const match = textBody.match(/VF-?\d+/i);
-                if (match) {
-                  const rawOrderId = match[0].toUpperCase().replace('VF', 'VF-').replace('VF--', 'VF-');
-                  const order = await fetchOrderFromFirestore(rawOrderId);
+                // Extract Order ID from message
+                const extractedId = extractOrderId(textBody);
+                if (extractedId) {
+                  const cleanOrderId = extractedId.replace('#', '').trim();
+                  console.log(`🔍 Extracted Order ID: "${cleanOrderId}". Fetching from Firestore...`);
 
-                  if (order && order.items && order.items.length > 0) {
+                  // Attempt lookup with cleanId first, fallback to #cleanId if needed
+                  let order = await fetchOrderFromFirestore(cleanOrderId);
+                  if (!order) {
+                    order = await fetchOrderFromFirestore('#' + cleanOrderId);
+                  }
+
+                  if (order) {
+                    const displayOrderId = order.id ? order.id.replace('#', '') : cleanOrderId;
                     let itemsTxt = '';
-                    order.items.forEach((it, idx) => {
-                      itemsTxt += `${idx + 1}. *${it.name || 'Jewellery Item'}*\n   • Qty: ${it.qty || 1} | Price: ₹${it.price || 0}\n`;
-                      if (it.img) itemsTxt += `   • Photo: ${it.img}\n`;
-                    });
+                    if (order.items && Array.isArray(order.items) && order.items.length > 0) {
+                      order.items.forEach((it, idx) => {
+                        itemsTxt += `${idx + 1}. *${it.name || 'Jewellery Item'}*\n   • Qty: ${it.qty || 1} | Price: ₹${it.price || 0}\n`;
+                        if (it.img) itemsTxt += `   • Photo: ${it.img}\n`;
+                      });
+                    } else {
+                      itemsTxt = `1. *Fashion Jewellery Order*\n   • Qty: 1 | Price: ₹${order.total || 0}\n`;
+                    }
 
                     const reply = 
-`📄 *VFS JEWELS — ORDER INVOICE & PHOTO SLIP*
-━━━━━━━━━━━━━━━━━━━━━━━
-📦 *Order ID:* #${order.id || rawOrderId}
+`📄 *VFS JEWELS — TAX INVOICE & PACKING PHOTO SLIP*
+━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 *Order ID:* #${displayOrderId}
 👤 *Customer:* ${order.name || 'Valued Customer'}
-🚚 *Delivery Address:* ${order.address || ''}, ${order.city || ''} ${order.pincode || ''}
+🚚 *Delivery Address:* ${order.address || 'Standard Address'}, ${order.city || ''} ${order.pincode || ''}
 
 🛍️ *PRODUCTS ORDERED:*
-${itemsTxt}
-━━━━━━━━━━━━━━━━━━━━━━━
-💰 *Subtotal:* ₹${order.subtotal || 0}
+${itemsTxt}━━━━━━━━━━━━━━━━━━━━━━━━━
+💰 *Subtotal:* ₹${order.subtotal || order.total || 0}
 🚚 *Shipping:* ₹${order.shipping || 0}
-💳 *Advance Adjusted:* -₹${order.advanceAdjusted || 0}
-✅ *Grand Total:* ₹${order.total || 0}
+💳 *Advance / Discount:* -₹${(Number(order.advanceAdjusted || 0) + Number(order.walletDiscount || 0) + Number(order.couponDiscount || 0))}
+✅ *Total Amount:* ₹${order.total || 0}
+💳 *Payment Status:* ${order.status === 'paid' ? 'Paid Online ✅' : 'Payment Verification Pending ⏳'}
 
-🔗 *Download Official PDFs:*
-📄 Tax Invoice: https://www.vfsjewels.store/api/invoice?id=${rawOrderId.replace('#','')}
-📸 Product Photo Slip: https://www.vfsjewels.store/api/photo-slip?id=${rawOrderId.replace('#','')}
+🔗 *DOWNLOAD OFFICIAL PDFS (Click to Open):*
+📄 *Tax Invoice PDF:*
+https://www.vfsjewels.store/api/invoice?id=${encodeURIComponent(displayOrderId)}
 
-Thank you for choosing VFS Jewels! 💎`;
+📸 *Packing Photo Slip PDF:*
+https://www.vfsjewels.store/api/photo-slip?id=${encodeURIComponent(displayOrderId)}
 
-                    await sendWhatsAppReply(senderPhone, reply);
+━━━━━━━━━━━━━━━━━━━━━━━━━
+Thank you for shopping with VFS Jewels! 💎✨
+Need help? Reply here anytime.`;
+
+                    const replyStatus = await sendWhatsAppReply(senderPhone, reply);
+                    console.log(`📤 WhatsApp Free Session Reply to +${senderPhone} for #${displayOrderId}: ${replyStatus ? 'SUCCESS' : 'FAILED'}`);
+                  } else {
+                    console.warn(`⚠️ Order not found in Firestore for ID: "${cleanOrderId}"`);
                   }
                 }
               }
