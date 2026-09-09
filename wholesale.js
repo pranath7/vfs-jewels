@@ -101,6 +101,7 @@ async function initCloudConfig() {
 
         // Setup Real-time Firestore Listeners for Products and Stock
         setupRealtimeProductsListener();
+        setupRealtimeCategoriesListener();
 
         // Immediately sync hero banners from cloud
         if (typeof window.loadDynamicHeroBanners === 'function') {
@@ -110,6 +111,35 @@ async function initCloudConfig() {
     }
   } catch (e) {
     console.warn("⚠️ VFS Cloud: Falling back to localStorage mode.", e);
+  }
+}
+
+window._vfsCategoriesListenerActive = false;
+function setupRealtimeCategoriesListener() {
+  if (!window.db || window._vfsCategoriesListenerActive) return;
+  window._vfsCategoriesListenerActive = true;
+  try {
+    window.db.collection('settings').doc('categories').onSnapshot(doc => {
+      if (doc && doc.exists) {
+        const data = doc.data() || {};
+        if (Array.isArray(data.list)) {
+          window._vfsCloudCategories = data.list;
+          try {
+            localStorage.setItem('vfs_custom_categories', JSON.stringify(data.list));
+          } catch(e) {}
+          if (typeof window.renderDynamicHeaderCategories === 'function') {
+            window.renderDynamicHeaderCategories();
+          }
+          if (typeof populateDrawerCategories === 'function') {
+            populateDrawerCategories();
+          }
+        }
+      }
+    }, err => {
+      console.warn("Firestore categories listener note:", err);
+    });
+  } catch(e) {
+    console.warn("Error setting up categories listener:", e);
   }
 }
 
@@ -160,6 +190,8 @@ function setupRealtimeProductsListener() {
         if (typeof renderProducts === 'function') renderProducts(null);
         if (typeof renderProductShelves === 'function') renderProductShelves();
         if (typeof updateCounts === 'function') updateCounts();
+        if (typeof window.renderDynamicHeaderCategories === 'function') window.renderDynamicHeaderCategories();
+        if (typeof populateDrawerCategories === 'function') populateDrawerCategories();
 
         // If PDP is open for this modified product, refresh PDP
         if (window.currentPdpProductId) {
@@ -755,6 +787,118 @@ function getFullCatalog() {
   return PRODUCTS;
 }
 
+// ── DYNAMIC CATEGORIES MANAGEMENT ──
+window.BASE_CATEGORIES = ['kadas', 'chains', 'bracelets', 'earrings', 'necklaces'];
+window._vfsCloudCategories = [];
+
+function getAllCategories() {
+  const catSet = new Set();
+  
+  // 1. Standard base categories in fixed order
+  window.BASE_CATEGORIES.forEach(c => catSet.add(c.toLowerCase()));
+  
+  // 2. Custom categories from local storage cache
+  try {
+    const local = localStorage.getItem('vfs_custom_categories');
+    if (local) {
+      const parsed = JSON.parse(local);
+      if (Array.isArray(parsed)) {
+        parsed.forEach(c => {
+          if (c) catSet.add(String(c).trim().toLowerCase());
+        });
+      }
+    }
+  } catch(e) {}
+  
+  // 3. Custom categories from Firestore cloud memory
+  if (Array.isArray(window._vfsCloudCategories)) {
+    window._vfsCloudCategories.forEach(c => {
+      if (c) catSet.add(String(c).trim().toLowerCase());
+    });
+  }
+  
+  // 4. Any categories from products currently in catalog
+  const catalog = typeof getFullCatalog === 'function' ? getFullCatalog() : (window.VFS_PRODUCTS_CACHE || []);
+  if (Array.isArray(catalog)) {
+    catalog.forEach(p => {
+      if (p && p.cat) {
+        const clean = String(p.cat).trim().toLowerCase();
+        if (clean && clean !== 'all' && clean !== 'bestsellers' && clean !== 'offer_stock' && clean !== 'sale') {
+          catSet.add(clean);
+        }
+      }
+    });
+  }
+  
+  const list = Array.from(catSet).filter(c => c && c !== 'all' && c !== 'bestsellers' && c !== 'offer_stock' && c !== 'sale');
+  const standardOrder = ['kadas', 'chains', 'bracelets', 'earrings', 'necklaces'];
+  list.sort((a, b) => {
+    const idxA = standardOrder.indexOf(a);
+    const idxB = standardOrder.indexOf(b);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return a.localeCompare(b);
+  });
+  
+  // Always append offer_stock at the end
+  list.push('offer_stock');
+  
+  return list;
+}
+
+function formatCategoryLabel(cat) {
+  const specialNames = {
+    'kadas': 'Kadas Collection',
+    'chains': 'Chains Collection',
+    'bracelets': 'Bracelets Collection',
+    'earrings': 'Earrings Collection',
+    'earings': 'Earrings Collection',
+    'necklaces': 'Necklaces Collection',
+    'offer_stock': 'Offer Stock (Special)',
+    'bestsellers': 'Bestsellers'
+  };
+  
+  const key = String(cat || '').trim().toLowerCase();
+  if (specialNames[key]) return specialNames[key];
+  
+  const words = key.replace(/[-_]/g, ' ').split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  if (/collection$/i.test(words)) {
+    return words;
+  }
+  return words + ' Collection';
+}
+
+window.renderDynamicHeaderCategories = function() {
+  const menu = document.getElementById('headerCategoriesMenu');
+  if (!menu) return;
+  
+  const categories = getAllCategories();
+  
+  menu.innerHTML = `
+    <div class="mega-heading">Shop Categories</div>
+    ${categories.map(cat => `
+      <a href="#category=${cat}" data-filter="${cat}">${formatCategoryLabel(cat)}</a>
+    `).join('')}
+  `;
+  
+  // Wire dynamic click listeners
+  menu.querySelectorAll('a[data-filter]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const filter = a.dataset.filter;
+      if (filter === 'all') {
+        window.location.hash = '';
+        setTimeout(() => {
+          document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+        }, 50);
+      } else {
+        window.location.hash = '#category=' + filter;
+      }
+    });
+  });
+};
+
 const CATEGORY_BANNERS = {
   bracelets: { 
     title: "Bracelets Collection", 
@@ -1275,24 +1419,14 @@ function renderProducts(filter) {
   if (filter && filter !== 'all' && filter !== 'sale') {
     categories = [filter];
   } else {
-    // Extract unique categories present in the catalog dynamically
-    const uniqueCats = new Set(fullCatalog.map(p => p.cat).filter(Boolean));
-    categories = Array.from(uniqueCats);
-    
-    // Sort standard ones first
-    const standardOrder = ['kadas', 'chains', 'earrings'];
-    categories.sort((a, b) => {
-      const idxA = standardOrder.indexOf(a);
-      const idxB = standardOrder.indexOf(b);
-      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-      if (idxA !== -1) return -1;
-      if (idxB !== -1) return 1;
-      return a.localeCompare(b);
-    });
+    categories = getAllCategories().filter(c => c !== 'offer_stock');
   }
 
   categories.forEach(cat => {
-    let list = fullCatalog.filter(p => p.cat === cat && isProductVisible(p));
+    let list = fullCatalog.filter(p => {
+      if (!isProductVisible(p)) return false;
+      return String(p.cat || '').toLowerCase() === String(cat).toLowerCase();
+    });
     if (filter === 'sale') {
       list = list.filter(p => {
         const info = getRetailPriceInfo(p);
@@ -1306,8 +1440,8 @@ function renderProducts(filter) {
     const visibleList = list.slice(0, BATCH_SIZE);
 
     const bannerInfo = CATEGORY_BANNERS[cat] || { 
-      title: cat.charAt(0).toUpperCase() + cat.slice(1) + " Collection", 
-      desc: "Premium handcrafted VFS creations." 
+      title: formatCategoryLabel(cat), 
+      desc: `Premium handcrafted anti-tarnish ${formatCategoryLabel(cat).toLowerCase()} by VFS Jewels.` 
     };
 
     const section = document.createElement('section');
@@ -1702,8 +1836,8 @@ function attachProductListeners(container) {
 
 function showCategoryPage(cat) {
   const bannersInfo = CATEGORY_BANNERS[cat] || {
-    title: cat.charAt(0).toUpperCase() + cat.slice(1) + " Collection",
-    desc: "Premium handcrafted VFS creations.",
+    title: formatCategoryLabel(cat),
+    desc: `Premium handcrafted anti-tarnish ${formatCategoryLabel(cat).toLowerCase()} by VFS Jewels.`,
     img: "assets/hero_banner.webp"
   };
 
@@ -1730,7 +1864,13 @@ function showCategoryPage(cat) {
     }
   }
 
-  const categoryProducts = getFullCatalog().filter(p => p.cat === cat && isProductVisible(p));
+  const categoryProducts = getFullCatalog().filter(p => {
+    if (!isProductVisible(p)) return false;
+    if (cat === 'offer_stock') {
+      return p.cat === 'offer_stock' || p.offerStock || p.badge === 'Offer Stock' || p.badge === 'Sale';
+    }
+    return String(p.cat || '').toLowerCase() === String(cat).toLowerCase();
+  });
 
   const bestSellers = [...categoryProducts]
     .sort((a, b) => (b.reviews || 0) - (a.reviews || 0))
@@ -5215,29 +5355,23 @@ function populateDrawerCategories() {
   if (!drawerCategoriesList) return;
   drawerCategoriesList.innerHTML = '';
   
-  // Get unique category names from catalog
-  const uniqueCats = [...new Set(getFullCatalog().map(p => p.cat).filter(Boolean))];
+  const allCats = getAllCategories();
   
-  uniqueCats.forEach(cat => {
+  allCats.forEach(cat => {
     const li = document.createElement('li');
     const a = document.createElement('a');
-    a.href = '#products';
+    a.href = '#category=' + cat;
     a.className = 'drawer-nav-link';
-    a.textContent = cat.toUpperCase();
-    a.addEventListener('click', () => {
+    a.textContent = formatCategoryLabel(cat).toUpperCase();
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
       // Close drawer
-      mobileNavDrawer.classList.remove('active');
-      document.body.style.overflow = '';
-      
-      // Filter products by category
-      currentFilter = cat;
-      renderProducts(cat);
-      
-      // Scroll to catalog section
-      const target = document.getElementById('products');
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth' });
+      if (mobileNavDrawer) {
+        mobileNavDrawer.classList.remove('active');
+        document.body.style.overflow = '';
       }
+      
+      window.location.hash = '#category=' + cat;
     });
     li.appendChild(a);
     drawerCategoriesList.appendChild(li);
@@ -7661,4 +7795,14 @@ window.closeCustomerCareModal = function() {
     document.body.style.overflow = '';
   }
 };
+
+// Render dynamic header categories immediately on startup
+if (typeof window.renderDynamicHeaderCategories === 'function') {
+  window.renderDynamicHeaderCategories();
+}
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof window.renderDynamicHeaderCategories === 'function') {
+    window.renderDynamicHeaderCategories();
+  }
+});
 

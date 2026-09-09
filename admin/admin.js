@@ -211,6 +211,10 @@ async function refreshCloudData() {
     renderSearchCatalog();
   }
   setupRealtimeAdminProductsListener();
+  setupRealtimeAdminCategoriesListener();
+  if (typeof renderAdminCategoryChips === 'function') {
+    renderAdminCategoryChips();
+  }
 }
 
 window._vfsAdminProductsListenerActive = false;
@@ -1079,12 +1083,7 @@ window.renderSearchCatalog = async function() {
                     <div class="edit-group">
                       <label>Category</label>
                       <select id="editCat_${p.id}">
-                        <option value="kadas" ${p.cat === 'kadas' ? 'selected' : ''}>Kadas</option>
-                        <option value="chains" ${p.cat === 'chains' ? 'selected' : ''}>Chains</option>
-                        <option value="necklaces" ${p.cat === 'necklaces' ? 'selected' : ''}>Necklaces</option>
-                        <option value="bracelets" ${p.cat === 'bracelets' ? 'selected' : ''}>Bracelets</option>
-                        <option value="earrings" ${p.cat === 'earrings' ? 'selected' : ''}>Earings</option>
-                        <option value="rings" ${p.cat === 'rings' ? 'selected' : ''}>Rings</option>
+                        ${window.getCategoryOptionsHtml ? window.getCategoryOptionsHtml(p.cat) : `<option value="${p.cat}">${p.cat}</option>`}
                       </select>
                     </div>
                     <div class="edit-group">
@@ -1309,6 +1308,10 @@ function switchAdminTab(targetTab) {
     if (typeof loadAdminReels === 'function') loadAdminReels();
   } else if (activeTab === 'walogs') {
     loadWhatsAppLogs();
+  } else if (activeTab === 'catalog') {
+    if (typeof window.renderAdminCategoryChips === 'function') {
+      window.renderAdminCategoryChips();
+    }
   } else if (activeTab === 'wallets') {
     if (typeof window.loadAdminWallets === 'function') {
       window.loadAdminWallets();
@@ -2649,6 +2652,239 @@ $('#choiceSplit').addEventListener('click', () => {
   renderBulkProductsForm();
 });
 
+// ── CATEGORIES MANAGEMENT ──
+window.BASE_CATEGORIES = ['kadas', 'chains', 'bracelets', 'earrings', 'necklaces'];
+window._vfsAdminCloudCategories = [];
+
+window.getAllAdminCategories = function() {
+  const catSet = new Set();
+  
+  // 1. Standard base categories in fixed order
+  window.BASE_CATEGORIES.forEach(c => catSet.add(c.toLowerCase()));
+  
+  // 2. Custom categories from local storage
+  try {
+    const local = localStorage.getItem('vfs_custom_categories');
+    if (local) {
+      const parsed = JSON.parse(local);
+      if (Array.isArray(parsed)) {
+        parsed.forEach(c => {
+          if (c) catSet.add(String(c).trim().toLowerCase());
+        });
+      }
+    }
+  } catch(e) {}
+  
+  // 3. Custom categories from Firestore cloud memory
+  if (Array.isArray(window._vfsAdminCloudCategories)) {
+    window._vfsAdminCloudCategories.forEach(c => {
+      if (c) catSet.add(String(c).trim().toLowerCase());
+    });
+  }
+  
+  // 4. Any categories from products currently in catalog
+  const catalog = getAdminCatalog();
+  if (Array.isArray(catalog)) {
+    catalog.forEach(p => {
+      if (p && p.cat) {
+        const clean = String(p.cat).trim().toLowerCase();
+        if (clean && clean !== 'all' && clean !== 'bestsellers' && clean !== 'offer_stock' && clean !== 'sale') {
+          catSet.add(clean);
+        }
+      }
+    });
+  }
+  
+  const list = Array.from(catSet).filter(c => c && c !== 'all' && c !== 'bestsellers' && c !== 'offer_stock' && c !== 'sale');
+  const standardOrder = ['kadas', 'chains', 'bracelets', 'earrings', 'necklaces'];
+  list.sort((a, b) => {
+    const idxA = standardOrder.indexOf(a);
+    const idxB = standardOrder.indexOf(b);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return a.localeCompare(b);
+  });
+  
+  return list;
+};
+
+window.formatAdminCategoryLabel = function(cat) {
+  const map = {
+    'kadas': 'Kadas',
+    'chains': 'Chains',
+    'bracelets': 'Bracelets',
+    'earrings': 'Earrings',
+    'earings': 'Earrings',
+    'necklaces': 'Necklaces',
+    'offer_stock': 'Offer Stock (Special)'
+  };
+  const key = String(cat || '').trim().toLowerCase();
+  if (map[key]) return map[key];
+  return key.replace(/[-_]/g, ' ').split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+};
+
+window.getCategoryOptionsHtml = function(selectedCat) {
+  const categories = window.getAllAdminCategories();
+  const selKey = String(selectedCat || '').trim().toLowerCase();
+  return categories.map(cat => `
+    <option value="${cat}" ${cat === selKey ? 'selected' : ''}>${window.formatAdminCategoryLabel(cat)}</option>
+  `).join('');
+};
+
+window.renderAdminCategoryChips = function() {
+  const container = document.getElementById('adminCategoryChips');
+  if (!container) return;
+  
+  const categories = window.getAllAdminCategories();
+  const catalog = getAdminCatalog();
+  
+  const countBadge = document.getElementById('adminCategoriesCountBadge');
+  if (countBadge) {
+    countBadge.textContent = `${categories.length} Categories Live`;
+  }
+  
+  container.innerHTML = categories.map(cat => {
+    const isBase = window.BASE_CATEGORIES.includes(cat);
+    const count = catalog.filter(p => String(p.cat || '').toLowerCase() === cat).length;
+    const label = window.formatAdminCategoryLabel(cat);
+    
+    if (isBase) {
+      return `
+        <div style="background:#1e293b; border:1px solid #334155; padding:6px 14px; border-radius:20px; font-size:1.15rem; display:inline-flex; align-items:center; gap:8px; color:#f8fafc;">
+          <span style="font-weight:600;">${label}</span>
+          <span style="background:#0f172a; padding:2px 8px; border-radius:10px; font-size:1rem; color:#94a3b8; font-weight:700;">${count} items</span>
+        </div>
+      `;
+    } else {
+      return `
+        <div style="background:rgba(212,175,55,0.12); border:1px solid rgba(212,175,55,0.35); padding:6px 14px; border-radius:20px; font-size:1.15rem; display:inline-flex; align-items:center; gap:8px; color:#D4AF37;">
+          <span style="font-weight:700;">✨ ${label}</span>
+          <span style="background:rgba(0,0,0,0.3); padding:2px 8px; border-radius:10px; font-size:1rem; color:#fcd34d; font-weight:700;">${count} items</span>
+          <button type="button" onclick="deleteCustomCategoryFromAdmin('${cat}')" title="Delete custom category" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem; font-weight:bold; line-height:1; padding:0 2px; margin-left:2px; display:inline-flex; align-items:center;">✕</button>
+        </div>
+      `;
+    }
+  }).join('');
+};
+
+window.addNewCategoryFromAdmin = async function() {
+  const input = document.getElementById('adminNewCategoryInput');
+  if (!input) return;
+  const rawVal = input.value.trim();
+  if (!rawVal) {
+    adminToast('Please enter a category name', 'error');
+    input.focus();
+    return;
+  }
+  
+  const cleanCat = rawVal.toLowerCase().replace(/collection$/i, '').trim();
+  if (!cleanCat) {
+    adminToast('Please enter a valid category name', 'error');
+    return;
+  }
+  
+  const existing = window.getAllAdminCategories();
+  if (existing.includes(cleanCat)) {
+    adminToast(`Category "${window.formatAdminCategoryLabel(cleanCat)}" already exists!`, 'warning');
+    input.value = '';
+    return;
+  }
+  
+  await registerAndSaveNewCategory(cleanCat);
+  input.value = '';
+  adminToast(`Category "${window.formatAdminCategoryLabel(cleanCat)}" is now live on the website! 🌸`);
+};
+
+window.deleteCustomCategoryFromAdmin = async function(cat) {
+  const catalog = getAdminCatalog();
+  const prodCount = catalog.filter(p => String(p.cat || '').toLowerCase() === cat).length;
+  if (prodCount > 0) {
+    if (!confirm(`Category "${window.formatAdminCategoryLabel(cat)}" currently has ${prodCount} product(s) assigned. Removing it will not delete products, but they will be categorized under uncategorized. Proceed?`)) {
+      return;
+    }
+  } else {
+    if (!confirm(`Are you sure you want to remove "${window.formatAdminCategoryLabel(cat)}" from categories?`)) {
+      return;
+    }
+  }
+  
+  let custom = [];
+  try {
+    const local = localStorage.getItem('vfs_custom_categories');
+    if (local) custom = JSON.parse(local);
+  } catch(e) {}
+  
+  custom = custom.filter(c => String(c).toLowerCase() !== cat);
+  localStorage.setItem('vfs_custom_categories', JSON.stringify(custom));
+  window._vfsAdminCloudCategories = custom;
+  
+  if (window.VFS_CLOUD_ACTIVE && window.db) {
+    try {
+      await window.db.collection('settings').doc('categories').set({
+        list: custom,
+        updatedAt: Date.now()
+      }, { merge: true });
+    } catch(e) {
+      console.error("Error deleting category from Firestore:", e);
+    }
+  }
+  
+  window.renderAdminCategoryChips();
+  adminToast(`Category removed.`);
+};
+
+async function registerAndSaveNewCategory(cleanCat) {
+  let custom = [];
+  try {
+    const local = localStorage.getItem('vfs_custom_categories');
+    if (local) custom = JSON.parse(local);
+  } catch(e) {}
+  
+  if (!custom.map(c => String(c).toLowerCase()).includes(cleanCat)) {
+    custom.push(cleanCat);
+  }
+  
+  localStorage.setItem('vfs_custom_categories', JSON.stringify(custom));
+  window._vfsAdminCloudCategories = custom;
+  
+  if (window.VFS_CLOUD_ACTIVE && window.db) {
+    try {
+      await window.db.collection('settings').doc('categories').set({
+        list: custom,
+        updatedAt: Date.now()
+      }, { merge: true });
+    } catch(e) {
+      console.error("Error saving categories to Firestore:", e);
+    }
+  }
+  
+  window.renderAdminCategoryChips();
+}
+
+function setupRealtimeAdminCategoriesListener() {
+  if (!window.db || window._vfsAdminCategoriesListenerActive) return;
+  window._vfsAdminCategoriesListenerActive = true;
+  try {
+    window.db.collection('settings').doc('categories').onSnapshot(doc => {
+      if (doc && doc.exists) {
+        const data = doc.data() || {};
+        if (Array.isArray(data.list)) {
+          window._vfsAdminCloudCategories = data.list;
+          try {
+            localStorage.setItem('vfs_custom_categories', JSON.stringify(data.list));
+          } catch(e) {}
+          if (typeof window.renderAdminCategoryChips === 'function') {
+            window.renderAdminCategoryChips();
+          }
+        }
+      }
+    }, err => {
+      console.warn("Admin categories listener note:", err);
+    });
+  } catch(e) {}
+}
+
 window.toggleCustomCategoryInput = function(prefix, select) {
   const isBulk = prefix.startsWith('bulk_');
   const targetId = isBulk ? `bulkCustomCategory_${prefix.split('_')[1]}` : `${prefix}CustomCategory`;
@@ -2679,12 +2915,7 @@ function renderSingleProductForm() {
         <div class="form-group">
           <label>Category</label>
           <select id="singCategory" onchange="toggleCustomCategoryInput('sing', this)" required>
-            <option value="kadas">Kadas</option>
-            <option value="chains">Chains</option>
-            <option value="necklaces">Necklaces</option>
-            <option value="bracelets">Bracelets</option>
-            <option value="earrings">Ear Rings</option>
-            <option value="rings">Rings</option>
+            ${window.getCategoryOptionsHtml()}
             <option value="__new__">+ Add New Category</option>
           </select>
         </div>
@@ -2748,8 +2979,7 @@ function renderBulkProductsForm() {
         <div class="form-group">
           <label>Category</label>
           <select class="bulk-category" data-idx="${idx}" onchange="toggleCustomCategoryInput('bulk_${idx}', this)" required>
-            <option value="kadas">Kadas</option>
-            <option value="chains">Chains</option>
+            ${window.getCategoryOptionsHtml()}
             <option value="__new__">+ Add New Category</option>
           </select>
           <input type="text" class="bulk-custom-category" id="bulkCustomCategory_${idx}" placeholder="Enter Category Name" style="display:none; margin-top:8px;">
@@ -2823,6 +3053,9 @@ $('#productForm').addEventListener('submit', async (e) => {
     let category = catSelect.value;
     if (category === '__new__') {
       category = $('#singCustomCategory').value.trim().toLowerCase();
+      if (category) {
+        await registerAndSaveNewCategory(category);
+      }
     }
     
     const retailPrice = +$('#singPrice').value;
@@ -2871,6 +3104,9 @@ $('#productForm').addEventListener('submit', async (e) => {
       let category = catSelect.value;
       if (category === '__new__') {
         category = document.getElementById(`bulkCustomCategory_${idx}`).value.trim().toLowerCase();
+        if (category) {
+          await registerAndSaveNewCategory(category);
+        }
       }
       
       const retailPrice = +prices[idx].value;

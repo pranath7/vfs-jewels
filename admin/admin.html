@@ -254,8 +254,38 @@
 
 
 
-      <!-- TAB 4: ADD PRODUCTS -->
+      <!-- TAB 4: ADD PRODUCTS & CATEGORIES -->
       <section class="tab-panel" id="panelCatalog">
+
+        <!-- CATEGORY MANAGEMENT MODULE -->
+        <div class="catalog-wizard-card" style="margin-bottom: 24px; border: 1px solid var(--color-border); border-top: 3px solid var(--color-secondary);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 16px;">
+            <div>
+              <h2 style="margin: 0; font-size: 1.8rem; display: flex; align-items: center; gap: 8px;">
+                🏷️ Shop Categories Management
+              </h2>
+              <p class="wizard-desc" style="margin: 4px 0 0 0;">
+                Add or manage product categories. Any category added here or during product upload reflects immediately on the website header dropdown, mobile menu, and product tracks!
+              </p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <input type="text" id="adminNewCategoryInput" placeholder="New category name (e.g. Anklets, Rings...)" style="padding: 10px 14px; font-size: 1.25rem; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-surface-dark); color: #fff; outline: none; min-width: 260px;" onkeydown="if(event.key==='Enter'){event.preventDefault();addNewCategoryFromAdmin();}">
+              <button type="button" class="btn-primary" onclick="addNewCategoryFromAdmin()" style="padding: 10px 18px; font-size: 1.25rem; font-weight: 700; white-space: nowrap; display: flex; align-items: center; gap: 6px;">
+                <span>+ Add Category</span>
+              </button>
+            </div>
+          </div>
+          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <label style="font-size: 1.15rem; color: var(--color-muted); font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">Active Storefront Categories:</label>
+              <span style="font-size: 1.1rem; color: var(--color-secondary); font-weight: 600;" id="adminCategoriesCountBadge"></span>
+            </div>
+            <div id="adminCategoryChips" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+              <!-- Dynamic category chips render here -->
+            </div>
+          </div>
+        </div>
+
         <div class="catalog-wizard-card">
           <h2>Add New Products to VFS Jewellery</h2>
           <p class="wizard-desc">Upload product photos. If you upload more than 1 image, our smart wizard will ask to group them as a gallery or split them into separate products.</p>

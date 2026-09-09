@@ -734,6 +734,9 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   box-shadow: 0 8px 30px rgba(0,0,0,0.06);
   padding: 20px 24px;
   min-width: 480px;
+  max-width: 650px;
+  max-height: 80vh;
+  overflow-y: auto;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.15s ease, visibility 0.15s ease;
