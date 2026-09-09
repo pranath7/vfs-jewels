@@ -52,7 +52,7 @@ function saveSlotToFirestore(slotData) {
       name: { stringValue: slotData.name || '' },
       phone: { stringValue: cleanPhone },
       city: { stringValue: slotData.city || '' },
-      slotFee: { doubleValue: Number(slotData.slotFee) || 1 },
+      slotFee: { doubleValue: Number(slotData.slotFee) || 500 },
       paymentId: { stringValue: slotData.paymentId || 'SLOT_PAID_CONFIRMED' },
       bookedAt: { integerValue: Date.now() }
     };
@@ -84,14 +84,14 @@ module.exports = async (req, res) => {
     const { name, phone, city, paymentId, slotFee } = req.body || {};
     const cleanPhone = (phone || '').replace(/\D/g, '');
 
-    await saveSlotToFirestore({ name, phone: cleanPhone, city, paymentId, slotFee: slotFee || 1 });
+    await saveSlotToFirestore({ name, phone: cleanPhone, city, paymentId, slotFee: slotFee || 500 });
 
     const adminMsg = `📹 *NEW LIVE SESSION SLOT BOOKING!*
 ━━━━━━━━━━━━━━━━━━━━━━━
 👤 *Customer:* ${name || 'Valued Customer'}
 📱 *Phone:* +${cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone}
 📍 *City:* ${city || 'Not specified'}
-💳 *Slot Fee:* ₹${slotFee || 1} (PAID ✅)
+💳 *Slot Fee:* ₹${slotFee || 500} (PAID ✅)
 🕒 *Session:* Today 8:30 PM Live Preview
 ━━━━━━━━━━━━━━━━━━━━━━━`;
 

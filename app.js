@@ -7343,7 +7343,7 @@ window.triggerRazorpaySlotBooking = async function(slotData = {}) {
       const res = await fetch('/api/create-razorpay-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: 1, currency: 'INR', receipt: 'slot_' + Date.now() })
+        body: JSON.stringify({ amount: 500, currency: 'INR', receipt: 'slot_' + Date.now() })
       });
       if (res.ok) {
         const data = await res.json();
@@ -7356,10 +7356,10 @@ window.triggerRazorpaySlotBooking = async function(slotData = {}) {
 
     const options = {
       key: keyId,
-      amount: 100, // ₹1 in paise
+      amount: 50000, // ₹500 in paise
       currency: "INR",
       name: "VFS JEWELS",
-      description: "Live 8:30 PM Video Session Slot Booking (₹1)",
+      description: "Live 8:30 PM Video Session Slot Booking (₹500)",
       image: "https://res.cloudinary.com/cwx4zame/image/upload/v1783183760/ze9xek1cled8puy6vfex.png",
       order_id: orderId || undefined,
       handler: async function (response) {
@@ -7378,7 +7378,7 @@ window.triggerRazorpaySlotBooking = async function(slotData = {}) {
               name: savedName,
               phone: cleanPhone,
               city: slotData.city || '',
-              slotFee: 1,
+              slotFee: 500,
               paymentId: paymentId,
               bookedAt: Date.now()
             }, { merge: true });
@@ -7392,7 +7392,7 @@ window.triggerRazorpaySlotBooking = async function(slotData = {}) {
           fetch('/api/save-slot-booking', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: savedName, phone: cleanPhone, city: slotData.city || '', slotFee: 1, paymentId, date: todayStr })
+            body: JSON.stringify({ name: savedName, phone: cleanPhone, city: slotData.city || '', slotFee: 500, paymentId, date: todayStr })
           });
         } catch(apiErr) {
           console.warn('API slot save note:', apiErr);
@@ -7631,7 +7631,7 @@ function initLiveSlotBooking() {
       const activeFormHtml = `
         <div style="text-align:center; margin-bottom:16px; padding:12px; background:rgba(212, 175, 55, 0.1); border-radius:8px; border:1px solid #D4AF37;">
           <strong style="font-size:1.2rem; color:#D4AF37; display:block; text-transform:uppercase; letter-spacing:0.5px;">⚡ ${availableSlots} OF ${totalSlots} SLOTS AVAILABLE FOR TODAY'S 8:30 PM SESSION</strong>
-          <div style="font-size:1.15rem; color:var(--text-primary); font-weight:700; margin-top:6px;">💳 Slot Booking Fee: <span style="color:#D4AF37; font-size:1.3rem; font-weight:900;">₹1</span></div>
+          <div style="font-size:1.15rem; color:var(--text-primary); font-weight:700; margin-top:6px;">💳 Slot Booking Fee: <span style="color:#D4AF37; font-size:1.3rem; font-weight:900;">₹500</span></div>
         </div>
         <form class="slot-booking-form-class" style="display:flex; flex-direction:column; gap:12px; text-align:left;">
           <div>
@@ -7646,7 +7646,7 @@ function initLiveSlotBooking() {
             <label style="display:block; font-size:1.1rem; font-weight:700; margin-bottom:4px; color:var(--text-primary);">City</label>
             <input type="text" class="slot-city-class" placeholder="Enter your city" required style="width:100%; padding:10px 12px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:1.2rem; outline:none;">
           </div>
-          <button type="submit" class="btn-primary" style="padding:14px; font-weight:900; text-transform:uppercase; margin-top:8px; font-size:1.3rem; border:none; cursor:pointer; background:#D4AF37; color:#121212; border-radius:8px; letter-spacing:0.5px; box-shadow:0 4px 15px rgba(212,175,55,0.35);">💳 Pay ₹1 &amp; Confirm 8:30 PM Booking →</button>
+          <button type="submit" class="btn-primary" style="padding:14px; font-weight:900; text-transform:uppercase; margin-top:8px; font-size:1.3rem; border:none; cursor:pointer; background:#D4AF37; color:#121212; border-radius:8px; letter-spacing:0.5px; box-shadow:0 4px 15px rgba(212,175,55,0.35);">💳 Pay ₹500 &amp; Confirm 8:30 PM Booking →</button>
         </form>`;
 
       c.innerHTML = activeFormHtml;

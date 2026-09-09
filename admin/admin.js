@@ -4889,7 +4889,8 @@ async function saveSlotSettings(silent = false) {
       await window.db.collection('settings').doc('live_slot_settings').set({
         enabled: enabled,
         meetLink: meetLink,
-        date: todayStr
+        date: todayStr,
+        fee: 500
       }, { merge: true });
     }
   } catch (err) {
@@ -4906,7 +4907,8 @@ async function saveSlotSettings(silent = false) {
         fields: {
           enabled: { booleanValue: enabled },
           meetLink: { stringValue: meetLink },
-          date: { stringValue: todayStr }
+          date: { stringValue: todayStr },
+          fee: { integerValue: 500 }
         }
       })
     });
@@ -4984,7 +4986,7 @@ async function loadSlotPanel() {
                 <td><strong>${b.name || 'Customer'}</strong></td>
                 <td>${b.phone || '-'}</td>
                 <td>${b.city || '-'}</td>
-                <td><span style="background:rgba(39,174,96,0.2); color:#27ae60; padding:4px 8px; border-radius:4px; font-weight:700; font-size:0.9rem;">Paid ₹${b.slotFee || 1}</span><br><span style="font-size:0.75rem; color:#888;">${b.paymentId || 'PAY_SLOT_CONFIRMED'}</span></td>
+                <td><span style="background:rgba(39,174,96,0.2); color:#27ae60; padding:4px 8px; border-radius:4px; font-weight:700; font-size:0.9rem;">Paid ₹${b.slotFee || 500}</span><br><span style="font-size:0.75rem; color:#888;">${b.paymentId || 'PAY_SLOT_CONFIRMED'}</span></td>
                 <td>
                   <a href="${waLink}" target="_blank" class="btn-primary" style="padding:6px 12px; font-size:0.9rem; text-decoration:none; background:#25D366; border-color:#25D366; display:inline-block;">
                     📱 Send WA Link
