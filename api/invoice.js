@@ -76,14 +76,14 @@ function createPDF(order) {
   const calculatedSubtotal = items.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.qty || 1)), 0);
   const subtotal = (order.subtotal !== undefined && order.subtotal !== null && order.subtotal !== '') ? Number(order.subtotal) : calculatedSubtotal;
   const shipping = (order.shipping !== undefined && order.shipping !== null && order.shipping !== '') ? Number(order.shipping) : 90;
-  const gstTotal = (order.gstAmount !== undefined && order.gstAmount !== null && order.gstAmount !== '') ? Number(order.gstAmount) : Math.round(subtotal * 0.03);
+  const gstTotal = (order.gstAmount !== undefined && order.gstAmount !== null && order.gstAmount !== '') ? Number(order.gstAmount) : Math.round(subtotal * 3 / 103);
   const cgst = Math.round(gstTotal / 2);
   const sgst = gstTotal - cgst;
 
   const couponAmount = Number(order.couponDiscount || 0);
   const walletAmount = Number(order.walletDiscount || 0);
   const advanceAmount = Number(order.advanceAdjusted || order.advanceDeducted || 0);
-  const total = (order.total !== undefined && order.total !== null && order.total !== '') ? Number(order.total) : Math.max(0, subtotal + shipping + gstTotal - couponAmount - walletAmount - advanceAmount);
+  const total = (order.total !== undefined && order.total !== null && order.total !== '') ? Number(order.total) : Math.max(0, subtotal + shipping - couponAmount - walletAmount - advanceAmount);
 
   const content = [];
 

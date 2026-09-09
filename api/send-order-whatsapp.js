@@ -261,7 +261,7 @@ Your order has been received and confirmed.
 ${itemsList || '1. Jewellery Order\n'}
 ━━━━━━━━━━━━━━━━━━━━━━━
 💰 *Subtotal:* ₹${order.subtotal || order.total}
-🏷️ *GST (3%):* ₹${order.gstAmount || 0}
+🏷️ *GST (3% Included):* ₹${order.gstAmount || 0}
 🚚 *Delivery Fee:* ₹${order.shipping || 90}
 ━━━━━━━━━━━━━━━━━━━━━━━
 ✅ *Grand Total: ₹${order.total}*

@@ -1287,7 +1287,7 @@ function updateHeaderTitles() {
   const smsPanel = $('#smsLogPanel');
   const courierStats = $('#courierDistributionArea');
   
-  const isAltTab = ['catalog', 'search', 'returns', 'moderation', 'customers', 'reports', 'banners', 'walogs', 'slots', 'wallets'].includes(activeTab);
+  const isAltTab = ['catalog', 'search', 'returns', 'customers', 'reports', 'banners', 'walogs', 'slots', 'wallets'].includes(activeTab);
   const isAltStages = ['preparing', 'ready', 'completed', 'cancelled'].includes(activeTab);
   
   if (activeTab === 'walogs') {
@@ -1335,9 +1335,6 @@ function updateHeaderTitles() {
   } else if (activeTab === 'returns') {
     title.textContent = 'Return Queries';
     subtitle.textContent = 'Verify unboxing videos and invoice screenshots to approve returns and credit points.';
-  } else if (activeTab === 'moderation') {
-    title.textContent = 'Reviews & Reels Moderation';
-    subtitle.textContent = 'Moderator panel to approve or reject video/photo reviews before publishing.';
   } else if (activeTab === 'customers') {
     title.textContent = 'Customer Database';
     subtitle.textContent = 'View all registered wholesale resellers, their purchase metrics, and loyalty tiers.';
@@ -1636,13 +1633,13 @@ window.downloadInvoicePDF = async function(orderId) {
 
   const subtotal = order.subtotal || items.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
   const shipping = order.shipping || 90;
-  const gstAmt = order.gstAmount || Math.round(subtotal * 0.03);
+  const gstAmt = order.gstAmount || Math.round(subtotal * 3 / 103);
   const cgst = Math.round(gstAmt / 2);
   const sgst = gstAmt - cgst;
   const advanceAmt = order.advanceAdjusted || order.advanceDeducted || 0;
   const couponAmt = order.couponDiscount || 0;
   const walletAmt = order.walletDiscount || 0;
-  const total = order.total || subtotal;
+  const total = (order.total !== undefined && order.total !== null && order.total !== '') ? Number(order.total) : Math.max(0, subtotal + shipping - couponAmt - advanceAmt - walletAmt);
 
   const tableRows = items.map((item, idx) => `
     <tr style="border-bottom: 1px solid #eeeeee;">
@@ -3340,77 +3337,6 @@ window.markOrderDelivered = async function(orderId) {
   }
 };
 
-async function loadReviewsModeration() {
-  const moderationContainer = $('#listModeration');
-  const countBadge = $('#countModeration');
-  if (!moderationContainer) return;
-  moderationContainer.innerHTML = '';
-
-  const reviewsList = await window.VFS_DB.getReviews();
-  const pendingReviews = reviewsList.filter(r => r.status === 'pending');
-
-  if (countBadge) {
-    countBadge.textContent = pendingReviews.length;
-  }
-
-  if (pendingReviews.length === 0) {
-    moderationContainer.innerHTML = `<div style="text-align:center;color:var(--color-muted);padding:40px 10px;font-size:1.3rem;">No pending reviews for moderation</div>`;
-    return;
-  }
-
-  pendingReviews.forEach(rev => {
-    const card = document.createElement('div');
-    card.className = 'order-card';
-    card.style.borderLeft = '4px solid var(--color-secondary)';
-    
-    let mediaHtml = '';
-    if (rev.fileUrl) {
-      if (rev.fileType === 'video') {
-        mediaHtml = `
-          <div style="margin-top:10px;">
-            <video src="${rev.fileUrl}" style="max-width:100%; max-height:160px; border-radius:6px;" controls></video>
-          </div>`;
-      } else {
-        mediaHtml = `
-          <div style="margin-top:10px;">
-            <img src="${rev.fileUrl}" style="max-width:100%; max-height:160px; border-radius:6px; object-fit:cover;">
-          </div>`;
-      }
-    }
-    
-    card.innerHTML = `
-      <div class="card-top">
-        <span class="order-id">${escapeHtml(rev.id)}</span>
-        <span class="order-date">${escapeHtml(rev.date)}</span>
-      </div>
-      <div class="card-customer" style="margin-bottom:8px;">
-        <span class="cust-name">${escapeHtml(rev.name)}</span>
-        <span class="cust-details" style="color:var(--color-secondary); font-size:1.4rem;">${'★'.repeat(rev.rating)}${'☆'.repeat(5-rev.rating)}</span>
-      </div>
-      <p style="font-size:1.3rem; line-height:1.4; color:#333; margin-bottom:8px;">"${escapeHtml(rev.text)}"</p>
-      ${mediaHtml}
-      <div class="card-actions" style="margin-top:12px; display:flex; gap:8px;">
-        <button class="btn-card-primary" onclick="approveReview('${rev.id}')" style="background:#27ae60; border-color:#27ae60;">Approve</button>
-        <button class="btn-card-danger" onclick="rejectReview('${rev.id}')">Reject</button>
-      </div>
-    `;
-    moderationContainer.appendChild(card);
-  });
-}
-
-window.approveReview = async function(reviewId) {
-  await window.VFS_DB.updateReview(reviewId, { status: 'approved' });
-  adminToast('Review approved and published! 🎉');
-  await loadDashboard();
-};
-
-window.rejectReview = async function(reviewId) {
-  if (!confirm('Are you sure you want to reject and delete this review?')) return;
-  await window.VFS_DB.updateReview(reviewId, { status: 'rejected' });
-  adminToast('Review rejected and archived.', 'error');
-  await loadDashboard();
-};
-
 // ── Order Stage Helper ──
 window.advanceOrderStage = async function(orderId, newStatus) {
   await window.VFS_DB.updateOrder(orderId, { status: newStatus });
@@ -4733,16 +4659,34 @@ async function loadSlotPanel() {
         updateSlotToggleBadge();
       }
 
-      // Real-time listener for today's slot bookings in Admin Panel
+      // Real-time listener for today's slot bookings in Admin Panel (deduplicated by phone)
       if (window.adminSlotUnsub) window.adminSlotUnsub();
       window.adminSlotUnsub = window.db.collection('live_slot_bookings')
         .where('date', '==', todayStr)
         .onSnapshot(snap => {
           const tbody = document.getElementById('slotBookingsTbody');
           const countSpan = document.getElementById('slotCountSpan');
-          if (countSpan) countSpan.textContent = snap.docs ? snap.docs.length : 0;
 
-          if (!snap.docs || snap.empty) {
+          // Deduplicate bookings by customer phone (last 10 digits)
+          const uniqueMap = new Map();
+          if (snap && snap.docs) {
+            snap.docs.forEach(d => {
+              const b = d.data();
+              const cleanP = (b.phone || '').replace(/\D/g, '').slice(-10) || d.id;
+              if (!uniqueMap.has(cleanP)) {
+                uniqueMap.set(cleanP, b);
+              } else {
+                const existing = uniqueMap.get(cleanP);
+                if ((b.bookedAt || 0) > (existing.bookedAt || 0)) {
+                  uniqueMap.set(cleanP, b);
+                }
+              }
+            });
+          }
+          const uniqueBookings = Array.from(uniqueMap.values());
+          if (countSpan) countSpan.textContent = uniqueBookings.length;
+
+          if (uniqueBookings.length === 0) {
             if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#888;">No slots booked yet today.</td></tr>';
             return;
           }
@@ -4750,8 +4694,7 @@ async function loadSlotPanel() {
           let rowsHtml = '';
           const meetUrl = document.getElementById('adminMeetLinkInput') ? document.getElementById('adminMeetLinkInput').value.trim() : '';
 
-          snap.docs.forEach((d, idx) => {
-            const b = d.data();
+          uniqueBookings.forEach((b, idx) => {
             const cleanPhone = (b.phone || '').replace(/[^0-9]/g, '');
             const waMsg = encodeURIComponent(`Hi ${b.name}! Here is your Google Meet link for today's 8:30 PM VFS Jewels Live Session: ${meetUrl || 'https://meet.google.com'}`);
             const waLink = `https://wa.me/${cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone}?text=${waMsg}`;

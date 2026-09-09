@@ -2444,7 +2444,7 @@ if (checkPinBtn) {
     // Simulate check
     const days = 2 + Math.floor(Math.random() * 4);
     res.className = 'pin-result ok';
-    res.innerHTML = `✓ Delivery available! Estimated ${days}–${days + 2} business days.<br><span style="font-weight:700;color:var(--color-secondary)">Express Shipping: ₹90 applies!</span>`;
+    res.innerHTML = `✓ Delivery available! Estimated ${days}–${days + 2} business days.<br><span style="font-weight:700;color:var(--color-secondary)">Shipping: ₹90 (<₹5k) · ₹150 (₹5k–₹10k) · ₹180 (≥₹10k)</span>`;
   });
 }
 
@@ -2692,10 +2692,12 @@ $('#coForm').addEventListener('submit', async (e) => {
   });
   const itemsList = await Promise.all(stockPromises);
   
-  const gstAmount = Math.round(subtotal * 0.03);
+  // 3% GST is already included in product prices (Taxable = Subtotal * 100 / 103)
+  const gstAmount = Math.round(subtotal * 3 / 103);
+  // Dynamic delivery charges: till 5k - ₹90, 5k-10k - ₹150, 10k and above - ₹180 (₹0 for demo product or freeShipping)
   const isDemoCart = cart.some(ci => String(ci.id) === '999' || ci.id === 999 || String(ci.id) === '1' || ci.id === 1);
   const hasFreeShippingItem = itemsList.some(i => i.freeShipping || i.price === 1 || String(i.id) === '999');
-  const shippingCost = (isDemoCart || hasFreeShippingItem) ? 0 : 90;
+  const shippingCost = (isDemoCart || hasFreeShippingItem) ? 0 : (subtotal >= 10000 ? 180 : subtotal >= 5000 ? 150 : 90);
   
   // Calculate Wholesale Advance Deduction if applicable
   let advanceDeduction = 0;
@@ -2717,7 +2719,8 @@ $('#coForm').addEventListener('submit', async (e) => {
     waReferralDiscount = Math.round(subtotal * 0.01);
   }
 
-  let grandTotal = subtotal + gstAmount + shippingCost - advanceDeduction - couponDiscount - waReferralDiscount;
+  // 3% GST is already included in subtotal, so customer is not charged extra GST
+  let grandTotal = subtotal + shippingCost - advanceDeduction - couponDiscount - waReferralDiscount;
   
   // Calculate Wallet Discount
   let walletDiscount = 0;
@@ -2785,7 +2788,7 @@ $('#coForm').addEventListener('submit', async (e) => {
 
   // Render Step 2 Payment details
   $('#coSumSubtotal').textContent = fmt(subtotal);
-  $('#coSumGST').textContent = fmt(gstAmount);
+  $('#coSumGST').textContent = `₹${fmt(gstAmount)} (Included)`;
   $('#coSumShipping').textContent = fmt(shippingCost);
   
   if (walletDiscount > 0) {
@@ -2954,7 +2957,7 @@ async function finalizeOrderAndProceed(paymentMethod, transactionId = '') {
 ${itemsSummaryText}
 ----------------------------------
 *Subtotal:* ₹${activeCheckoutOrder.subtotal}
-*GST (3%):* ₹${activeCheckoutOrder.gstAmount}
+*GST (3% Included):* ₹${activeCheckoutOrder.gstAmount}
 *Delivery Fee:* ₹${activeCheckoutOrder.shipping}\n`;
 
   if (activeCheckoutOrder.walletDiscount && activeCheckoutOrder.walletDiscount > 0) {
@@ -7393,7 +7396,12 @@ function initLiveSlotBooking() {
         const data = await res.json();
         const docs = data.documents || [];
         const todayDocs = docs.filter(d => d.fields && d.fields.date && d.fields.date.stringValue === todayStr);
-        currentBookedCount = todayDocs.length;
+        const uniquePhones = new Set();
+        todayDocs.forEach(d => {
+          const p = (d.fields && d.fields.phone && d.fields.phone.stringValue) ? d.fields.phone.stringValue.replace(/\D/g, '').slice(-10) : (d.name || Math.random());
+          uniquePhones.add(p);
+        });
+        currentBookedCount = uniquePhones.size;
       }
       renderSlotUI();
     } catch (e) {
@@ -7417,12 +7425,20 @@ function initLiveSlotBooking() {
             }
           });
 
-        // Real-time listener for Bookings
+        // Real-time listener for Bookings (deduplicated by phone so 1 customer takes 1 slot)
         if (window.webSlotUnsub) window.webSlotUnsub();
         window.webSlotUnsub = window.db.collection('live_slot_bookings')
           .where('date', '==', todayStr)
           .onSnapshot(snap => {
-            currentBookedCount = (snap && snap.docs) ? snap.docs.length : 0;
+            const uniquePhones = new Set();
+            if (snap && snap.docs) {
+              snap.docs.forEach(d => {
+                const b = d.data();
+                const p = (b.phone || '').replace(/\D/g, '').slice(-10) || d.id;
+                uniquePhones.add(p);
+              });
+            }
+            currentBookedCount = uniquePhones.size;
             renderSlotUI();
           });
       } catch (e) {

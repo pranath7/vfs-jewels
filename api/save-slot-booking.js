@@ -44,11 +44,11 @@ function sendWhatsAppText(toPhone, message) {
 
 function saveSlotToFirestore(slotData) {
   return new Promise((resolve) => {
-    const cleanPhone = (slotData.phone || '').replace(/\D/g, '');
-    const docId = 'SLOT_' + cleanPhone + '_' + Date.now();
-    const todayStr = new Date().toISOString().split('T')[0];
+    const cleanPhone = (slotData.phone || '').replace(/\D/g, '').slice(-10);
+    const todayStr = slotData.date || new Date().toISOString().split('T')[0];
+    const docId = 'SLOT_' + todayStr + '_' + cleanPhone;
     const fields = {
-      date: { stringValue: slotData.date || todayStr },
+      date: { stringValue: todayStr },
       name: { stringValue: slotData.name || '' },
       phone: { stringValue: cleanPhone },
       city: { stringValue: slotData.city || '' },
@@ -59,8 +59,8 @@ function saveSlotToFirestore(slotData) {
     const data = JSON.stringify({ fields });
     const options = {
       hostname: 'firestore.googleapis.com',
-      path: `/v1/projects/vfs-jewellery/databases/(default)/documents/live_slot_bookings?documentId=${docId}`,
-      method: 'POST',
+      path: `/v1/projects/vfs-jewellery/databases/(default)/documents/live_slot_bookings/${docId}`,
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(data)
