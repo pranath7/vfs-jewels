@@ -738,44 +738,87 @@ window.VFS_DB = {
 
   // ── Banners ──
   getBanners: async function() {
-    if (window.VFS_CLOUD_ACTIVE) {
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
         const snap = await window.db.collection('banners').get();
         const list = [];
         snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
-        return list;
+        if (list.length > 0) {
+          list.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+          return list;
+        }
       } catch(e) {
-        console.error("Firestore read banners error:", e);
+        console.warn("Firestore read banners error:", e);
       }
     }
+    // Direct REST API fallback
+    try {
+      const res = await fetch('https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/banners');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.documents && data.documents.length > 0) {
+          const list = data.documents.map(d => {
+            const f = d.fields || {};
+            return {
+              id: f.id?.stringValue || d.name.split('/').pop(),
+              url: f.url?.stringValue || '',
+              link: f.link?.stringValue || '#categories',
+              createdAt: Number(f.createdAt?.integerValue || 0)
+            };
+          }).filter(b => b.url);
+          list.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+          if (list.length > 0) return list;
+        }
+      }
+    } catch(err) {}
+
     const local = localStorage.getItem('vfs_banners');
     return local ? JSON.parse(local) : [];
   },
 
   saveBanner: async function(banner) {
-    if (window.VFS_CLOUD_ACTIVE) {
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
         await window.db.collection('banners').doc(banner.id).set(banner);
-        return;
       } catch(e) {
-        console.error("Firestore write banner error:", e);
+        console.warn("Firestore write banner error:", e);
       }
     }
+    try {
+      await fetch(`https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/banners/${banner.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fields: {
+            id: { stringValue: banner.id },
+            url: { stringValue: banner.url },
+            link: { stringValue: banner.link || '#categories' },
+            createdAt: { integerValue: String(banner.createdAt || Date.now()) }
+          }
+        })
+      });
+    } catch(err) {}
+
     const local = localStorage.getItem('vfs_banners');
     let list = local ? JSON.parse(local) : [];
-    list.push(banner);
+    list.unshift(banner);
     localStorage.setItem('vfs_banners', JSON.stringify(list));
   },
 
   deleteBanner: async function(bannerId) {
-    if (window.VFS_CLOUD_ACTIVE) {
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
         await window.db.collection('banners').doc(bannerId).delete();
-        return;
       } catch(e) {
-        console.error("Firestore delete banner error:", e);
+        console.warn("Firestore delete banner error:", e);
       }
     }
+    try {
+      await fetch(`https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/banners/${bannerId}`, {
+        method: 'DELETE'
+      });
+    } catch(err) {}
+
     const local = localStorage.getItem('vfs_banners');
     const list = local ? JSON.parse(local) : [];
     const filtered = list.filter(b => b.id !== bannerId);

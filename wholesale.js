@@ -101,6 +101,11 @@ async function initCloudConfig() {
 
         // Setup Real-time Firestore Listeners for Products and Stock
         setupRealtimeProductsListener();
+
+        // Immediately sync hero banners from cloud
+        if (typeof window.loadDynamicHeroBanners === 'function') {
+          window.loadDynamicHeroBanners();
+        }
       }
     }
   } catch (e) {
@@ -599,29 +604,72 @@ window.VFS_DB = {
 
   // ── Banners ──
   getBanners: async function() {
-    if (window.VFS_CLOUD_ACTIVE) {
+    // 1. Direct Firestore REST API (fastest on initial load, works without waiting for Firebase SDK)
+    try {
+      const res = await fetch('https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/banners');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.documents && data.documents.length > 0) {
+          const banners = data.documents.map(d => {
+            const f = d.fields || {};
+            return {
+              id: f.id?.stringValue || d.name.split('/').pop(),
+              url: f.url?.stringValue || '',
+              link: f.link?.stringValue || '#categories',
+              createdAt: Number(f.createdAt?.integerValue || 0)
+            };
+          }).filter(b => b.url);
+          banners.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+          if (banners.length > 0) return banners;
+        }
+      }
+    } catch(err) {
+      console.warn("Direct REST banners fetch note:", err);
+    }
+
+    // 2. Try Firestore SDK if active
+    if (window.db) {
       try {
-        const snap = await window.db.collection('banners').orderBy('createdAt', 'desc').get();
+        const snap = await window.db.collection('banners').get();
         const banners = [];
         snap.forEach(doc => banners.push({ id: doc.id, ...doc.data() }));
-        return banners;
+        if (banners.length > 0) {
+          banners.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+          return banners;
+        }
       } catch(e) {
-        console.error("Firestore read banners error:", e);
+        console.warn("Firestore SDK read banners notice:", e);
       }
     }
+
+    // 3. Local fallback
     const local = localStorage.getItem('vfs_banners');
     return local ? JSON.parse(local) : [];
   },
 
   saveBanner: async function(banner) {
-    if (window.VFS_CLOUD_ACTIVE) {
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
         await window.db.collection('banners').doc(banner.id).set(banner);
-        return;
       } catch(e) {
-        console.error("Firestore write banner error:", e);
+        console.warn("Firestore write banner error:", e);
       }
     }
+    try {
+      await fetch(`https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/banners/${banner.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fields: {
+            id: { stringValue: banner.id },
+            url: { stringValue: banner.url },
+            link: { stringValue: banner.link || '#categories' },
+            createdAt: { integerValue: String(banner.createdAt || Date.now()) }
+          }
+        })
+      });
+    } catch(err) {}
+
     const local = localStorage.getItem('vfs_banners');
     const list = local ? JSON.parse(local) : [];
     list.unshift(banner);
@@ -629,14 +677,19 @@ window.VFS_DB = {
   },
 
   deleteBanner: async function(bannerId) {
-    if (window.VFS_CLOUD_ACTIVE) {
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
         await window.db.collection('banners').doc(bannerId).delete();
-        return;
       } catch(e) {
-        console.error("Firestore delete banner error:", e);
+        console.warn("Firestore delete banner error:", e);
       }
     }
+    try {
+      await fetch(`https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/banners/${bannerId}`, {
+        method: 'DELETE'
+      });
+    } catch(err) {}
+
     const local = localStorage.getItem('vfs_banners');
     const list = local ? JSON.parse(local) : [];
     const filtered = list.filter(b => b.id !== bannerId);
@@ -945,14 +998,58 @@ window.addEventListener('scroll', () => {
   $('#siteHeader').classList.toggle('scrolled', window.scrollY > 10);
 });
 
-// ── Hero Slider ──
-(function initHero() {
+// ── Hero Slider with Live Cloud Sync ──
+let heroSliderTimer = null;
+window.loadDynamicHeroBanners = async function() {
   const slider = $('#heroSlider');
+  if (!slider) return;
+
+  try {
+    const customBanners = await window.VFS_DB.getBanners();
+    if (customBanners && customBanners.length > 0) {
+      slider.innerHTML = customBanners.map((b, i) => `
+        <div class="hero-slide ${i === 0 ? 'active' : ''}">
+          <a href="${b.link || '#categories'}" class="hero-banner-link" aria-label="Shop VFS Jewels Collection">
+            <img src="${b.url}" alt="VFS Jewels Luxury Jewellery" ${i === 0 ? 'fetchpriority="high"' : ''}>
+          </a>
+        </div>
+      `).join('');
+    } else {
+      slider.innerHTML = `
+        <div class="hero-slide active">
+          <a href="#categories" class="hero-banner-link" aria-label="Shop VFS Jewels Collection - Dark Theme">
+            <img src="assets/vfsbanner01.jpg" alt="VFS Jewels Premium Korean &amp; Imitation Jewellery - Dark Theme" fetchpriority="high">
+          </a>
+        </div>
+        <div class="hero-slide">
+          <a href="#categories" class="hero-banner-link" aria-label="Shop VFS Jewels Collection - Light Theme">
+            <img src="assets/vfsbanner02.png" alt="VFS Jewels Premium Korean &amp; Imitation Jewellery - Light Theme">
+          </a>
+        </div>
+      `;
+    }
+  } catch(e) {
+    console.warn("Could not load dynamic banners, using fallback:", e);
+  }
+
   const slides = $$('#heroSlider .hero-slide');
   const dotsContainer = $('#heroDots');
   const prevBtn = $('#heroPrev');
   const nextBtn = $('#heroNext');
   if (!slides.length) return;
+
+  // Single banner handling: hide controls and stop timer
+  if (slides.length <= 1) {
+    if (prevBtn) prevBtn.style.display = 'none';
+    if (nextBtn) nextBtn.style.display = 'none';
+    if (dotsContainer) dotsContainer.style.display = 'none';
+    if (heroSliderTimer) clearInterval(heroSliderTimer);
+    return;
+  } else {
+    if (prevBtn) prevBtn.style.display = '';
+    if (nextBtn) nextBtn.style.display = '';
+    if (dotsContainer) dotsContainer.style.display = '';
+  }
 
   if (dotsContainer) dotsContainer.innerHTML = '';
   slides.forEach((_, i) => {
@@ -979,8 +1076,9 @@ window.addEventListener('scroll', () => {
   if (prevBtn) prevBtn.onclick = (e) => { e.preventDefault(); goSlide(cur - 1); resetTimer(); };
   if (nextBtn) nextBtn.onclick = (e) => { e.preventDefault(); goSlide(cur + 1); resetTimer(); };
 
-  let startX = 0;
-  if (slider) {
+  if (slider && !slider._hasTouchBound) {
+    slider._hasTouchBound = true;
+    let startX = 0;
     slider.addEventListener('touchstart', (e) => {
       startX = e.touches[0].clientX;
     }, { passive: true });
@@ -995,12 +1093,35 @@ window.addEventListener('scroll', () => {
     }, { passive: true });
   }
 
-  let timer = setInterval(() => goSlide(cur + 1), 5000);
   function resetTimer() {
-    clearInterval(timer);
-    timer = setInterval(() => goSlide(cur + 1), 5000);
+    if (heroSliderTimer) clearInterval(heroSliderTimer);
+    heroSliderTimer = setInterval(() => goSlide(cur + 1), 5000);
   }
-})();
+  resetTimer();
+
+  // Attach real-time cloud sync listener
+  const setupBannerListener = () => {
+    if (window.db && !window._heroBannersListenerAttached) {
+      window._heroBannersListenerAttached = true;
+      try {
+        window.db.collection('banners').onSnapshot(() => {
+          window.loadDynamicHeroBanners();
+        }, err => console.warn('Banners real-time snapshot notice:', err));
+      } catch(e) {}
+    }
+  };
+  setupBannerListener();
+  if (!window._heroBannersListenerAttached) {
+    const bannerSyncInterval = setInterval(() => {
+      if (window.db) {
+        setupBannerListener();
+        clearInterval(bannerSyncInterval);
+      }
+    }, 1000);
+    setTimeout(() => clearInterval(bannerSyncInterval), 10000);
+  }
+};
+window.loadDynamicHeroBanners();
 
 // ── State for Lazy Loading / Horizontal Infinite Scroll ──
 const LOADED_COUNTS = {};

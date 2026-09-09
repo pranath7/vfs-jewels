@@ -101,6 +101,11 @@ async function initCloudConfig() {
 
         // Setup Real-time Firestore Listeners for Products and Stock
         setupRealtimeProductsListener();
+
+        // Immediately sync hero banners from cloud
+        if (typeof window.loadDynamicHeroBanners === 'function') {
+          window.loadDynamicHeroBanners();
+        }
       }
     }
   } catch (e) {
@@ -599,29 +604,72 @@ window.VFS_DB = {
 
   // ── Banners ──
   getBanners: async function() {
-    if (window.VFS_CLOUD_ACTIVE) {
+    // 1. Direct Firestore REST API (fastest on initial load, works without waiting for Firebase SDK)
+    try {
+      const res = await fetch('https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/banners');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.documents && data.documents.length > 0) {
+          const banners = data.documents.map(d => {
+            const f = d.fields || {};
+            return {
+              id: f.id?.stringValue || d.name.split('/').pop(),
+              url: f.url?.stringValue || '',
+              link: f.link?.stringValue || '#categories',
+              createdAt: Number(f.createdAt?.integerValue || 0)
+            };
+          }).filter(b => b.url);
+          banners.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+          if (banners.length > 0) return banners;
+        }
+      }
+    } catch(err) {
+      console.warn("Direct REST banners fetch note:", err);
+    }
+
+    // 2. Try Firestore SDK if active
+    if (window.db) {
       try {
-        const snap = await window.db.collection('banners').orderBy('createdAt', 'desc').get();
+        const snap = await window.db.collection('banners').get();
         const banners = [];
         snap.forEach(doc => banners.push({ id: doc.id, ...doc.data() }));
-        return banners;
+        if (banners.length > 0) {
+          banners.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+          return banners;
+        }
       } catch(e) {
-        console.error("Firestore read banners error:", e);
+        console.warn("Firestore SDK read banners notice:", e);
       }
     }
+
+    // 3. Local fallback
     const local = localStorage.getItem('vfs_banners');
     return local ? JSON.parse(local) : [];
   },
 
   saveBanner: async function(banner) {
-    if (window.VFS_CLOUD_ACTIVE) {
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
         await window.db.collection('banners').doc(banner.id).set(banner);
-        return;
       } catch(e) {
-        console.error("Firestore write banner error:", e);
+        console.warn("Firestore write banner error:", e);
       }
     }
+    try {
+      await fetch(`https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/banners/${banner.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fields: {
+            id: { stringValue: banner.id },
+            url: { stringValue: banner.url },
+            link: { stringValue: banner.link || '#categories' },
+            createdAt: { integerValue: String(banner.createdAt || Date.now()) }
+          }
+        })
+      });
+    } catch(err) {}
+
     const local = localStorage.getItem('vfs_banners');
     const list = local ? JSON.parse(local) : [];
     list.unshift(banner);
@@ -629,14 +677,19 @@ window.VFS_DB = {
   },
 
   deleteBanner: async function(bannerId) {
-    if (window.VFS_CLOUD_ACTIVE) {
+    if (window.VFS_CLOUD_ACTIVE && window.db) {
       try {
         await window.db.collection('banners').doc(bannerId).delete();
-        return;
       } catch(e) {
-        console.error("Firestore delete banner error:", e);
+        console.warn("Firestore delete banner error:", e);
       }
     }
+    try {
+      await fetch(`https://firestore.googleapis.com/v1/projects/vfs-jewellery/databases/(default)/documents/banners/${bannerId}`, {
+        method: 'DELETE'
+      });
+    } catch(err) {}
+
     const local = localStorage.getItem('vfs_banners');
     const list = local ? JSON.parse(local) : [];
     const filtered = list.filter(b => b.id !== bannerId);
@@ -959,6 +1012,19 @@ window.loadDynamicHeroBanners = async function() {
           </a>
         </div>
       `).join('');
+    } else {
+      slider.innerHTML = `
+        <div class="hero-slide active">
+          <a href="#categories" class="hero-banner-link" aria-label="Shop VFS Jewels Collection - Dark Theme">
+            <img src="assets/vfsbanner01.jpg" alt="VFS Jewels Premium Korean &amp; Imitation Jewellery - Dark Theme" fetchpriority="high">
+          </a>
+        </div>
+        <div class="hero-slide">
+          <a href="#categories" class="hero-banner-link" aria-label="Shop VFS Jewels Collection - Light Theme">
+            <img src="assets/vfsbanner02.png" alt="VFS Jewels Premium Korean &amp; Imitation Jewellery - Light Theme">
+          </a>
+        </div>
+      `;
     }
   } catch(e) {
     console.warn("Could not load dynamic banners, using fallback:", e);
@@ -969,6 +1035,19 @@ window.loadDynamicHeroBanners = async function() {
   const prevBtn = $('#heroPrev');
   const nextBtn = $('#heroNext');
   if (!slides.length) return;
+
+  // Single banner handling: hide controls and stop timer
+  if (slides.length <= 1) {
+    if (prevBtn) prevBtn.style.display = 'none';
+    if (nextBtn) nextBtn.style.display = 'none';
+    if (dotsContainer) dotsContainer.style.display = 'none';
+    if (heroSliderTimer) clearInterval(heroSliderTimer);
+    return;
+  } else {
+    if (prevBtn) prevBtn.style.display = '';
+    if (nextBtn) nextBtn.style.display = '';
+    if (dotsContainer) dotsContainer.style.display = '';
+  }
 
   if (dotsContainer) dotsContainer.innerHTML = '';
   slides.forEach((_, i) => {
@@ -1018,14 +1097,26 @@ window.loadDynamicHeroBanners = async function() {
   }
   resetTimer();
 
-  // Attach real-time cloud sync listener once
-  if (window.VFS_CLOUD_ACTIVE && window.db && !window._heroBannersListenerAttached) {
-    window._heroBannersListenerAttached = true;
-    try {
-      window.db.collection('banners').onSnapshot(() => {
-        window.loadDynamicHeroBanners();
-      }, err => console.warn('Banners real-time snapshot notice:', err));
-    } catch(e) {}
+  // Attach real-time cloud sync listener
+  const setupBannerListener = () => {
+    if (window.db && !window._heroBannersListenerAttached) {
+      window._heroBannersListenerAttached = true;
+      try {
+        window.db.collection('banners').onSnapshot(() => {
+          window.loadDynamicHeroBanners();
+        }, err => console.warn('Banners real-time snapshot notice:', err));
+      } catch(e) {}
+    }
+  };
+  setupBannerListener();
+  if (!window._heroBannersListenerAttached) {
+    const bannerSyncInterval = setInterval(() => {
+      if (window.db) {
+        setupBannerListener();
+        clearInterval(bannerSyncInterval);
+      }
+    }, 1000);
+    setTimeout(() => clearInterval(bannerSyncInterval), 10000);
   }
 };
 window.loadDynamicHeroBanners();
