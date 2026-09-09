@@ -84,7 +84,7 @@ async function initCloudConfig() {
               map.set(idKey, { ...existing, ...p, id: existing.id !== undefined ? existing.id : p.id });
             }
           });
-          window.VFS_PRODUCTS_CACHE = Array.from(map.values());
+          window.VFS_PRODUCTS_CACHE = Array.from(map.values()).filter(p => p && String(p.id) !== '999' && String(p.sku || '').toUpperCase() !== 'DEMO-001' && String(p.cat || '').trim().toLowerCase() !== 'demo');
           PRODUCTS.length = 0;
           PRODUCTS.push(...window.VFS_PRODUCTS_CACHE);
           PRODUCTS.forEach(p => {
@@ -122,17 +122,22 @@ function setupRealtimeCategoriesListener() {
     window.db.collection('settings').doc('categories').onSnapshot(doc => {
       if (doc && doc.exists) {
         const data = doc.data() || {};
-        if (Array.isArray(data.list)) {
-          window._vfsCloudCategories = data.list;
-          try {
-            localStorage.setItem('vfs_custom_categories', JSON.stringify(data.list));
-          } catch(e) {}
-          if (typeof window.renderDynamicHeaderCategories === 'function') {
-            window.renderDynamicHeaderCategories();
-          }
-          if (typeof populateDrawerCategories === 'function') {
-            populateDrawerCategories();
-          }
+        let list = Array.isArray(data.list) ? data.list : [];
+        let deleted = Array.isArray(data.deleted) ? data.deleted : [];
+        const delSet = new Set(deleted.map(d => String(d).trim().toLowerCase()));
+        list = list.filter(c => !delSet.has(String(c).trim().toLowerCase()));
+        
+        window._vfsCloudCategories = list;
+        window._vfsDeletedCategories = deleted;
+        try {
+          localStorage.setItem('vfs_custom_categories', JSON.stringify(list));
+          localStorage.setItem('vfs_deleted_categories', JSON.stringify(deleted));
+        } catch(e) {}
+        if (typeof window.renderDynamicHeaderCategories === 'function') {
+          window.renderDynamicHeaderCategories();
+        }
+        if (typeof populateDrawerCategories === 'function') {
+          populateDrawerCategories();
         }
       }
     }, err => {
@@ -179,7 +184,7 @@ function setupRealtimeProductsListener() {
       });
 
       if (hasChanges) {
-        window.VFS_PRODUCTS_CACHE = Array.from(prodMap.values());
+        window.VFS_PRODUCTS_CACHE = Array.from(prodMap.values()).filter(p => p && String(p.id) !== '999' && String(p.sku || '').toUpperCase() !== 'DEMO-001' && String(p.cat || '').trim().toLowerCase() !== 'demo');
         PRODUCTS.length = 0;
         PRODUCTS.push(...window.VFS_PRODUCTS_CACHE);
         try {
@@ -781,21 +786,41 @@ window.VFS_DB = {
 
 
 function getFullCatalog() {
-  if (window.VFS_PRODUCTS_CACHE && window.VFS_PRODUCTS_CACHE.length > 0) {
-    return window.VFS_PRODUCTS_CACHE;
-  }
-  return PRODUCTS;
+  const list = (window.VFS_PRODUCTS_CACHE && window.VFS_PRODUCTS_CACHE.length > 0)
+    ? window.VFS_PRODUCTS_CACHE
+    : PRODUCTS;
+  return list.filter(p => p && String(p.id) !== '999' && String(p.sku || '').toUpperCase() !== 'DEMO-001' && String(p.cat || '').trim().toLowerCase() !== 'demo');
 }
 
 // ── DYNAMIC CATEGORIES MANAGEMENT ──
 window.BASE_CATEGORIES = ['kadas', 'chains', 'bracelets', 'earrings', 'necklaces'];
 window._vfsCloudCategories = [];
+window._vfsDeletedCategories = [];
 
 function getAllCategories() {
   const catSet = new Set();
   
+  // Excluded system & invalid category keys (demo is permanently blocked)
+  const excluded = new Set(['all', 'bestsellers', 'offer_stock', 'sale', 'uncategorized', 'none', '', 'null', 'undefined', 'demo']);
+  
+  // Deleted categories blacklist
+  let deletedCats = [];
+  try {
+    const delStored = localStorage.getItem('vfs_deleted_categories');
+    if (delStored) deletedCats = JSON.parse(delStored);
+  } catch(e) {}
+  if (Array.isArray(window._vfsDeletedCategories)) {
+    window._vfsDeletedCategories.forEach(d => { if (d) deletedCats.push(d); });
+  }
+  deletedCats.forEach(d => {
+    if (d) excluded.add(String(d).trim().toLowerCase());
+  });
+  
   // 1. Standard base categories in fixed order
-  window.BASE_CATEGORIES.forEach(c => catSet.add(c.toLowerCase()));
+  window.BASE_CATEGORIES.forEach(c => {
+    const clean = c.toLowerCase();
+    if (!excluded.has(clean)) catSet.add(clean);
+  });
   
   // 2. Custom categories from local storage cache
   try {
@@ -804,7 +829,10 @@ function getAllCategories() {
       const parsed = JSON.parse(local);
       if (Array.isArray(parsed)) {
         parsed.forEach(c => {
-          if (c) catSet.add(String(c).trim().toLowerCase());
+          if (c) {
+            const clean = String(c).trim().toLowerCase();
+            if (clean && !excluded.has(clean)) catSet.add(clean);
+          }
         });
       }
     }
@@ -813,7 +841,10 @@ function getAllCategories() {
   // 3. Custom categories from Firestore cloud memory
   if (Array.isArray(window._vfsCloudCategories)) {
     window._vfsCloudCategories.forEach(c => {
-      if (c) catSet.add(String(c).trim().toLowerCase());
+      if (c) {
+        const clean = String(c).trim().toLowerCase();
+        if (clean && !excluded.has(clean)) catSet.add(clean);
+      }
     });
   }
   
@@ -823,14 +854,14 @@ function getAllCategories() {
     catalog.forEach(p => {
       if (p && p.cat) {
         const clean = String(p.cat).trim().toLowerCase();
-        if (clean && clean !== 'all' && clean !== 'bestsellers' && clean !== 'offer_stock' && clean !== 'sale') {
+        if (clean && !excluded.has(clean)) {
           catSet.add(clean);
         }
       }
     });
   }
   
-  const list = Array.from(catSet).filter(c => c && c !== 'all' && c !== 'bestsellers' && c !== 'offer_stock' && c !== 'sale');
+  const list = Array.from(catSet).filter(c => c && !excluded.has(c));
   const standardOrder = ['kadas', 'chains', 'bracelets', 'earrings', 'necklaces'];
   list.sort((a, b) => {
     const idxA = standardOrder.indexOf(a);
@@ -5321,13 +5352,27 @@ async function initApp() {
       const data = await res.json();
       if (Array.isArray(data)) {
         PRODUCTS.length = 0;
-        PRODUCTS.push(...data);
+        PRODUCTS.push(...data.filter(p => p && String(p.id) !== '999' && String(p.sku || '').toUpperCase() !== 'DEMO-001' && String(p.cat || '').trim().toLowerCase() !== 'demo'));
         window.VFS_PRODUCTS_CACHE = [...PRODUCTS];
       }
     }
   } catch (e) {
     console.error("Failed to load products from live catalog:", e);
   }
+
+  // Purge any stale demo category or demo product from localStorage
+  try {
+    let cats = JSON.parse(localStorage.getItem('vfs_custom_categories') || '[]');
+    if (Array.isArray(cats) && cats.some(c => String(c).trim().toLowerCase() === 'demo')) {
+      cats = cats.filter(c => String(c).trim().toLowerCase() !== 'demo');
+      localStorage.setItem('vfs_custom_categories', JSON.stringify(cats));
+    }
+    let prods = JSON.parse(localStorage.getItem('vfs_custom_products') || '[]');
+    if (Array.isArray(prods) && prods.some(p => p && (String(p.id) === '999' || String(p.sku || '').toUpperCase() === 'DEMO-001' || String(p.cat || '').trim().toLowerCase() === 'demo'))) {
+      prods = prods.filter(p => p && String(p.id) !== '999' && String(p.sku || '').toUpperCase() !== 'DEMO-001' && String(p.cat || '').trim().toLowerCase() !== 'demo');
+      localStorage.setItem('vfs_custom_products', JSON.stringify(prods));
+    }
+  } catch(e) {}
 
   // If local cache of edited products exists, merge it immediately for instantaneous display
   try {
@@ -5345,7 +5390,7 @@ async function initApp() {
             map.set(idKey, p);
           }
         });
-        window.VFS_PRODUCTS_CACHE = Array.from(map.values());
+        window.VFS_PRODUCTS_CACHE = Array.from(map.values()).filter(p => p && String(p.id) !== '999' && String(p.sku || '').toUpperCase() !== 'DEMO-001' && String(p.cat || '').trim().toLowerCase() !== 'demo');
         PRODUCTS.length = 0;
         PRODUCTS.push(...window.VFS_PRODUCTS_CACHE);
       }

@@ -37,6 +37,18 @@ async function initAdminCatalog() {
   try {
     localStorage.removeItem('vfs_products');
     localStorage.removeItem('vfs_custom_products');
+    
+    // Auto-purge demo category and sync blacklist
+    let custom = JSON.parse(localStorage.getItem('vfs_custom_categories') || '[]');
+    if (Array.isArray(custom)) {
+      custom = custom.filter(c => String(c).trim().toLowerCase() !== 'demo');
+      localStorage.setItem('vfs_custom_categories', JSON.stringify(custom));
+    }
+    let del = JSON.parse(localStorage.getItem('vfs_deleted_categories') || '[]');
+    if (!del.map(d => String(d).toLowerCase()).includes('demo')) {
+      del.push('demo');
+      localStorage.setItem('vfs_deleted_categories', JSON.stringify(del));
+    }
   } catch (e) {}
 
   try {
@@ -178,8 +190,15 @@ async function refreshCloudData() {
   // 2. If Firestore is active, merge any cloud-stored products on top
   if (window.VFS_CLOUD_ACTIVE) {
     try {
-      const dbProducts = await window.VFS_DB.getProducts();
+      let dbProducts = await window.VFS_DB.getProducts();
       if (dbProducts && dbProducts.length > 0) {
+        dbProducts = dbProducts.filter(p => {
+          const isDemo = String(p.cat || p.category || '').trim().toLowerCase() === 'demo';
+          if (isDemo && window.VFS_DB && typeof window.VFS_DB.deleteProduct === 'function') {
+            window.VFS_DB.deleteProduct(p.id).catch(() => {});
+          }
+          return !isDemo;
+        });
         const prodMap = new Map();
         window.VFS_PRODUCTS_CACHE.forEach(p => prodMap.set(String(p.id), p));
         dbProducts.forEach(p => {
@@ -1230,12 +1249,19 @@ window.deleteProductFromCatalog = async function(id) {
   delete window.VFS_STOCK_CACHE[idStr];
   
   window.VFS_PRODUCTS_CACHE = filtered;
+  if (Array.isArray(DEFAULT_PRODUCTS)) {
+    DEFAULT_PRODUCTS = DEFAULT_PRODUCTS.filter(p => String(p.id) !== idStr && String(p.sku) !== idStr);
+  }
   try {
     localStorage.setItem('vfs_custom_products', JSON.stringify(filtered));
+    localStorage.setItem('vfs_products', JSON.stringify(filtered));
   } catch(e) {}
 
   adminToast('Product deleted instantly! 🗑️');
   renderSearchCatalog();
+  if (typeof window.renderAdminCategoryChips === 'function') {
+    window.renderAdminCategoryChips();
+  }
 
   // 3. Cloud Deletion
   await window.VFS_DB.deleteProduct(id);
@@ -2655,12 +2681,32 @@ $('#choiceSplit').addEventListener('click', () => {
 // ── CATEGORIES MANAGEMENT ──
 window.BASE_CATEGORIES = ['kadas', 'chains', 'bracelets', 'earrings', 'necklaces'];
 window._vfsAdminCloudCategories = [];
+window._vfsAdminDeletedCategories = [];
 
 window.getAllAdminCategories = function() {
   const catSet = new Set();
   
+  // Excluded system & invalid category keys
+  const excluded = new Set(['all', 'bestsellers', 'offer_stock', 'sale', 'uncategorized', 'none', '', 'null', 'undefined']);
+  
+  // Deleted categories blacklist (to prevent stale products or cache from resurrecting removed categories)
+  let deletedCats = [];
+  try {
+    const delStored = localStorage.getItem('vfs_deleted_categories');
+    if (delStored) deletedCats = JSON.parse(delStored);
+  } catch(e) {}
+  if (Array.isArray(window._vfsAdminDeletedCategories)) {
+    window._vfsAdminDeletedCategories.forEach(d => { if (d) deletedCats.push(d); });
+  }
+  deletedCats.forEach(d => {
+    if (d) excluded.add(String(d).trim().toLowerCase());
+  });
+  
   // 1. Standard base categories in fixed order
-  window.BASE_CATEGORIES.forEach(c => catSet.add(c.toLowerCase()));
+  window.BASE_CATEGORIES.forEach(c => {
+    const clean = c.toLowerCase();
+    if (!excluded.has(clean)) catSet.add(clean);
+  });
   
   // 2. Custom categories from local storage
   try {
@@ -2669,7 +2715,10 @@ window.getAllAdminCategories = function() {
       const parsed = JSON.parse(local);
       if (Array.isArray(parsed)) {
         parsed.forEach(c => {
-          if (c) catSet.add(String(c).trim().toLowerCase());
+          if (c) {
+            const clean = String(c).trim().toLowerCase();
+            if (clean && !excluded.has(clean)) catSet.add(clean);
+          }
         });
       }
     }
@@ -2678,7 +2727,10 @@ window.getAllAdminCategories = function() {
   // 3. Custom categories from Firestore cloud memory
   if (Array.isArray(window._vfsAdminCloudCategories)) {
     window._vfsAdminCloudCategories.forEach(c => {
-      if (c) catSet.add(String(c).trim().toLowerCase());
+      if (c) {
+        const clean = String(c).trim().toLowerCase();
+        if (clean && !excluded.has(clean)) catSet.add(clean);
+      }
     });
   }
   
@@ -2688,14 +2740,14 @@ window.getAllAdminCategories = function() {
     catalog.forEach(p => {
       if (p && p.cat) {
         const clean = String(p.cat).trim().toLowerCase();
-        if (clean && clean !== 'all' && clean !== 'bestsellers' && clean !== 'offer_stock' && clean !== 'sale') {
+        if (clean && !excluded.has(clean)) {
           catSet.add(clean);
         }
       }
     });
   }
   
-  const list = Array.from(catSet).filter(c => c && c !== 'all' && c !== 'bestsellers' && c !== 'offer_stock' && c !== 'sale');
+  const list = Array.from(catSet).filter(c => c && !excluded.has(c));
   const standardOrder = ['kadas', 'chains', 'bracelets', 'earrings', 'necklaces'];
   list.sort((a, b) => {
     const idxA = standardOrder.indexOf(a);
@@ -2796,43 +2848,137 @@ window.addNewCategoryFromAdmin = async function() {
   adminToast(`Category "${window.formatAdminCategoryLabel(cleanCat)}" is now live on the website! 🌸`);
 };
 
+window.closeDeleteCategoryModal = function() {
+  const modal = document.getElementById('deleteCategoryModal');
+  if (modal) modal.style.display = 'none';
+  window._pendingCategoryDelete = null;
+};
+
 window.deleteCustomCategoryFromAdmin = async function(cat) {
+  cat = String(cat || '').trim().toLowerCase();
+  if (!cat) return;
+  
   const catalog = getAdminCatalog();
-  const prodCount = catalog.filter(p => String(p.cat || '').toLowerCase() === cat).length;
-  if (prodCount > 0) {
-    if (!confirm(`Category "${window.formatAdminCategoryLabel(cat)}" currently has ${prodCount} product(s) assigned. Removing it will not delete products, but they will be categorized under uncategorized. Proceed?`)) {
-      return;
-    }
-  } else {
-    if (!confirm(`Are you sure you want to remove "${window.formatAdminCategoryLabel(cat)}" from categories?`)) {
-      return;
-    }
+  const affectedProducts = catalog.filter(p => String(p.cat || p.category || '').trim().toLowerCase() === cat);
+  const prodCount = affectedProducts.length;
+  const label = window.formatAdminCategoryLabel(cat);
+  
+  const confirmMsg = prodCount > 0
+    ? `Are you sure you want to remove category "${label}" and permanently DELETE the ${prodCount} product(s) in this category?`
+    : `Are you sure you want to remove category "${label}"?`;
+    
+  if (!confirm(confirmMsg)) {
+    return;
   }
   
+  await executeCategoryDeletion(cat, 'delete_products', null, affectedProducts);
+};
+
+async function executeCategoryDeletion(cat, action, targetCat, affectedProducts) {
+  cat = String(cat || '').trim().toLowerCase();
+  let catalog = [...getAdminCatalog()];
+  const label = window.formatAdminCategoryLabel(cat);
+  
+  const isMatch = (p) => {
+    if (!p) return false;
+    const c = String(p.cat || p.category || '').trim().toLowerCase();
+    return c === cat;
+  };
+  
+  const matches = catalog.filter(isMatch);
+  const idsToDelete = new Set(matches.map(p => String(p.id)));
+  const skusToDelete = new Set(matches.map(p => String(p.sku)));
+  
+  // 1. Process Affected Products — Permanently Remove from Local Catalog
+  catalog = catalog.filter(p => !isMatch(p) && !idsToDelete.has(String(p.id)) && !skusToDelete.has(String(p.sku)));
+  window.VFS_PRODUCTS_CACHE = catalog;
+  if (Array.isArray(DEFAULT_PRODUCTS)) {
+    DEFAULT_PRODUCTS = DEFAULT_PRODUCTS.filter(p => !isMatch(p) && !idsToDelete.has(String(p.id)) && !skusToDelete.has(String(p.sku)));
+  }
+  
+  // Remove from Stock Cache & DOM
+  matches.forEach(p => {
+    delete window.VFS_STOCK_CACHE[p.id];
+    delete window.VFS_STOCK_CACHE[String(p.id)];
+    const cardEl = document.getElementById(`prodCard_${p.id}`) || document.querySelector(`[data-product-id="${p.id}"]`);
+    if (cardEl) cardEl.remove();
+  });
+  
+  // Save Updated Catalog to Local Storage
+  try {
+    localStorage.setItem('vfs_custom_products', JSON.stringify(catalog));
+    localStorage.setItem('vfs_products', JSON.stringify(catalog));
+  } catch(e) {}
+  
+  // 2. Remove from Custom Categories
   let custom = [];
   try {
     const local = localStorage.getItem('vfs_custom_categories');
     if (local) custom = JSON.parse(local);
   } catch(e) {}
-  
-  custom = custom.filter(c => String(c).toLowerCase() !== cat);
+  custom = custom.filter(c => String(c).trim().toLowerCase() !== cat);
   localStorage.setItem('vfs_custom_categories', JSON.stringify(custom));
   window._vfsAdminCloudCategories = custom;
   
+  // 3. Add to Deleted Categories Blacklist (prevents ghosts from resurrecting)
+  let deletedCats = [];
+  try {
+    const delStored = localStorage.getItem('vfs_deleted_categories');
+    if (delStored) deletedCats = JSON.parse(delStored);
+  } catch(e) {}
+  if (!deletedCats.map(c => String(c).trim().toLowerCase()).includes(cat)) {
+    deletedCats.push(cat);
+  }
+  localStorage.setItem('vfs_deleted_categories', JSON.stringify(deletedCats));
+  window._vfsAdminDeletedCategories = deletedCats;
+  
+  // 4. Cloud Deletion: Deep sweep in Firestore Cloud
   if (window.VFS_CLOUD_ACTIVE && window.db) {
     try {
+      // Direct delete by ID
+      for (const p of matches) {
+        await window.db.collection('products').doc(String(p.id)).delete().catch(() => {});
+        await window.db.collection('product_stock').doc(String(p.id)).delete().catch(() => {});
+      }
+      // Query Firestore for any products tagged with this category and delete them
+      const snap = await window.db.collection('products').get();
+      const batch = window.db.batch();
+      let deleteCount = 0;
+      snap.forEach(doc => {
+        const d = doc.data() || {};
+        const pCat = String(d.cat || d.category || '').trim().toLowerCase();
+        if (pCat === cat || idsToDelete.has(String(d.id)) || idsToDelete.has(String(doc.id))) {
+          batch.delete(doc.ref);
+          batch.delete(window.db.collection('product_stock').doc(doc.id));
+          deleteCount++;
+        }
+      });
+      if (deleteCount > 0) {
+        await batch.commit();
+        console.log(`🔥 Firestore: Deleted ${deleteCount} product documents in category "${cat}"`);
+      }
+      
+      // Update settings/categories doc
       await window.db.collection('settings').doc('categories').set({
         list: custom,
+        deleted: deletedCats,
         updatedAt: Date.now()
       }, { merge: true });
-    } catch(e) {
-      console.error("Error deleting category from Firestore:", e);
+    } catch(cloudErr) {
+      console.warn("Cloud category and product deletion warning:", cloudErr);
     }
   }
   
+  // 5. Close modal if open
+  window.closeDeleteCategoryModal();
+  
+  // 6. Refresh UI
   window.renderAdminCategoryChips();
-  adminToast(`Category removed.`);
-};
+  if (typeof renderSearchCatalog === 'function') {
+    renderSearchCatalog();
+  }
+  adminToast(`Category "${label}" and its product(s) deleted! 🗑️`);
+}
 
 async function registerAndSaveNewCategory(cleanCat) {
   let custom = [];
@@ -2845,6 +2991,16 @@ async function registerAndSaveNewCategory(cleanCat) {
     custom.push(cleanCat);
   }
   
+  // If it was previously marked deleted, un-blacklist it
+  let deletedCats = [];
+  try {
+    const delStored = localStorage.getItem('vfs_deleted_categories');
+    if (delStored) deletedCats = JSON.parse(delStored);
+  } catch(e) {}
+  deletedCats = deletedCats.filter(c => String(c).trim().toLowerCase() !== cleanCat);
+  localStorage.setItem('vfs_deleted_categories', JSON.stringify(deletedCats));
+  window._vfsAdminDeletedCategories = deletedCats;
+  
   localStorage.setItem('vfs_custom_categories', JSON.stringify(custom));
   window._vfsAdminCloudCategories = custom;
   
@@ -2852,6 +3008,7 @@ async function registerAndSaveNewCategory(cleanCat) {
     try {
       await window.db.collection('settings').doc('categories').set({
         list: custom,
+        deleted: deletedCats,
         updatedAt: Date.now()
       }, { merge: true });
     } catch(e) {
@@ -2869,14 +3026,22 @@ function setupRealtimeAdminCategoriesListener() {
     window.db.collection('settings').doc('categories').onSnapshot(doc => {
       if (doc && doc.exists) {
         const data = doc.data() || {};
-        if (Array.isArray(data.list)) {
-          window._vfsAdminCloudCategories = data.list;
-          try {
-            localStorage.setItem('vfs_custom_categories', JSON.stringify(data.list));
-          } catch(e) {}
-          if (typeof window.renderAdminCategoryChips === 'function') {
-            window.renderAdminCategoryChips();
-          }
+        let list = Array.isArray(data.list) ? data.list : [];
+        let deleted = Array.isArray(data.deleted) ? data.deleted : [];
+        
+        // Always strip deleted categories from cloud memory list
+        const delSet = new Set(deleted.map(d => String(d).trim().toLowerCase()));
+        list = list.filter(c => !delSet.has(String(c).trim().toLowerCase()));
+        
+        window._vfsAdminCloudCategories = list;
+        window._vfsAdminDeletedCategories = deleted;
+        try {
+          localStorage.setItem('vfs_custom_categories', JSON.stringify(list));
+          localStorage.setItem('vfs_deleted_categories', JSON.stringify(deleted));
+        } catch(e) {}
+        
+        if (typeof window.renderAdminCategoryChips === 'function') {
+          window.renderAdminCategoryChips();
         }
       }
     }, err => {
