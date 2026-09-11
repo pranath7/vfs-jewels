@@ -3707,6 +3707,9 @@ function openPDP(id) {
   const p = getFullCatalog().find(x => x.id === id);
   if (!p) return;
 
+  // Dismiss open drawers, search overlays, and background backdrops
+  document.querySelectorAll('.dw.active, .drawer.active, .drawer-overlay.active, .search-overlay.active, #cartBG.active, #wlBG.active, #profileBG.active, #cartDW.active, #wlDW.active, #profileDW.active, #mobileNavDrawer.active').forEach(el => el.classList.remove('active'));
+
   const minQty = p.moq ? parseInt(p.moq) : 1;
   const overlay = $('#pdpOverlay');
   if (currentPdpScrollListener) {
