@@ -1020,7 +1020,6 @@ button { font-family: var(--font-body); cursor: pointer; border: none; backgroun
   background: var(--color-primary);
   color: #fff;
   padding: 12px 0;
-  overflow: hidden;
 }
 
 .delivery-inner {
@@ -5592,9 +5591,6 @@ body:has(#cartBG.active) .floating-guide-btn,
 body:has(#wlBG.active) .floating-guide-btn,
 body:has(#checkoutModal.active) .floating-guide-btn,
 body:has(#pdpOverlay.active) .floating-guide-btn,
-body:has(.pdp-overlay.active) .floating-guide-btn,
-body:has(#trackingOverlay.active) .floating-guide-btn,
-body:has(#guideModal.active) .floating-guide-btn,
 body:has(.modal-backdrop.active) .floating-guide-btn,
 body:has(.modal-bg.active) .floating-guide-btn,
 body:has(.drawer.active) .floating-guide-btn,
@@ -5602,68 +5598,27 @@ body:has(#mobileNavDrawer.active) .floating-guide-btn,
 body:has(.drawer-overlay.active) .floating-guide-btn,
 body:has(#welcomeModeModal[style*="display: flex"]) .floating-guide-btn,
 body:has(#welcomeModeModal.active) .floating-guide-btn,
-body:has(#customerCareModal.active) .floating-guide-btn,
-body:has(#customerCareModal[style*="display: flex"]) .floating-guide-btn,
-body:has(.care-modal-backdrop.active) .floating-guide-btn,
-body:has(#walletModal.active) .floating-guide-btn,
-body:has(#walletModal[style*="display: flex"]) .floating-guide-btn,
 body:has(#profileDW.active) .floating-guide-btn,
-body:has(#profileBG.active) .floating-guide-btn,
 body:has(#cartDW.active) .floating-order-btn,
 body:has(#wlDW.active) .floating-order-btn,
 body:has(#cartBG.active) .floating-order-btn,
 body:has(#wlBG.active) .floating-order-btn,
 body:has(#checkoutModal.active) .floating-order-btn,
 body:has(#pdpOverlay.active) .floating-order-btn,
-body:has(.pdp-overlay.active) .floating-order-btn,
-body:has(#trackingOverlay.active) .floating-order-btn,
-body:has(#guideModal.active) .floating-order-btn,
 body:has(.modal-backdrop.active) .floating-order-btn,
 body:has(.modal-bg.active) .floating-order-btn,
 body:has(.drawer.active) .floating-order-btn,
 body:has(#mobileNavDrawer.active) .floating-order-btn,
 body:has(.drawer-overlay.active) .floating-order-btn,
-body:has(#welcomeModeModal[style*="display: flex"]) .floating-order-btn,
-body:has(#welcomeModeModal.active) .floating-order-btn,
-body:has(#customerCareModal.active) .floating-order-btn,
-body:has(#customerCareModal[style*="display: flex"]) .floating-order-btn,
-body:has(.care-modal-backdrop.active) .floating-order-btn,
-body:has(#walletModal.active) .floating-order-btn,
-body:has(#walletModal[style*="display: flex"]) .floating-order-btn,
 body:has(#profileDW.active) .floating-order-btn,
-body:has(#profileBG.active) .floating-order-btn,
 body:has(#mobileNavDrawer.active) .scroll-to-top,
 body:has(.drawer-overlay.active) .scroll-to-top,
-body:has(#trackingOverlay.active) .scroll-to-top,
-body:has(.pdp-overlay.active) .scroll-to-top,
-body:has(.modal-bg.active) .scroll-to-top,
-body:has(.modal-backdrop.active) .scroll-to-top,
-body:has(#customerCareModal.active) .scroll-to-top,
-body:has(#customerCareModal[style*="display: flex"]) .scroll-to-top,
-body:has(#walletModal.active) .scroll-to-top,
-body:has(#walletModal[style*="display: flex"]) .scroll-to-top,
 body:has(#mobileNavDrawer.active) .toast-box,
 body:has(.drawer-overlay.active) .toast-box {
   display: none !important;
   opacity: 0 !important;
   pointer-events: none !important;
   visibility: hidden !important;
-}
-
-@media (max-width: 768px) {
-  .pin-modal {
-    padding: 24px 18px 30px !important;
-    max-height: 88dvh !important;
-    width: 94% !important;
-    box-sizing: border-box !important;
-  }
-  .guide-pin-modal {
-    padding: 24px 16px 40px !important;
-    max-height: 90vh !important;
-    width: 94% !important;
-    overflow-y: auto !important;
-    box-sizing: border-box !important;
-  }
 }
 
 /* PDP Instagram Share Icon Styling */
