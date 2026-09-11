@@ -123,7 +123,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Figtree:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700;900&display=swap"></noscript>
 
-  <link rel="stylesheet" href="style.css?v=20260908_wa_free_invoice">
+  <link rel="stylesheet" href="style.css?v=20260911_mobile_fixes">
   <link rel="stylesheet" href="assets/gesture-navigation.css?v=20260827_v21_historysync">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icon-192.png">
@@ -1465,21 +1465,25 @@
 
   <!-- WELCOME SHOPPING PREFERENCE MODAL -->
   <div class="vfs-modal-overlay" id="welcomeModeModal" style="display:none;">
-    <div class="vfs-modal-content welcome-modal-card" style="max-width:520px; padding:32px; border-radius:16px; text-align:center; position:relative; background:var(--bg-card); border:1px solid var(--border-color); box-shadow:0 20px 50px rgba(0,0,0,0.4);">
-      <button class="modal-close-btn" onclick="window.closeWelcomeModeModal()" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:2rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+    <div class="vfs-modal-content welcome-modal-card">
+      <button class="modal-close-btn" onclick="window.closeWelcomeModeModal()" aria-label="Close modal">&times;</button>
       <div class="welcome-crown" style="font-size:3rem; margin-bottom:12px;">👑</div>
       <h2 style="font-size:2.2rem; margin-bottom:8px; text-transform:uppercase; font-family:var(--font-heading);">Welcome to VFS Jewels</h2>
-      <p style="font-size:1.3rem; color:var(--text-muted); margin-bottom:24px;">Select your shopping preference to view customized catalog rates:</p>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-        <button id="chooseWholesaleBtn" class="mode-choice-btn" style="padding:24px 16px; border-radius:12px; border:2px solid var(--color-secondary); background:var(--bg-secondary); cursor:pointer; text-align:center; transition:all 0.2s ease;">
-          <div style="font-size:2.8rem; margin-bottom:8px;">📦</div>
-          <strong style="display:block; font-size:1.5rem; color:var(--text-primary); margin-bottom:4px;">Wholesale Portal</strong>
-          <span style="font-size:1.1rem; color:var(--text-muted); line-height:1.4; display:block;">Reseller Rates • MOQ ₹1,000 Only • B2B Direct</span>
+      <p style="font-size:1.3rem; color:var(--text-muted); margin-bottom:20px;">Select your shopping preference to view customized catalog rates:</p>
+      <div class="mode-choice-grid">
+        <button id="chooseWholesaleBtn" class="mode-choice-btn wholesale-choice-btn">
+          <div class="mode-choice-icon">📦</div>
+          <div class="mode-choice-info">
+            <strong class="mode-choice-title">Wholesale Portal</strong>
+            <span class="mode-choice-desc">Reseller Rates • MOQ ₹1,000 Only • B2B Direct</span>
+          </div>
         </button>
-        <button id="chooseRetailBtn" class="mode-choice-btn" style="padding:24px 16px; border-radius:12px; border:2px solid var(--border-color); background:var(--bg-secondary); cursor:pointer; text-align:center; transition:all 0.2s ease;">
-          <div style="font-size:2.8rem; margin-bottom:8px;">🛍️</div>
-          <strong style="display:block; font-size:1.5rem; color:var(--text-primary); margin-bottom:4px;">Retail Store</strong>
-          <span style="font-size:1.1rem; color:var(--text-muted); line-height:1.4; display:block;">Personal Shopping • Express Delivery</span>
+        <button id="chooseRetailBtn" class="mode-choice-btn retail-choice-btn">
+          <div class="mode-choice-icon">🛍️</div>
+          <div class="mode-choice-info">
+            <strong class="mode-choice-title">Retail Store</strong>
+            <span class="mode-choice-desc">Personal Shopping • Express Delivery</span>
+          </div>
         </button>
       </div>
     </div>
